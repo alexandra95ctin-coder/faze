@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#F9F5EC" />
+<title>Fáze</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    /* active / self-development palette — cool, fresh, premium */
+    --bg1:#FBFAF5; --bg2:#F5F3EC;
+    --ink:#1E241F; --muted:#79837B;
+    --energy:#EC6142; --energy-deep:#D14B2E;   /* coral — CTA / high energy */
+    --calm:#2F8072;                            /* teal-green — low energy   */
+    --card:#FFFFFF;
+    --hi:#FCEAE2;   /* high-energy card tint  */
+    --lo:#E5EEEB;   /* low-energy card tint   */
+    --radius:24px;
+    --shadow:0 18px 40px -24px rgba(30,45,35,.42), 0 4px 14px -9px rgba(30,45,35,.20);
+    --shadow-sm:0 8px 22px -16px rgba(30,45,35,.45);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:'Inter',-apple-system,system-ui,sans-serif;color:var(--ink);
+    background:linear-gradient(165deg,var(--bg1) 0%,var(--bg2) 100%);
+    background-attachment:fixed;min-height:100vh;line-height:1.5;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:560px;margin:0 auto;padding:26px 20px 120px}
+  .serif{font-family:'Fraunces',Georgia,serif;font-weight:500}
+  .label{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .muted{color:var(--muted)}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  input,select{font-family:inherit;font-size:15px;color:var(--ink)}
+
+  /* header */
+  header.hero{margin-bottom:20px}
+  .brand{font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--energy-deep);font-weight:600;margin-bottom:14px}
+  .brandlogo{height:34px;width:auto;max-width:100%;display:block;margin:0 0 14px -2px}
+  h1.title{font-size:40px;line-height:1.04;margin:0;letter-spacing:-.01em}
+  h1.title em{font-style:italic;color:var(--energy);font-weight:500}
+  .wave{width:120px;height:16px;margin-top:14px;color:var(--energy);opacity:.9}
+  .subline{margin-top:10px;color:var(--muted);font-size:14px;max-width:40ch}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin:2px 2px 18px;font-size:11.5px;color:var(--muted);font-weight:500}
+  .legend span{white-space:nowrap}
+
+  /* spend + week nav */
+  .spendbar{display:flex;gap:10px;margin:18px 0 14px;flex-wrap:wrap}
+  .chip{background:var(--card);border-radius:18px;padding:11px 16px;box-shadow:var(--shadow-sm);flex:1;min-width:120px;cursor:pointer}
+  .chip:active{transform:scale(.99)}
+  .spendtotal{display:flex;justify-content:space-between;align-items:baseline;padding:11px 2px 2px;border-top:1.5px solid #EBE4D6;font-family:'Fraunces',serif;font-weight:600;font-size:18px}
+  .spendtotal.sub2{border-top:none;font-family:'Inter',sans-serif;font-size:12.5px;color:var(--muted);font-weight:500;padding-top:6px}
+  .chip .v{font-family:'Fraunces',serif;font-size:22px;font-weight:600;margin-top:2px}
+  .chip .v small{font-size:13px;font-weight:500;color:var(--muted);font-family:'Inter',sans-serif}
+  .weeknav{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 0 18px}
+  .wbtn{width:40px;height:40px;border-radius:999px;background:var(--card);box-shadow:var(--shadow-sm);
+    font-size:20px;font-weight:600;color:var(--ink);line-height:1;display:flex;align-items:center;justify-content:center}
+  .wbtn:active{transform:scale(.94)}
+  .wnow{flex:0 1 auto;min-width:130px;text-align:center;padding:10px 18px;border-radius:999px;
+    background:var(--card);box-shadow:var(--shadow-sm);font-weight:600;font-size:14px;color:var(--ink)}
+  .wnow.here{color:var(--muted)}
+
+  /* when should I…? */
+  .whenbtn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--ink);color:#F7F3EC;border-radius:18px;padding:16px 20px;margin:0 0 16px;box-shadow:var(--shadow-sm)}
+  .whenbtn:active{transform:scale(.99)}
+  .whenbtn .q{font-family:'Fraunces',serif;font-style:italic;font-size:18px}
+  .whenbtn svg{width:18px;height:18px;opacity:.85}
+  .whenback{font-size:12.5px;color:var(--muted);font-weight:600;display:flex;gap:10px;align-items:center}
+  .whenback button{color:var(--energy-deep);font-weight:600}
+  .typehint.big{gap:8px}
+  .typehint.big button{font-size:13.5px;padding:9px 14px;background:#EFEAE0;color:var(--ink)}
+  .whenres{text-align:center;padding:16px 0 4px}
+  .whenact{font-size:14px;color:var(--muted);font-weight:600;margin-bottom:6px}
+  .whenwin{font-family:'Fraunces',serif;font-size:34px;font-weight:600;line-height:1.05}
+  .whenphase{font-size:13px;font-style:italic;font-family:'Fraunces',serif;margin-top:5px}
+  .whenweek{margin-top:18px;font-size:13.5px;display:flex;flex-direction:column;gap:5px}
+
+  /* passes */
+  .passwrap{margin:0 0 16px}
+  .passhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+  .passadd{font-size:12px;font-weight:600;color:var(--energy-deep)}
+  .passrow{display:flex;gap:9px;overflow-x:auto;padding-bottom:3px}
+  .pass{flex:0 0 auto;background:var(--card);border-radius:16px;padding:10px 14px;box-shadow:var(--shadow-sm);text-align:left;min-width:118px;display:flex;flex-direction:column;gap:1px}
+  .pass:active{transform:scale(.98)}
+  .pass .pn{font-weight:600;font-size:13.5px}
+  .pass .pr{font-size:11.5px;color:var(--muted)}
+  .pass .pp{font-size:11px;color:var(--muted);font-weight:600}
+  .pass.low{outline:1.5px solid #E4B36A}
+  .pass.low .pr{color:#B5722A;font-weight:600}
+  .pass.empty{color:var(--muted);font-size:12.5px;font-weight:500;min-width:auto;flex-direction:row;align-items:center}
+  .linklike{color:var(--energy-deep);font-weight:600;text-decoration:underline}
+  .placeblock{margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #EFE9DD}
+  .placeblock:last-of-type{border-bottom:none;padding-bottom:0}
+  .placehead{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  .placename{font-family:'Fraunces',serif;font-size:16px;font-weight:600}
+  .addclass{margin-top:8px;font-size:12.5px;font-weight:600;color:var(--energy-deep)}
+  .field select{width:100%;padding:13px 14px;border-radius:14px;border:1.5px solid #DCE2DB;background:#fff;outline:none}
+
+  /* day cards */
+  .day{border-radius:var(--radius);padding:16px 18px;margin-bottom:14px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .day.today{outline:2px solid var(--energy);outline-offset:2px}
+  .day.high{background:var(--hi)}
+  .day.low{background:var(--lo)}
+  .day-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+  .day-name{font-family:'Fraunces',serif;font-size:19px;font-weight:600}
+  .day-date{font-size:12px;color:var(--muted);margin-left:6px;font-weight:500}
+  .todaytag{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--energy-deep);font-weight:700}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:5px 11px 5px 8px;border-radius:999px;font-size:12px;font-weight:600;background:rgba(255,255,255,.7)}
+  .pill.foll{color:var(--energy-deep)} .pill.ovu{color:#B0451F}
+  .pill.lut{color:var(--calm)} .pill.men{color:#7c6f6a}
+  .pill svg{width:14px;height:14px}
+  .nudge{font-size:13px;color:var(--ink);opacity:.72;margin-top:8px;font-style:italic;font-family:'Fraunces',serif}
+  .acts{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+
+  /* activity row */
+  .act{display:flex;align-items:flex-start;gap:11px;background:rgba(255,255,255,.62);border-radius:16px;padding:11px 13px;text-align:left;width:100%}
+  .act:active{transform:scale(.99)}
+  .cat-badge{width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+    font-size:17px;background:var(--c,#eee);flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.04)}
+  .act .body{flex:1;min-width:0}
+  .a-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+  .a-name{font-size:14.5px;font-weight:600;line-height:1.25}
+  .a-name .rep{font-size:9px;opacity:.55;margin-left:4px}
+  .cost{font-size:12.5px;font-weight:600;white-space:nowrap}
+  .cost.free{color:var(--calm)}
+  .a-sub{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+  .a-flag{font-size:11.5px;margin-top:7px;line-height:1.35;padding:5px 9px;border-radius:9px;font-weight:500}
+  .a-flag.o{background:#FBEEDD;color:#A9661F}
+  .a-flag.r{background:#FBE7E4;color:#BE4A41}
+  .empty{font-size:12.5px;color:var(--muted);opacity:.7;margin-top:10px}
+
+  /* view toggle + month grid */
+  .viewtog{display:flex;background:#E6EAE4;border-radius:14px;padding:4px;gap:4px;margin:0 0 16px}
+  .viewtog button{flex:1;padding:9px;border-radius:11px;font-weight:600;font-size:13.5px;color:var(--muted)}
+  .viewtog button.on{background:#fff;color:var(--ink);box-shadow:var(--shadow-sm)}
+  .mgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:8px}
+  .mdow{text-align:center;font-size:10px;letter-spacing:.06em;color:var(--muted);font-weight:600;padding-bottom:2px}
+  .mcell{aspect-ratio:1;border-radius:13px;padding:7px 8px;position:relative;font-size:12.5px;font-weight:600;color:var(--ink);text-align:left;overflow:hidden}
+  .mcell.blank{background:transparent!important;pointer-events:none}
+  .mcell.high{background:var(--hi)} .mcell.low{background:var(--lo)}
+  .mcell.today{outline:2px solid var(--energy);outline-offset:-2px}
+  .mcell .mmark{position:absolute;bottom:7px;right:8px;width:7px;height:7px;border-radius:50%;background:rgba(46,40,35,.32)}
+  .mcell .mmark.cau{background:#D0514A}
+  /* best-windows list */
+  .winlist{display:flex;flex-direction:column}
+  .win{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid #EFE9DD}
+  .win:last-child{border-bottom:none}
+  .win-main{flex:1;min-width:0}
+  .win-name{font-size:14px;font-weight:600}
+  .win-times{font-size:12.5px;margin-top:2px}
+  .wgood{color:#4E9B63;font-weight:600}
+  .wavoid{color:#B5722A}
+  /* phase guide cards */
+  .phasecard{border-radius:20px;padding:16px 18px;margin-bottom:12px;box-shadow:var(--shadow-sm)}
+  .phasehead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:5px}
+  .phasename{font-family:'Fraunces',serif;font-size:18px;font-weight:600}
+  .phasedates{font-size:12px;color:var(--muted);font-weight:600}
+  .phaseintro{font-size:13px;color:var(--ink);opacity:.82;font-style:italic;font-family:'Fraunces',serif;margin-bottom:13px}
+  .nicelist{display:flex;flex-wrap:wrap;gap:7px}
+  .nicechip{background:rgba(255,255,255,.62);border-radius:999px;padding:7px 13px;font-size:12.5px;font-weight:500;cursor:pointer;transition:transform .08s;color:var(--ink)}
+  .nicechip:active{transform:scale(.95)}
+  .nicechip .np{opacity:.5;font-weight:700;margin-right:5px}
+  .dateline{margin-top:12px;font-size:12.5px;color:var(--muted);font-weight:600;letter-spacing:.02em}
+  .wrange{display:block;font-size:11px;color:var(--muted);font-weight:500;margin-top:1px}
+  .mcell.out{opacity:.4}
+
+  /* buttons / footer */
+  .footer{margin-top:26px;display:flex;flex-direction:column;gap:10px}
+  .btn{border-radius:999px;padding:15px 20px;font-size:15px;font-weight:600;text-align:center;transition:transform .08s,box-shadow .2s}
+  .btn:active{transform:scale(.985)}
+  .btn.primary{background:var(--energy);color:#fff;box-shadow:0 12px 26px -12px rgba(236,97,66,.9)}
+  .btn.ghost{background:var(--card);color:var(--ink);box-shadow:var(--shadow-sm)}
+  .btn.disabled{background:#E4E7E2;color:var(--muted);box-shadow:none;cursor:not-allowed}
+  .importnote{font-size:11.5px;color:var(--muted);text-align:center;margin-top:-2px}
+  .disclaimer{font-size:11px;color:var(--muted);text-align:center;margin-top:6px;opacity:.85}
+
+  .fab{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:40;background:var(--energy);color:#fff;
+    border-radius:999px;padding:15px 26px;font-weight:600;font-size:15px;box-shadow:0 16px 34px -12px rgba(236,97,66,.95);
+    display:flex;align-items:center;gap:9px}
+  .fab:active{transform:translateX(-50%) scale(.97)}
+  .fab svg{width:18px;height:18px}
+
+  /* sheet */
+  .scrim{position:fixed;inset:0;background:rgba(24,32,26,.44);backdrop-filter:blur(3px);z-index:50;display:none;align-items:flex-end;justify-content:center}
+  .scrim.open{display:flex}
+  .sheet{background:linear-gradient(165deg,var(--bg1),#fff 60%);width:100%;max-width:560px;border-radius:28px 28px 0 0;
+    padding:22px 22px 30px;box-shadow:0 -20px 50px -20px rgba(24,32,26,.5);max-height:92vh;overflow-y:auto;
+    animation:rise .28s cubic-bezier(.2,.8,.25,1)}
+  @keyframes rise{from{transform:translateY(30px);opacity:.4}to{transform:translateY(0);opacity:1}}
+  .sheet h2{font-family:'Fraunces',serif;font-size:24px;font-weight:600;margin:0 0 4px}
+  .sheet .sub{color:var(--muted);font-size:13px;margin-bottom:18px}
+  .field{margin-bottom:16px}
+  .field>.label{display:block;margin-bottom:7px}
+  .field input[type=text],.field input[type=date],.field input[type=time],.field input[type=number]{
+    width:100%;padding:13px 14px;border-radius:14px;border:1.5px solid #DCE2DB;background:#fff;outline:none}
+  .field input:focus{border-color:var(--energy)}
+  .catgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px}
+  .catcell{background:#fff;border:1.5px solid #DCE2DB;border-radius:14px;padding:10px 6px;display:flex;flex-direction:column;
+    align-items:center;gap:4px;font-size:11.5px;font-weight:600;color:var(--muted)}
+  .catcell .ce{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;background:var(--c)}
+  .catcell.on{border-color:var(--c);color:var(--ink);box-shadow:0 6px 16px -10px var(--c)}
+  .seg{display:flex;background:#E6EAE4;border-radius:14px;padding:4px;gap:4px;margin-bottom:18px}
+  .seg button{flex:1;padding:10px;border-radius:11px;font-weight:600;font-size:13.5px;color:var(--muted)}
+  .seg button.on{background:#fff;color:var(--ink);box-shadow:var(--shadow-sm)}
+  .dows{display:flex;gap:6px;flex-wrap:wrap}
+  .dow{width:40px;height:40px;border-radius:12px;background:#fff;border:1.5px solid #DCE2DB;font-size:13px;font-weight:600;color:var(--muted)}
+  .dow.on{background:var(--energy);color:#fff;border-color:var(--energy)}
+  .toggle{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
+  .toggle input{width:20px;height:20px;accent-color:var(--energy)}
+  .sheet-actions{display:flex;gap:10px;margin-top:8px}
+  .sheet-actions .btn{flex:1}
+  .btn.danger{background:none;color:#b4483a;box-shadow:none;border:1.5px solid #e6c9c3}
+  .hidden{display:none!important}
+  .typehint{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+  .typehint button{font-size:11.5px;padding:5px 10px;border-radius:999px;background:#EDF0EB;color:var(--muted);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<button class="fab hidden" id="fab" onclick="openActivity()">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+  Add
+</button>
+
+<div class="scrim" id="scrim"><div class="sheet" id="sheet"></div></div>
+
+<script>
+/* ---------------- storage ---------------- */
+const K_CYCLE='whenTo.cycle', K_ACTS='whenTo.activities';
+const load=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}};
+const save=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+const K_PASSES='whenTo.passes', K_PLACES='whenTo.places', K_CLASSES='whenTo.classes';
+let cycle=load(K_CYCLE,null);
+let activities=load(K_ACTS,[]);
+let passes=load(K_PASSES,[]);
+let places=load(K_PLACES,[]);
+let classes=load(K_CLASSES,[]);
+let weekOffset=0;
+let viewMode='week';        // 'week' | 'month' | 'spend'
+let monthCursor=null;       // Date of displayed month
+let spendPeriod='month';    // 'week' | 'month'
+let prevCalView='week';     // where to return from the spend screen
+
+/* ---------------- categories ---------------- */
+const CATS={
+  MOVE:  {label:'Fitness',  desc:'movement & sport',  emoji:'🏃', color:'#F6DAD0', dot:'#EC6142',
+          types:['Strength','HIIT','CrossFit','Running','Cycling','Swimming','Pilates','Yoga','Walking','Hiking','Stretching','Recovery']},
+  SPA:   {label:'Spa & Body',desc:'massage & recovery',emoji:'💆', color:'#D7E9E3', dot:'#2F8072',
+          types:['Massage','Deep tissue','Lymphatic drainage','Body scrub','Body wrap','Sauna','Steam','Hot bath','Cryotherapy']},
+  FACIAL:{label:'Facial & Skin',desc:'facials & skin', emoji:'✨', color:'#F4DCEA', dot:'#D46AA0',
+          types:['Facial','Deep cleansing','Hydration','LED therapy','Dermaplaning','Chemical peel','Microneedling','Laser facial','Acne treatment']},
+  HAIR:  {label:'Hair Removal',desc:'wax, laser, IPL', emoji:'💇', color:'#F1E6C6', dot:'#C9931F',
+          types:['Waxing','Sugaring','Threading','Laser hair removal','IPL','Electrolysis']},
+  AESTH: {label:'Aesthetics',desc:'injectables & tweaks',emoji:'💉', color:'#E7DCF0', dot:'#8E5AA8',
+          types:['Botox','Fillers','PRP','Mesotherapy','Skin boosters','Laser','Body contouring']},
+  NAILS: {label:'Nails & Beauty',desc:'nails, lashes, brows',emoji:'💅', color:'#D6E2F4', dot:'#4C77C9',
+          types:['Manicure','Pedicure','Gel / Shellac','Lash extensions','Lash lift','Brow shaping','Brow lamination','Tanning']},
+  MIND:  {label:'Mind & Recovery',desc:'calm & reset', emoji:'🧠', color:'#DEEBCE', dot:'#6FA542',
+          types:['Meditation','Breathwork','Journaling','Sleep','Relaxation','Digital detox','Socializing']},
+  TRAVEL:{label:'Travel',   desc:'trips & getaways',   emoji:'✈️', color:'#F7E4CE', dot:'#E08A2E',
+          types:['Flight','Road trip','Getaway','City break','Beach','Hiking trip']}
+};
+const CAT_KEYS=Object.keys(CATS);
+
+/* rating meta */
+const RATE={
+  g:{dot:'🟢',text:'Best time'},
+  y:{dot:'🟡',text:'Fine / flexible'},
+  o:{dot:'🟠',text:'More sensitive'},
+  r:{dot:'🔴',text:'Consider postponing'}
+};
+/* recommendation matrix: category × phase → [rating, reason]  (a gentle guideline, not medical advice) */
+const REC={
+  MOVE:  {men:['y','honour low energy — keep it gentle'], foll:['g','prime time for strength & new challenges'], ovu:['g','peak power — go for a PR'], lut:['o','ease into steady, lower-intensity work']},
+  SPA:   {men:['g','rest & recovery land beautifully now'], foll:['y','lovely, though your energy wants to move'], ovu:['y','a nice reward after high-energy days'], lut:['g','winding down — massage & sauna feel great']},
+  FACIAL:{men:['o','skin’s most sensitive — treatments sting more'], foll:['g','calmest, clearest skin — best for facials'], ovu:['y','skin looks great but can be reactive'], lut:['o','breakouts & sensitivity rising — go gentle']},
+  HAIR:  {men:['r','pain’s highest now — waxing really stings'], foll:['g','least sensitive — the best time to book'], ovu:['y','fine, though sensitivity ticks up'], lut:['o','sensitivity rising toward your period']},
+  AESTH: {men:['r','more bruising & tenderness — best to wait'], foll:['g','calmest window — less bruising'], ovu:['y','fine, a touch more reactive'], lut:['o','sensitivity rising — go gentle']},
+  NAILS: {men:['y','totally fine — routine upkeep'], foll:['g','great window — nails & brows at their best'], ovu:['g','you’re glowing — perfect for a refresh'], lut:['y','fine — brows & lashes can feel tender']},
+  MIND:  {men:['g','exactly what your body wants now'], foll:['g','a clear head for planning & focus'], ovu:['g','social energy peaks — enjoy it'], lut:['g','protect calm & sleep as you wind down']},
+  TRAVEL:{men:['y','fine — plan in rest & comfort'], foll:['g','great energy for an active trip'], ovu:['g','peak energy — adventure away'], lut:['y','fine — build in some downtime']}
+};
+
+/* ---------------- date helpers ---------------- */
+const DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const DOW_FULL=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function ymd(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function parseYMD(s){const[y,m,dd]=s.split('-').map(Number);return new Date(y,m-1,dd)}
+function today(){const t=new Date();t.setHours(0,0,0,0);return t}
+function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x}
+function daysBetween(a,b){return Math.round((b-a)/86400000)}
+function mondayOf(d){const x=new Date(d);const wd=(x.getDay()+6)%7;return addDays(x,-wd)}
+
+/* ---------------- phase logic (guideline only) ---------------- */
+const PHASES={
+  men: {key:'men', label:'Menstrual', energy:'low',  tint:'#E0EAF3', accent:'#5B86A6', nudge:'Rest & gentle movement.'},
+  foll:{key:'foll',label:'Follicular',energy:'high', tint:'#E2EDD7', accent:'#5E9A57', nudge:'Energy rising — strength & new things.'},
+  ovu: {key:'ovu', label:'Ovulatory', energy:'high', tint:'#FBE2D4', accent:'#DD6236', nudge:'Peak energy — go hard, chase a PR.'},
+  lut: {key:'lut', label:'Luteal',    energy:'low',  tint:'#E9E2F1', accent:'#8073A8', nudge:'Winding down — steady & calm.'}
+};
+const PHASE_GUIDE={
+  men: {intro:'Low energy — your body wants rest. Nothing intense; keep it kind.', nice:[['Gentle yoga','MOVE'],['Walking','MOVE'],['Stretching','MOVE'],['Massage','SPA'],['Sauna','SPA'],['Sleep','MIND'],['Journaling','MIND']]},
+  foll:{intro:'Energy’s rising — a great time to build and try new things.', nice:[['Strength','MOVE'],['HIIT','MOVE'],['New class','MOVE'],['Facial','FACIAL'],['Waxing','HAIR'],['Laser','HAIR'],['Haircut','NAILS']]},
+  ovu: {intro:'Peak energy and confidence — go big and be social.', nice:[['HIIT','MOVE'],['Running','MOVE'],['CrossFit','MOVE'],['Socialising','MIND'],['Manicure','NAILS'],['Travel','TRAVEL']]},
+  lut: {intro:'Winding down — steadier movement and a little more self-care.', nice:[['Pilates','MOVE'],['Yoga','MOVE'],['Steady cardio','MOVE'],['Walking','MOVE'],['Massage','SPA'],['Lymphatic drainage','SPA'],['Sleep','MIND']]}
+};
+function phaseForDate(date){
+  if(!cycle)return null;
+  const start=parseYMD(cycle.lastPeriodStart);const len=cycle.cycleLength||28;
+  let diff=daysBetween(start,date);let day=((diff%len)+len)%len+1;
+  let key;
+  if(day<=5)key='men'; else if(day<=13)key='foll'; else if(day<=16)key='ovu'; else key='lut';
+  return {day,...PHASES[key]};
+}
+const ICON_FLAME='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 3-2 4-2 7 0 1.5 1 2.5 1 2.5S9 12 8 13c-2 2-2 5 0 7 1.4 1.4 3 1.5 4 1.5 3 0 5-2 5-5 0-3-2-4-2-6 0 1-1 1.5-1.5 1.5.5-2-1-4-1.5-5-1-2-1-4 1-6-3 0-5 1.5-5 4 0 0-2-1-2-4z"/></svg>';
+const ICON_MOON='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>';
+
+/* ---------------- money ---------------- */
+const EUR=n=>'€'+(Math.round(n*100)/100).toLocaleString(undefined,{minimumFractionDigits:(n%1?2:0),maximumFractionDigits:2});
+
+/* activities occurring on a given date */
+function actsOn(date){
+  const wd=date.getDay(),ds=ymd(date);
+  return activities.filter(a=>a.recurring?(a.daysOfWeek||[]).includes(wd):a.date===ds)
+    .sort((a,b)=>(a.time||'99').localeCompare(b.time||'99'));
+}
+function costOf(a){return (a.passId||a.includedInPass)?0:(Number(a.cost)||0)}
+function catOf(a){return CATS[a.category]||CATS.MOVE}
+/* passes: total=null → unlimited membership; else a class pack. used = one-off bookings linked to it */
+function passById(id){return passes.find(p=>p.id===id)}
+function passUsed(id){return activities.filter(a=>a.passId===id&&!a.recurring).length}
+function passRemaining(p){return p.total==null?null:Math.max(0,p.total-passUsed(p.id))}
+function weekSpend(mon){mon=mon||mondayOf(today());let s=0;for(let i=0;i<7;i++)actsOn(addDays(mon,i)).forEach(a=>s+=costOf(a));return s}
+function monthSpend(base){base=base||today();const y=base.getFullYear(),m=base.getMonth(),days=new Date(y,m+1,0).getDate();let s=0;
+  for(let d=1;d<=days;d++)actsOn(new Date(y,m,d)).forEach(a=>s+=costOf(a));return s}
+function spendRange(from,to){const totals={};let total=0;let d=new Date(from);
+  while(d<=to){actsOn(d).forEach(a=>{const c=costOf(a);if(c>0){totals[a.category]=(totals[a.category]||0)+c;total+=c}});d=addDays(d,1)}
+  return {totals,total}}
+function openSpend(fromY,toY,label){
+  const {totals,total}=spendRange(parseYMD(fromY),parseYMD(toY));
+  const rows=CAT_KEYS.filter(k=>totals[k]).sort((a,b)=>totals[b]-totals[a]).map(k=>{const cat=CATS[k];
+    return `<div class="act" style="cursor:default"><span class="cat-badge" style="--c:${cat.color}">${cat.emoji}</span>
+      <span class="body"><div class="a-top"><span class="a-name">${cat.label}</span><span class="cost">${EUR(totals[k])}</span></div></span></div>`;
+  }).join('')||'<div class="empty">No per-session spend in this period.</div>';
+  const passTotal=passes.reduce((s,p)=>s+(Number(p.price)||0),0);
+  sheet(`<h2 class="serif">${esc(label)}</h2>
+    <div class="sub">Where it went, by category.</div>
+    <div class="acts" style="margin:2px 0 12px">${rows}</div>
+    <div class="spendtotal"><span>Total per-session</span><span>${EUR(total)}</span></div>
+    ${passTotal?`<div class="spendtotal sub2"><span>Passes & memberships</span><span>${EUR(passTotal)}</span></div>`:''}
+    <div class="sheet-actions" style="margin-top:16px"><button class="btn primary" onclick="closeSheet()">Close</button></div>`);
+}
+function weekLabel(off,mon){
+  if(off===0)return 'This week'; if(off===1)return 'Next week'; if(off===-1)return 'Last week';
+  const end=addDays(mon,6);return mon.getDate()+' '+MON[mon.getMonth()]+' – '+end.getDate()+' '+MON[end.getMonth()];
+}
+function changeWeek(d){weekOffset+=d;renderHome();window.scrollTo(0,0)}
+function goThisWeek(){weekOffset=0;renderHome();window.scrollTo(0,0)}
+
+/* ---------------- render helpers ---------------- */
+function fmtTime(t){if(!t)return '';const[h,m]=t.split(':').map(Number);const ap=h<12?'am':'pm';const hh=((h+11)%12)+1;return hh+(m?':'+String(m).padStart(2,'0'):'')+ap}
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------------- render: home ---------------- */
+function renderHome(){
+  document.getElementById('fab').classList.remove('hidden');
+  const mon=addDays(mondayOf(today()),weekOffset*7);const tday=ymd(today());
+  const wSpend=weekSpend(mon),mSpend=monthSpend(),wLabel=weekLabel(weekOffset,mon);
+  const tt=today();const mFirst=ymd(new Date(tt.getFullYear(),tt.getMonth(),1)),mLast=ymd(new Date(tt.getFullYear(),tt.getMonth()+1,0)),mName=MON[tt.getMonth()];
+  const wFrom=ymd(mon),wEnd=addDays(mon,6),wTo=ymd(wEnd);
+  const wRange=mon.getDate()+' '+MON[mon.getMonth()]+' – '+wEnd.getDate()+' '+MON[wEnd.getMonth()];
+  let daysHtml='';
+  for(let i=0;i<7;i++){
+    const d=addDays(mon,i);const p=phaseForDate(d);const isToday=ymd(d)===tday;const acts=actsOn(d);
+    const icon=p.energy==='high'?ICON_FLAME:ICON_MOON;
+    let actsHtml=acts.map(a=>{
+      const cat=catOf(a);const c=costOf(a);
+      const cost=(a.passId||a.includedInPass)?'<span class="cost free">on pass</span>':(c?`<span class="cost">${EUR(c)}</span>`:'<span class="cost free">free</span>');
+      const rec=(REC[a.category]||REC.MOVE)[p.key];const caution=rec[0]==='o'||rec[0]==='r';
+      return `<button class="act" onclick="openActivityMenu('${a.id}')">
+        <span class="cat-badge" style="--c:${cat.color}">${cat.emoji}</span>
+        <span class="body">
+          <div class="a-top"><span class="a-name">${esc(a.type)||cat.label}${a.recurring?'<span class="rep">↻</span>':''}</span>${cost}</div>
+          <div class="a-sub">${fmtTime(a.time)?fmtTime(a.time)+' · ':''}${esc(a.place)||cat.label}</div>
+          ${caution?`<div class="a-flag ${rec[0]}">${rec[1]}${betterWhen(a.category)?` · <b>${betterWhen(a.category)}</b>`:''}</div>`:''}
+        </span></button>`;
+    }).join('');
+    if(!acts.length)actsHtml=`<div class="empty">— nothing planned</div>`;
+    daysHtml+=`<div class="day ${isToday?'today':''}" style="background:${p.tint}">
+      <div class="day-head">
+        <div><span class="day-name">${DOW_FULL[d.getDay()]}</span><span class="day-date">${d.getDate()} ${MON[d.getMonth()]}</span>
+        ${isToday?'<div class="todaytag">Today</div>':''}</div>
+        <span class="pill" style="color:${p.accent}">${icon}${p.label}</span>
+      </div>
+      <div class="nudge">${p.nudge}</div>
+      <div class="acts">${actsHtml}</div>
+    </div>`;
+  }
+  document.getElementById('app').innerHTML=`
+    <header class="hero">
+      <img class="brandlogo" src="faze-logo.png" alt="fáze — cycle × wellness planner">
+
+      <h1 class="title serif">Your week.<br><em>In sync.</em></h1>
+      <svg class="wave" viewBox="0 0 120 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M2 8c8-9 16 9 24 0s16-9 24 0 16 9 24 0 16-9 24 0"/></svg>
+      <div class="dateline">Today · ${DOW_FULL[tt.getDay()]} ${tt.getDate()} ${MON[tt.getMonth()]} ${tt.getFullYear()}</div>
+    </header>
+    <button class="whenbtn" onclick="openWhen()"><span class="q">When should I…?</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
+    <div class="viewtog"><button class="on" onclick="setView('week')">Week</button><button onclick="setView('month')">Month</button></div>
+    <div class="spendbar">
+      <div class="chip" onclick="openSpend('${wFrom}','${wTo}','${esc(wLabel)} spend')"><div class="label">${esc(wLabel)}</div><div class="v">${EUR(wSpend)} <small>spend</small></div></div>
+      <div class="chip" onclick="openSpend('${mFirst}','${mLast}','${mName} spend')"><div class="label">${mName}</div><div class="v">${EUR(mSpend)} <small>so far</small></div></div>
+    </div>
+    <div class="weeknav">
+      <button class="wbtn" onclick="changeWeek(-1)" aria-label="Previous week">‹</button>
+      <button class="wnow ${weekOffset===0?'here':''}" onclick="goThisWeek()">${esc(wLabel)}<span class="wrange">${wRange}</span></button>
+      <button class="wbtn" onclick="changeWeek(1)" aria-label="Next week">›</button>
+    </div>
+    ${daysHtml}
+    <div class="footer">
+      <button class="btn ghost" onclick="openPlaces()">Places & classes</button>
+      <button class="btn ghost" onclick="openPasses()">Passes & memberships</button>
+      <button class="btn ghost" onclick="openCycle()">Edit cycle dates</button>
+      <button class="btn disabled" onclick="importInfo()">📷 Import schedule from photo</button>
+      <div class="importnote">Turns on paid AI extraction — off during free testing.</div>
+      <div class="disclaimer">A gentle guideline synced to your cycle — not medical advice.</div>
+    </div>`;
+}
+
+/* ---------------- render: month (best windows) ---------------- */
+function fmtR(r){return r[0]===r[1]?`${r[0]}`:`${r[0]}–${r[1]}`}
+function phaseRanges(phaseKey,y,m){
+  const days=new Date(y,m+1,0).getDate();let out=[],s=null;
+  for(let d=1;d<=days;d++){const k=phaseForDate(new Date(y,m,d)).key;
+    if(k===phaseKey){if(s==null)s=d}else if(s!=null){out.push([s,d-1]);s=null}}
+  if(s!=null)out.push([s,days]);return out;
+}
+function monthWindows(cat,y,m){
+  const days=new Date(y,m+1,0).getDate();let best=[],avoid=[],bs=null,as=null;
+  for(let d=1;d<=days;d++){
+    const rr=(REC[cat]||REC.MOVE)[phaseForDate(new Date(y,m,d)).key][0];
+    if(rr==='g'){if(bs==null)bs=d}else if(bs!=null){best.push([bs,d-1]);bs=null}
+    if(rr==='r'){if(as==null)as=d}else if(as!=null){avoid.push([as,d-1]);as=null}
+  }
+  if(bs!=null)best.push([bs,days]);if(as!=null)avoid.push([as,days]);
+  return {best,avoid,days};
+}
+function renderMonth(){
+  document.getElementById('fab').classList.remove('hidden');
+  const base=monthCursor||today();const y=base.getFullYear(),m=base.getMonth();const tt=today();
+  const first=new Date(y,m,1),last=new Date(y,m+1,0);
+  const guide=['men','foll','ovu','lut'].map(k=>{
+    const ph=PHASES[k],g=PHASE_GUIDE[k],ranges=phaseRanges(k,y,m);
+    if(!ranges.length)return '';
+    return `<div class="phasecard" style="background:${ph.tint}">
+      <div class="phasehead"><span class="phasename" style="color:${ph.accent}">${ph.label}</span><span class="phasedates">${ranges.map(fmtR).join(', ')} ${MON[m]}</span></div>
+      <div class="phaseintro">${g.intro}</div>
+      <div class="nicelist">${g.nice.map(n=>`<button class="nicechip" onclick="openActivity(null,{category:'${n[1]}',type:'${n[0]}'})"><span class="np">＋</span>${n[0]}</button>`).join('')}</div>
+    </div>`;
+  }).join('');
+  let clashes=[];let d=new Date(first);
+  while(d<=last){const p=phaseForDate(d);actsOn(d).forEach(a=>{const rr=(REC[a.category]||REC.MOVE)[p.key][0];if(rr==='r'||rr==='o')clashes.push({a,d:new Date(d)})});d=addDays(d,1);}
+  const clashHtml=clashes.length?`<div class="label" style="margin:24px 2px 10px">Heads-up this month</div><div class="acts">${clashes.map(({a,d})=>{const c=catOf(a);const w=monthWindows(a.category,y,m).best;const better=w.length?'around '+fmtR(w[0]):'another week';
+    return `<button class="act" onclick="openDay('${ymd(d)}')"><span class="cat-badge" style="--c:${c.color}">${c.emoji}</span><span class="body"><div class="a-top"><span class="a-name">${esc(a.type)||c.label}</span><span class="cost" style="color:#BE4A41">${DOW[d.getDay()]} ${d.getDate()}</span></div><div class="a-sub">better ${better}</div></span></button>`;}).join('')}</div>`:'';
+  document.getElementById('app').innerHTML=`
+    <header class="hero">
+      <img class="brandlogo" src="faze-logo.png" alt="fáze — cycle × wellness planner">
+
+      <h1 class="title serif">Your month.<br><em>In sync.</em></h1>
+      <svg class="wave" viewBox="0 0 120 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M2 8c8-9 16 9 24 0s16-9 24 0 16 9 24 0 16-9 24 0"/></svg>
+      <div class="dateline">Today · ${DOW_FULL[tt.getDay()]} ${tt.getDate()} ${MON[tt.getMonth()]} ${tt.getFullYear()}</div>
+    </header>
+    <button class="whenbtn" onclick="openWhen()"><span class="q">When should I…?</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
+    <div class="viewtog"><button onclick="setView('week')">Week</button><button class="on" onclick="setView('month')">Month</button></div>
+    <div class="spendbar">
+      <div class="chip" onclick="openSpend('${ymd(first)}','${ymd(last)}','${MON[m]} ${y} spend')"><div class="label">${MON[m]} ${y}</div><div class="v">${EUR(monthSpend(base))} <small>spend</small></div></div>
+    </div>
+    <div class="weeknav">
+      <button class="wbtn" onclick="changeMonth(-1)" aria-label="Previous month">‹</button>
+      <button class="wnow" onclick="goThisMonth()">${MON[m]} ${y}</button>
+      <button class="wbtn" onclick="changeMonth(1)" aria-label="Next month">›</button>
+    </div>
+    <div class="label" style="margin:2px 2px 12px">This month, phase by phase</div>
+    ${guide}
+    ${clashHtml}
+    <div class="footer">
+      <button class="btn ghost" onclick="openPlaces()">Places & classes</button>
+      <button class="btn ghost" onclick="openPasses()">Passes & memberships</button>
+      <button class="btn ghost" onclick="openCycle()">Edit cycle dates</button>
+      <div class="disclaimer">A gentle guideline synced to your cycle — not medical advice.</div>
+    </div>`;
+}
+function openDay(ds){
+  const d=parseYMD(ds);const p=phaseForDate(d);const acts=actsOn(d);
+  const list=acts.length?acts.map(a=>{
+    const cat=catOf(a);const c=costOf(a);const rec=(REC[a.category]||REC.MOVE)[p.key];const caution=rec[0]==='o'||rec[0]==='r';
+    const cost=(a.passId||a.includedInPass)?'<span class="cost free">on pass</span>':(c?`<span class="cost">${EUR(c)}</span>`:'<span class="cost free">free</span>');
+    return `<button class="act" onclick="openActivityMenu('${a.id}')">
+      <span class="cat-badge" style="--c:${cat.color}">${cat.emoji}</span>
+      <span class="body"><div class="a-top"><span class="a-name">${esc(a.type)||cat.label}${a.recurring?'<span class="rep">↻</span>':''}</span>${cost}</div>
+      <div class="a-sub">${fmtTime(a.time)?fmtTime(a.time)+' · ':''}${esc(a.place)||cat.label}</div>
+      ${caution?`<div class="a-flag ${rec[0]}">${rec[1]}${betterWhen(a.category)?` · <b>${betterWhen(a.category)}</b>`:''}</div>`:''}</span></button>`;
+  }).join(''):'<div class="empty">Nothing planned.</div>';
+  sheet(`<h2 class="serif">${DOW_FULL[d.getDay()]} ${d.getDate()} ${MON[d.getMonth()]}</h2>
+    <div class="sub" style="color:${p.accent}">${p.label} · ${p.nudge}</div>
+    <div class="acts" style="margin:2px 0 18px">${list}</div>
+    <div class="sheet-actions"><button class="btn ghost" onclick="closeSheet()">Close</button><button class="btn primary" onclick="closeSheet();openActivity()">Add activity</button></div>`);
+}
+function setView(v){viewMode=v;if(v==='month'&&!monthCursor)monthCursor=today();render();window.scrollTo(0,0)}
+function changeMonth(n){const b=monthCursor||today();monthCursor=new Date(b.getFullYear(),b.getMonth()+n,1);renderMonth();window.scrollTo(0,0)}
+function goThisMonth(){monthCursor=today();renderMonth();window.scrollTo(0,0)}
+function render(){viewMode==='month'?renderMonth():renderHome()}
+
+/* ---------------- passes ---------------- */
+function passesStripHtml(){
+  const total=passes.reduce((s,p)=>s+(Number(p.price)||0),0);
+  const chips=passes.map(p=>{
+    const rem=passRemaining(p);const remTxt=rem==null?'unlimited':`${rem} of ${p.total} left`;
+    const low=rem!=null&&rem<=2;
+    return `<button class="pass ${low?'low':''}" onclick="openPass('${p.id}')">
+      <span class="pn">${esc(p.name)}</span><span class="pr">${remTxt}</span>${p.price?`<span class="pp">${EUR(p.price)}</span>`:''}</button>`;
+  }).join('');
+  return `<div class="passwrap">
+    <div class="passhead"><span class="label">Passes${total?' · '+EUR(total):''}</span><button class="passadd" onclick="openPass()">＋ Add</button></div>
+    <div class="passrow">${chips||'<button class="pass empty" onclick="openPass()">＋ Add a class pack or membership</button>'}</div>
+  </div>`;
+}
+function setPassCat(k){formPassCat=k;document.querySelectorAll('#pcatgrid .catcell').forEach(el=>el.classList.toggle('on',el.dataset.cat===k))}
+function openPass(id){
+  editingPass=id||null;const p=id?passById(id):{name:'',price:'',total:''};const unlimited=id?(p.total==null):false;
+  const used=id?passUsed(id):0;formPassCat=p.category||'MOVE';
+  sheet(`<h2 class="serif">${id?'Edit pass':'New pass'}</h2>
+    <div class="sub">A membership or class pack — so its cost & classes are tracked.</div>
+    <label class="label" style="display:block;margin-bottom:9px">Category</label>
+    <div class="catgrid" id="pcatgrid">${CAT_KEYS.map(k=>`<button type="button" class="catcell ${k===formPassCat?'on':''}" data-cat="${k}" style="--c:${CATS[k].color}" onclick="setPassCat('${k}')"><span class="ce">${CATS[k].emoji}</span>${CATS[k].label}</button>`).join('')}</div>
+    <div class="field"><label class="label">Name</label><input type="text" id="p-name" placeholder="e.g. F45 10-pack" value="${esc(p.name)}"></div>
+    <div class="field"><label class="label">Price (€)</label><input type="number" id="p-price" min="0" step="1" placeholder="0" value="${p.price!=null&&p.price!==''?p.price:''}"></div>
+    <div class="field"><label class="toggle"><input type="checkbox" id="p-unl" ${unlimited?'checked':''} onchange="togglePassUnl()"> <span>Unlimited membership (no class count)</span></label>
+      <div id="p-total-wrap" class="${unlimited?'hidden':''}" style="margin-top:12px">
+        <label class="label" style="display:block;margin-bottom:7px">Total classes${id&&!unlimited?` · ${used} booked so far`:''}</label>
+        <input type="number" id="p-total" min="1" step="1" placeholder="e.g. 10" value="${p.total!=null&&p.total!==''?p.total:''}"></div>
+    </div>
+    <div class="sheet-actions">
+      ${id?`<button class="btn danger" onclick="deletePass('${id}')">Delete</button>`:'<button class="btn ghost" onclick="closeSheet()">Cancel</button>'}
+      <button class="btn primary" onclick="savePass()">Save</button>
+    </div>`);
+}
+function togglePassUnl(){document.getElementById('p-total-wrap').classList.toggle('hidden',document.getElementById('p-unl').checked)}
+function savePass(){
+  const name=document.getElementById('p-name').value.trim();
+  const price=parseFloat(document.getElementById('p-price').value)||0;
+  const unl=document.getElementById('p-unl').checked;
+  const total=unl?null:(parseInt(document.getElementById('p-total').value)||null);
+  if(!name){alert('Name your pass.');return}
+  const base={category:formPassCat,name,price,total};
+  if(editingPass){const i=passes.findIndex(x=>x.id===editingPass);passes[i]={...passes[i],...base}}
+  else{passes.push({id:'p'+Date.now()+Math.random().toString(36).slice(2,5),...base})}
+  save(K_PASSES,passes);closeSheet();render();
+}
+function deletePass(id){
+  activities.forEach(a=>{if(a.passId===id)a.passId=null});save(K_ACTS,activities);
+  passes=passes.filter(p=>p.id!==id);save(K_PASSES,passes);closeSheet();render();
+}
+function openPasses(){
+  const list=passes.length?passes.map(p=>{
+    const rem=passRemaining(p);const remTxt=rem==null?'Unlimited':`${rem} of ${p.total} classes left`;const low=rem!=null&&rem<=2;const cat=CATS[p.category]||CATS.MOVE;
+    return `<button class="act" onclick="openPass('${p.id}')">
+      <span class="cat-badge" style="--c:${cat.color}">${cat.emoji}</span>
+      <span class="body"><div class="a-top"><span class="a-name">${esc(p.name)}</span>${p.price?`<span class="cost">${EUR(p.price)}</span>`:''}</div>
+      <div class="a-sub" ${low?'style="color:#B5722A;font-weight:600"':''}>${remTxt}</div></span></button>`;
+  }).join(''):'<div class="empty">No passes yet — add your gym membership or a class pack.</div>';
+  sheet(`<h2 class="serif">Passes & memberships</h2>
+    <div class="sub">Track what you’ve paid and how many classes are left.</div>
+    <div class="acts" style="margin:2px 0 16px">${list}</div>
+    <div class="sheet-actions"><button class="btn ghost" onclick="closeSheet()">Close</button><button class="btn primary" onclick="openPass()">＋ New pass</button></div>`);
+}
+
+/* ---------------- onboarding / cycle ---------------- */
+function openCycle(first){
+  const c=cycle||{lastPeriodStart:ymd(today()),cycleLength:28};
+  sheet(`
+    <h2 class="serif">${first?'Let’s sync up':'Your cycle'}</h2>
+    <div class="sub">A simple guideline — not medical advice. Edit anytime.</div>
+    <div class="field"><label class="label">First day of last period</label>
+      <input type="date" id="c-start" value="${c.lastPeriodStart}" max="${ymd(today())}"></div>
+    <div class="field"><label class="label">Typical cycle length (days)</label>
+      <input type="number" id="c-len" value="${c.cycleLength}" min="18" max="45" step="1"></div>
+    <div class="sheet-actions">
+      ${first?'':'<button class="btn ghost" onclick="closeSheet()">Cancel</button>'}
+      <button class="btn primary" onclick="saveCycle()">Save</button>
+    </div>`);
+}
+function saveCycle(){
+  const start=document.getElementById('c-start').value;
+  const len=Math.max(18,Math.min(45,parseInt(document.getElementById('c-len').value)||28));
+  if(!start){alert('Pick your last period start date.');return}
+  cycle={lastPeriodStart:start,cycleLength:len};save(K_CYCLE,cycle);closeSheet();render();
+}
+
+/* ---------------- add / edit activity ---------------- */
+let editingId=null,formMode='recurring',formDows=[],formCat='MOVE',formCost='free',editingPass=null,formPassCat='MOVE',whenCat=null,whenAct=null;
+let editingPlace=null,editingClass=null,editingClassPlace=null,classCat='MOVE',classDay=1;
+function openActivity(id,pre){
+  editingId=id||null;
+  let a=id?activities.find(x=>x.id===id):null;
+  formMode=a?(a.recurring?'recurring':'oneoff'):((pre&&pre.date)?'oneoff':'recurring');
+  formDows=a&&a.daysOfWeek?[...a.daysOfWeek]:((pre&&pre.day!=null)?[pre.day]:[]);
+  formCat=a&&a.category?a.category:((pre&&pre.category)?pre.category:'MOVE');
+  formCost=a?(a.passId?'pass':(Number(a.cost)>0?'session':'free')):'free';
+  sheet(`
+    <h2 class="serif">${id?'Edit activity':'Add activity'}</h2>
+    <div class="sub">Anything you do for yourself — a class, a treatment, an appointment.</div>
+    <label class="label" style="display:block;margin-bottom:9px">Category</label>
+    <div class="catgrid" id="catgrid">
+      ${CAT_KEYS.map(k=>`<button type="button" class="catcell ${k===formCat?'on':''}" data-cat="${k}" style="--c:${CATS[k].color}" onclick="setCat('${k}')">
+        <span class="ce">${CATS[k].emoji}</span>${CATS[k].label}</button>`).join('')}
+    </div>
+    <div class="seg">
+      <button id="seg-rec" class="${formMode==='recurring'?'on':''}" onclick="setMode('recurring')">Recurring</button>
+      <button id="seg-one" class="${formMode==='oneoff'?'on':''}" onclick="setMode('oneoff')">One-off</button>
+    </div>
+    <div class="field"><label class="label">Activity</label>
+      <input type="text" id="f-type" placeholder="e.g. ${CATS[formCat].types[0]}" value="${a?esc(a.type):((pre&&pre.type)?esc(pre.type):'')}">
+      <div class="typehint" id="typehint">${CATS[formCat].types.map(t=>`<button type="button" onclick="setType('${t}')">${t}</button>`).join('')}</div>
+    </div>
+    <div class="field"><label class="label">Place</label>
+      <input type="text" id="f-place" placeholder="e.g. Studio / clinic name" value="${a?esc(a.place):((pre&&pre.place)?esc(pre.place):'')}"></div>
+    <div id="m-rec" class="${formMode==='recurring'?'':'hidden'}">
+      <div class="field"><label class="label">Days of week</label>
+        <div class="dows">${[1,2,3,4,5,6,0].map(w=>`<button type="button" class="dow ${formDows.includes(w)?'on':''}" data-w="${w}" onclick="toggleDow(${w},this)">${DOW[w][0]}</button>`).join('')}</div></div>
+    </div>
+    <div id="m-one" class="${formMode==='oneoff'?'':'hidden'}">
+      <div class="field"><label class="label">Date</label>
+        <input type="date" id="f-date" value="${a&&a.date?a.date:ymd(today())}"></div>
+    </div>
+    <div class="field"><label class="label">Time</label>
+      <input type="time" id="f-time" value="${a?a.time||'':((pre&&pre.time)?pre.time:'')}"></div>
+    <div class="field"><label class="label">Cost</label>
+      <div class="seg costseg">
+        <button type="button" id="cs-free" class="${formCost==='free'?'on':''}" onclick="setCost('free')">Free</button>
+        <button type="button" id="cs-session" class="${formCost==='session'?'on':''}" onclick="setCost('session')">Per session</button>
+        <button type="button" id="cs-pass" class="${formCost==='pass'?'on':''}" onclick="setCost('pass')">On a pass</button>
+      </div>
+      <div id="cost-session" class="${formCost==='session'?'':'hidden'}" style="margin-top:10px">
+        <input type="number" id="f-cost" min="0" step="0.5" placeholder="€ per session" value="${a&&Number(a.cost)>0?a.cost:''}">
+      </div>
+      <div id="cost-pass" class="${formCost==='pass'?'':'hidden'}" style="margin-top:10px">
+        ${passes.length?`<select id="f-pass">${passes.map(p=>`<option value="${p.id}" ${a&&a.passId===p.id?'selected':''}>${(CATS[p.category]||CATS.MOVE).emoji} ${esc(p.name)}${p.total!=null?' · '+passRemaining(p)+' left':''}</option>`).join('')}</select>`
+          :`<div class="muted" style="font-size:13px">No passes yet. <button type="button" class="linklike" onclick="closeSheet();openPass()">Create one</button> first.</div>`}
+      </div>
+    </div>
+    <div class="sheet-actions">
+      ${id?'<button class="btn danger" onclick="deleteActivity()">Delete</button>':'<button class="btn ghost" onclick="closeSheet()">Cancel</button>'}
+      <button class="btn primary" onclick="saveActivity()">Save</button>
+    </div>`);
+}
+function setCat(k){
+  formCat=k;
+  document.querySelectorAll('.catcell').forEach(el=>el.classList.toggle('on',el.dataset.cat===k));
+  const ti=document.getElementById('f-type');if(ti&&!ti.value)ti.placeholder='e.g. '+CATS[k].types[0];
+  document.getElementById('typehint').innerHTML=CATS[k].types.map(t=>`<button type="button" onclick="setType('${t}')">${t}</button>`).join('');
+}
+function setMode(m){formMode=m;document.getElementById('seg-rec').classList.toggle('on',m==='recurring');
+  document.getElementById('seg-one').classList.toggle('on',m==='oneoff');
+  document.getElementById('m-rec').classList.toggle('hidden',m!=='recurring');
+  document.getElementById('m-one').classList.toggle('hidden',m!=='oneoff');}
+function setType(t){document.getElementById('f-type').value=t}
+function setCost(m){formCost=m;['free','session','pass'].forEach(k=>document.getElementById('cs-'+k).classList.toggle('on',k===m));
+  document.getElementById('cost-session').classList.toggle('hidden',m!=='session');
+  document.getElementById('cost-pass').classList.toggle('hidden',m!=='pass');}
+function toggleDow(w,el){const i=formDows.indexOf(w);if(i>=0)formDows.splice(i,1);else formDows.push(w);el.classList.toggle('on')}
+function toggleInc(){document.getElementById('f-cost-wrap').classList.toggle('hidden',document.getElementById('f-inc').checked)}
+function saveActivity(){
+  const type=document.getElementById('f-type').value.trim();
+  const place=document.getElementById('f-place').value.trim();
+  const time=document.getElementById('f-time').value;
+  if(!type){alert('What’s the activity?');return}
+  let passId=null,cost=0;
+  if(formCost==='pass'){const sel=document.getElementById('f-pass');passId=sel?sel.value:null;if(!passId){alert('Pick a pass, or choose another cost option.');return}}
+  else if(formCost==='session'){cost=parseFloat(document.getElementById('f-cost').value)||0}
+  let rec={recurring:formMode==='recurring',daysOfWeek:null,date:null};
+  if(formMode==='recurring'){if(!formDows.length){alert('Pick at least one day.');return}rec.daysOfWeek=[...formDows].sort();}
+  else{const dt=document.getElementById('f-date').value;if(!dt){alert('Pick a date.');return}rec.date=dt;}
+  const base={category:formCat,type,place,time,passId,includedInPass:false,cost,...rec};
+  if(editingId){const idx=activities.findIndex(x=>x.id===editingId);activities[idx]={...activities[idx],...base}}
+  else{activities.push({id:'a'+Date.now()+Math.random().toString(36).slice(2,6),...base})}
+  save(K_ACTS,activities);closeSheet();render();
+}
+function deleteActivity(id){id=id||editingId;if(!id)return;activities=activities.filter(x=>x.id!==id);save(K_ACTS,activities);closeSheet();render();}
+function openActivityMenu(id){
+  const a=activities.find(x=>x.id===id);if(!a)return;const cat=catOf(a);
+  sheet(`<h2 class="serif">${esc(a.type)||cat.label}</h2>
+    <div class="sub">${esc(a.place)||cat.label}${a.time?' · '+fmtTime(a.time):''}${a.recurring?' · weekly':''}</div>
+    <div class="sheet-actions">
+      <button class="btn danger" onclick="deleteActivity('${id}')">Delete</button>
+      <button class="btn primary" onclick="openActivity('${id}')">Modify</button>
+    </div>`);
+}
+
+/* ---------------- places & classes ---------------- */
+function classesFor(id){return classes.filter(c=>c.placeId===id)}
+function placeName(id){const p=places.find(x=>x.id===id);return p?p.name:''}
+function openPlaces(){
+  const list=places.length?places.map(p=>{
+    const cl=classesFor(p.id);
+    const rows=cl.length?cl.map(c=>{const cat=CATS[c.category]||CATS.MOVE;
+      return `<button class="act" onclick="openClass('${p.id}','${c.id}')"><span class="cat-badge" style="--c:${cat.color}">${cat.emoji}</span><span class="body"><div class="a-top"><span class="a-name">${esc(c.name)}</span></div><div class="a-sub">${DOW_FULL[c.day]}${c.time?' · '+fmtTime(c.time):''}</div></span></button>`;
+    }).join(''):'<div class="empty" style="margin:6px 0 2px">No classes yet.</div>';
+    return `<div class="placeblock"><div class="placehead"><span class="placename">${esc(p.name)}</span><button class="passadd" onclick="openPlace('${p.id}')">edit</button></div><div class="acts">${rows}</div><button class="addclass" onclick="openClass('${p.id}')">＋ Add class</button></div>`;
+  }).join(''):'<div class="empty">No places yet — save a studio or clinic you love.</div>';
+  sheet(`<h2 class="serif">Places & classes</h2><div class="sub">Save where you go and the classes that interest you — so suggestions can name a real class.</div><div style="margin:2px 0 16px">${list}</div><div class="sheet-actions"><button class="btn ghost" onclick="closeSheet()">Close</button><button class="btn primary" onclick="openPlace()">＋ Add place</button></div>`);
+}
+function openPlace(id){
+  editingPlace=id||null;const p=id?places.find(x=>x.id===id):{name:''};
+  sheet(`<h2 class="serif">${id?'Edit place':'New place'}</h2><div class="field"><label class="label">Name</label><input type="text" id="pl-name" placeholder="e.g. Sala Studio" value="${esc(p.name)}"></div><div class="sheet-actions">${id?`<button class="btn danger" onclick="deletePlace('${id}')">Delete</button>`:'<button class="btn ghost" onclick="openPlaces()">Cancel</button>'}<button class="btn primary" onclick="savePlace()">Save</button></div>`);
+}
+function savePlace(){const name=document.getElementById('pl-name').value.trim();if(!name){alert('Name the place.');return}
+  if(editingPlace){const i=places.findIndex(x=>x.id===editingPlace);places[i]={...places[i],name}}else{places.push({id:'pl'+Date.now()+Math.random().toString(36).slice(2,5),name})}
+  save(K_PLACES,places);openPlaces();}
+function deletePlace(id){classes=classes.filter(c=>c.placeId!==id);save(K_CLASSES,classes);places=places.filter(p=>p.id!==id);save(K_PLACES,places);openPlaces();}
+function setClassCat(k){classCat=k;document.querySelectorAll('#ccatgrid .catcell').forEach(el=>el.classList.toggle('on',el.dataset.cat===k))}
+function setClassDay(w,el){classDay=w;el.parentElement.querySelectorAll('.dow').forEach(x=>x.classList.toggle('on',+x.dataset.w===w))}
+function openClass(placeId,id){
+  editingClassPlace=placeId;editingClass=id||null;
+  const c=id?classes.find(x=>x.id===id):{name:'',category:'MOVE',day:1,time:''};
+  classCat=c.category||'MOVE';classDay=(c.day==null?1:c.day);
+  sheet(`<h2 class="serif">${id?'Edit class':'New class'}</h2><div class="sub">at ${esc(placeName(placeId))}</div>
+    <label class="label" style="display:block;margin-bottom:9px">Category</label>
+    <div class="catgrid" id="ccatgrid">${CAT_KEYS.map(k=>`<button type="button" class="catcell ${k===classCat?'on':''}" data-cat="${k}" style="--c:${CATS[k].color}" onclick="setClassCat('${k}')"><span class="ce">${CATS[k].emoji}</span>${CATS[k].label}</button>`).join('')}</div>
+    <div class="field"><label class="label">Class name</label><input type="text" id="cl-name" placeholder="e.g. Reformer Flow" value="${esc(c.name)}"></div>
+    <div class="field"><label class="label">Day</label><div class="dows">${[1,2,3,4,5,6,0].map(w=>`<button type="button" class="dow ${classDay===w?'on':''}" data-w="${w}" onclick="setClassDay(${w},this)">${DOW[w][0]}</button>`).join('')}</div></div>
+    <div class="field"><label class="label">Time</label><input type="time" id="cl-time" value="${c.time||''}"></div>
+    <div class="sheet-actions">${id?`<button class="btn danger" onclick="deleteClass('${id}')">Delete</button>`:`<button class="btn ghost" onclick="openPlaces()">Cancel</button>`}<button class="btn primary" onclick="saveClass()">Save</button></div>`);
+}
+function saveClass(){const name=document.getElementById('cl-name').value.trim();const time=document.getElementById('cl-time').value;if(!name){alert('Name the class.');return}
+  const base={placeId:editingClassPlace,name,category:classCat,day:classDay,time};
+  if(editingClass){const i=classes.findIndex(x=>x.id===editingClass);classes[i]={...classes[i],...base}}else{classes.push({id:'cl'+Date.now()+Math.random().toString(36).slice(2,5),...base})}
+  save(K_CLASSES,classes);openPlaces();}
+function deleteClass(id){classes=classes.filter(c=>c.id!==id);save(K_CLASSES,classes);openPlaces();}
+function planClass(cid){const c=classes.find(x=>x.id===cid);if(!c)return;closeSheet();openActivity(null,{category:c.category,type:c.name,place:placeName(c.placeId),day:c.day,time:c.time,recurring:true});}
+
+/* ---------------- "when should I…?" ---------------- */
+function nextGoodWindow(cat){
+  if(!cycle)return null;const len=cycle.cycleLength||28;let start=null,end=null;
+  for(let i=0;i<len;i++){const d=addDays(today(),i);const r=(REC[cat]||REC.MOVE)[phaseForDate(d).key][0];
+    if(r==='g'){if(start==null)start=d;end=d;}else if(start!=null){break;}}
+  return start?{start,end}:null;
+}
+function betterWhen(cat){
+  const w=nextGoodWindow(cat);if(!w)return '';const s=w.start,e=w.end;
+  return (+e>+s)?`better ${s.getDate()}${s.getMonth()===e.getMonth()?'':' '+MON[s.getMonth()]}–${e.getDate()} ${MON[e.getMonth()]}`:`better ${s.getDate()} ${MON[s.getMonth()]}`;
+}
+function openWhen(cat,act){
+  whenCat=cat||null;whenAct=act||null;let body;
+  if(!whenCat){
+    body=`<label class="label" style="display:block;margin-bottom:9px">Pick a type of care</label>
+      <div class="catgrid">${CAT_KEYS.map(k=>`<button type="button" class="catcell" style="--c:${CATS[k].color}" onclick="openWhen('${k}')"><span class="ce">${CATS[k].emoji}</span>${CATS[k].label}</button>`).join('')}</div>`;
+  }else if(!whenAct){
+    const c=CATS[whenCat];
+    body=`<div class="whenback"><button onclick="openWhen()">‹ all</button><span>${c.emoji} ${c.label}</span></div>
+      <label class="label" style="display:block;margin:14px 0 9px">What exactly?</label>
+      <div class="typehint big">${c.types.map(t=>`<button type="button" onclick="openWhen('${whenCat}','${t}')">${t}</button>`).join('')}</div>`;
+  }else{
+    const c=CATS[whenCat];const win=nextGoodWindow(whenCat);
+    const mon=addDays(mondayOf(today()),weekOffset*7);let good=[],warn=[];
+    for(let i=0;i<7;i++){const d=addDays(mon,i);const r=(REC[whenCat]||REC.MOVE)[phaseForDate(d).key][0];
+      if(r==='g')good.push(DOW[d.getDay()]);else if(r==='o'||r==='r')warn.push(DOW[d.getDay()]);}
+    const winTxt=win?`${win.start.getDate()} ${MON[win.start.getMonth()]}${(+win.end>+win.start)?' – '+win.end.getDate()+' '+MON[win.end.getMonth()]:''}`:'—';
+    const wp=win?phaseForDate(win.start):null;
+    const matched=classes.filter(x=>x.category===whenCat);const monw=mondayOf(today());
+    const matchedHtml=matched.length?`<div class="label" style="margin:20px 2px 8px">Your saved classes</div><div class="acts">${matched.map(x=>{
+      const cd=addDays(monw,(x.day+6)%7);const gr=(REC[whenCat]||REC.MOVE)[phaseForDate(cd).key][0];const goodDay=gr==='g';
+      return `<button class="act" onclick="planClass('${x.id}')"><span class="cat-badge" style="--c:${c.color}">${c.emoji}</span><span class="body"><div class="a-top"><span class="a-name">${esc(x.name)}</span>${goodDay?`<span class="cost" style="color:${PHASES.foll.accent}">good day</span>`:''}</div><div class="a-sub">${DOW[x.day]}${x.time?' '+fmtTime(x.time):''} · ${esc(placeName(x.placeId))}</div></span></button>`;
+    }).join('')}</div>`:`<div class="muted" style="margin-top:16px;font-size:12.5px;text-align:center">Save your studios & classes to get real suggestions here. <button class="linklike" onclick="closeSheet();openPlaces()">Add places</button></div>`;
+    body=`<div class="whenback"><button onclick="openWhen('${whenCat}')">‹ ${c.label}</button></div>
+      <div class="whenres">
+        <div class="whenact">${c.emoji} ${esc(whenAct)}</div>
+        <div class="whenwin">${winTxt}</div>
+        ${wp?`<div class="whenphase" style="color:${wp.accent}">${wp.label} — ${(REC[whenCat]||REC.MOVE)[wp.key][1]}</div>`:''}
+        <div class="whenweek">
+          ${good.length?`<div><b style="color:${PHASES.foll.accent}">Good this week</b> · ${good.join(', ')}</div>`:`<div class="muted">Nothing ideal this week — ${winTxt} is your window.</div>`}
+          ${warn.length?`<div class="muted">Maybe wait · ${warn.join(', ')}</div>`:''}
+        </div>
+      </div>
+      ${matchedHtml}
+      <div class="sheet-actions"><button class="btn ghost" onclick="closeSheet()">Close</button><button class="btn primary" onclick="closeSheet();openActivity(null,{category:'${whenCat}',type:'${whenAct}'})">Add to my plan</button></div>`;
+  }
+  sheet(`<h2 class="serif">When should I…?</h2>
+    <div class="sub">Pick something — I’ll tell you the best time in your cycle.</div>
+    ${body}`);
+}
+
+/* ---------------- import placeholder ---------------- */
+function importInfo(){
+  sheet(`<h2 class="serif">Photo import</h2>
+  <div class="sub" style="margin-bottom:20px">Snap a studio or clinic timetable and let AI turn it into rows you just confirm.</div>
+  <p class="muted" style="font-size:14px;margin-top:0">This uses paid AI extraction, so it’s <strong>off during free testing</strong>. Everything else runs 100% on your device, for free.</p>
+  <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">Got it</button></div>`);
+}
+
+/* ---------------- sheet plumbing ---------------- */
+function sheet(html){document.getElementById('sheet').innerHTML=html;document.getElementById('scrim').classList.add('open')}
+function closeSheet(){document.getElementById('scrim').classList.remove('open')}
+document.getElementById('scrim').addEventListener('click',e=>{if(e.target.id==='scrim')closeSheet()});
+
+/* ---------------- boot ---------------- */
+if(!cycle){document.getElementById('fab').classList.add('hidden');
+  document.getElementById('app').innerHTML=`<header class="hero"><img class="brandlogo" src="faze-logo.png" alt="fáze — cycle × wellness planner">
+
+    <h1 class="title serif">When to<br><em>do what.</em></h1>
+    <svg class="wave" viewBox="0 0 120 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M2 8c8-9 16 9 24 0s16-9 24 0 16 9 24 0 16-9 24 0"/></svg>
+    <div class="subline">Your cycle, over everything you do for yourself. Let’s set it up once.</div></header>
+    <div class="footer"><button class="btn primary" onclick="openCycle(true)">Set my cycle</button></div>`;
+  openCycle(true);
+}else{render()}
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
+</body>
+</html>
