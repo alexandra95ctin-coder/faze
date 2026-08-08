@@ -165,6 +165,13 @@
   .nicechip .np{opacity:.5;font-weight:700;margin-right:5px}
   .dateline{margin-top:12px;font-size:12.5px;color:var(--muted);font-weight:600;letter-spacing:.02em}
   .wrange{display:block;font-size:11px;color:var(--muted);font-weight:500;margin-top:1px}
+  .predict{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--card);border:1.6px solid #5B86A6;border-radius:18px;padding:13px 18px;margin:0 0 16px;box-shadow:var(--shadow-sm);cursor:pointer}
+  .predict .label{color:#5B86A6}
+  .predict .pv{font-family:'Fraunces',serif;font-size:22px;font-weight:600;margin-top:2px;color:var(--ink)}
+  .predict .pdays{font-size:12.5px;color:var(--muted);font-weight:600;white-space:nowrap}
+  .catsum{display:flex;align-items:center;gap:10px;margin-bottom:16px;font-size:14px;font-weight:600}
+  .catsum .cat-badge{width:30px;height:30px;font-size:15px}
+  .catsum .linklike{margin-left:auto;font-size:12.5px}
   .mcell.out{opacity:.4}
 
   /* buttons / footer */
@@ -233,12 +240,13 @@
 const K_CYCLE='whenTo.cycle', K_ACTS='whenTo.activities';
 const load=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}};
 const save=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
-const K_PASSES='whenTo.passes', K_PLACES='whenTo.places', K_CLASSES='whenTo.classes';
+const K_PASSES='whenTo.passes', K_PLACES='whenTo.places', K_CLASSES='whenTo.classes', K_PERIODS='whenTo.periods';
 let cycle=load(K_CYCLE,null);
 let activities=load(K_ACTS,[]);
 let passes=load(K_PASSES,[]);
 let places=load(K_PLACES,[]);
 let classes=load(K_CLASSES,[]);
+let periods=load(K_PERIODS, cycle&&cycle.lastPeriodStart?[cycle.lastPeriodStart]:[]);
 let weekOffset=0;
 let viewMode='week';        // 'week' | 'month' | 'spend'
 let monthCursor=null;       // Date of displayed month
@@ -309,9 +317,15 @@ const PHASE_GUIDE={
   ovu: {intro:'Peak energy and confidence — go big and be social.', nice:[['HIIT','MOVE'],['Running','MOVE'],['CrossFit','MOVE'],['Socialising','MIND'],['Manicure','NAILS'],['Travel','TRAVEL']]},
   lut: {intro:'Winding down — steadier movement and a little more self-care.', nice:[['Pilates','MOVE'],['Yoga','MOVE'],['Steady cardio','MOVE'],['Walking','MOVE'],['Massage','SPA'],['Lymphatic drainage','SPA'],['Sleep','MIND']]}
 };
+function recentGaps(){const p=[...periods].filter(Boolean).sort();const g=[];for(let i=1;i<p.length;i++)g.push(daysBetween(parseYMD(p[i-1]),parseYMD(p[i])));return g;}
+function cycleLen(){const g=recentGaps().slice(-6);if(g.length){const a=Math.round(g.reduce((x,y)=>x+y,0)/g.length);return Math.max(18,Math.min(45,a));}return (cycle&&cycle.cycleLength)||28;}
+function cycleRange(){const g=recentGaps().slice(-6);return g.length>=2?[Math.min(...g),Math.max(...g)]:null;}
+function lastStart(){const p=[...periods].filter(Boolean).sort();return p.length?parseYMD(p[p.length-1]):(cycle&&cycle.lastPeriodStart?parseYMD(cycle.lastPeriodStart):null);}
+function nextPeriodStart(){const s=lastStart();if(!s)return null;const len=cycleLen();const diff=daysBetween(s,today());const k=(diff<0)?0:Math.floor(diff/len)+1;return addDays(s,k*len);}
+function logPeriod(ds){if(!ds)return;if(!periods.includes(ds))periods.push(ds);periods.sort();save(K_PERIODS,periods);cycle=cycle||{};cycle.lastPeriodStart=periods[periods.length-1];cycle.cycleLength=cycleLen();save(K_CYCLE,cycle);}
 function phaseForDate(date){
   if(!cycle)return null;
-  const start=parseYMD(cycle.lastPeriodStart);const len=cycle.cycleLength||28;
+  const start=lastStart();const len=cycleLen();if(!start)return null;
   let diff=daysBetween(start,date);let day=((diff%len)+len)%len+1;
   let key;
   if(day<=5)key='men'; else if(day<=13)key='foll'; else if(day<=16)key='ovu'; else key='lut';
@@ -405,8 +419,6 @@ function renderHome(){
     <header class="hero">
       <img class="brandlogo" src="faze-logo.png" alt="fáze — cycle × wellness planner">
 
-      <h1 class="title serif">Your week.<br><em>In sync.</em></h1>
-      <svg class="wave" viewBox="0 0 120 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M2 8c8-9 16 9 24 0s16-9 24 0 16 9 24 0 16-9 24 0"/></svg>
       <div class="dateline">Today · ${DOW_FULL[tt.getDay()]} ${tt.getDate()} ${MON[tt.getMonth()]} ${tt.getFullYear()}</div>
     </header>
     <button class="whenbtn" onclick="openWhen()"><span class="q">When should I…?</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
@@ -423,6 +435,7 @@ function renderHome(){
     ${daysHtml}
     <div class="footer">
       <button class="btn ghost" onclick="openPlaces()">Places & classes</button>
+      <button class="btn ghost" onclick="openBackup()">Data & calendar</button>
       <button class="btn ghost" onclick="openPasses()">Passes & memberships</button>
       <button class="btn ghost" onclick="openCycle()">Edit cycle dates</button>
       <button class="btn disabled" onclick="importInfo()">📷 Import schedule from photo</button>
@@ -453,6 +466,10 @@ function renderMonth(){
   document.getElementById('fab').classList.remove('hidden');
   const base=monthCursor||today();const y=base.getFullYear(),m=base.getMonth();const tt=today();
   const first=new Date(y,m,1),last=new Date(y,m+1,0);
+  const np=nextPeriodStart();let npTxt='',npWhen='';
+  if(np){const rg=cycleRange(),avg=cycleLen();let lo=np,hi=np;if(rg){lo=addDays(np,rg[0]-avg);hi=addDays(np,rg[1]-avg);}
+    npTxt=rg?(lo.getMonth()===hi.getMonth()?`${lo.getDate()}–${hi.getDate()} ${MON[hi.getMonth()]}`:`${lo.getDate()} ${MON[lo.getMonth()]} – ${hi.getDate()} ${MON[hi.getMonth()]}`):`${np.getDate()} ${MON[np.getMonth()]}`;
+    const du=daysBetween(tt,np);npWhen=du<=0?'around now':(du===1?'in 1 day':`in ${du} days`);}
   const guide=['men','foll','ovu','lut'].map(k=>{
     const ph=PHASES[k],g=PHASE_GUIDE[k],ranges=phaseRanges(k,y,m);
     if(!ranges.length)return '';
@@ -470,8 +487,6 @@ function renderMonth(){
     <header class="hero">
       <img class="brandlogo" src="faze-logo.png" alt="fáze — cycle × wellness planner">
 
-      <h1 class="title serif">Your month.<br><em>In sync.</em></h1>
-      <svg class="wave" viewBox="0 0 120 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M2 8c8-9 16 9 24 0s16-9 24 0 16 9 24 0 16-9 24 0"/></svg>
       <div class="dateline">Today · ${DOW_FULL[tt.getDay()]} ${tt.getDate()} ${MON[tt.getMonth()]} ${tt.getFullYear()}</div>
     </header>
     <button class="whenbtn" onclick="openWhen()"><span class="q">When should I…?</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
@@ -479,6 +494,7 @@ function renderMonth(){
     <div class="spendbar">
       <div class="chip" onclick="openSpend('${ymd(first)}','${ymd(last)}','${MON[m]} ${y} spend')"><div class="label">${MON[m]} ${y}</div><div class="v">${EUR(monthSpend(base))} <small>spend</small></div></div>
     </div>
+    ${np?`<div class="predict" onclick="openCycle()"><div><div class="label">Next period · approx</div><div class="pv">~ ${npTxt}</div></div><div class="pdays">${npWhen}</div></div>`:''}
     <div class="weeknav">
       <button class="wbtn" onclick="changeMonth(-1)" aria-label="Previous month">‹</button>
       <button class="wnow" onclick="goThisMonth()">${MON[m]} ${y}</button>
@@ -489,6 +505,7 @@ function renderMonth(){
     ${clashHtml}
     <div class="footer">
       <button class="btn ghost" onclick="openPlaces()">Places & classes</button>
+      <button class="btn ghost" onclick="openBackup()">Data & calendar</button>
       <button class="btn ghost" onclick="openPasses()">Passes & memberships</button>
       <button class="btn ghost" onclick="openCycle()">Edit cycle dates</button>
       <div class="disclaimer">A gentle guideline synced to your cycle — not medical advice.</div>
@@ -589,21 +606,28 @@ function openCycle(first){
       <input type="date" id="c-start" value="${c.lastPeriodStart}" max="${ymd(today())}"></div>
     <div class="field"><label class="label">Typical cycle length (days)</label>
       <input type="number" id="c-len" value="${c.cycleLength}" min="18" max="45" step="1"></div>
+    <div class="field"><label class="label">Period log</label>
+      <div class="muted" style="font-size:13px">${cycleRange()?`Your cycles average <b>${cycleLen()} days</b> (${cycleRange()[0]}–${cycleRange()[1]}) across ${periods.length} logs — predictions use this.`:'Log each period start and Fáze sharpens its prediction over time.'}</div>
+      <button type="button" class="linklike" style="margin-top:9px;display:inline-block" onclick="logPeriodToday()">＋ I started my period today</button>
+    </div>
     <div class="sheet-actions">
       ${first?'':'<button class="btn ghost" onclick="closeSheet()">Cancel</button>'}
       <button class="btn primary" onclick="saveCycle()">Save</button>
     </div>`);
 }
+function logPeriodToday(){logPeriod(ymd(today()));render();openCycle();}
 function saveCycle(){
   const start=document.getElementById('c-start').value;
   const len=Math.max(18,Math.min(45,parseInt(document.getElementById('c-len').value)||28));
   if(!start){alert('Pick your last period start date.');return}
-  cycle={lastPeriodStart:start,cycleLength:len};save(K_CYCLE,cycle);closeSheet();render();
+  cycle={lastPeriodStart:start,cycleLength:len};save(K_CYCLE,cycle);
+  if(!periods.includes(start)){periods.push(start);periods.sort();save(K_PERIODS,periods);}
+  closeSheet();render();
 }
 
 /* ---------------- add / edit activity ---------------- */
 let editingId=null,formMode='recurring',formDows=[],formCat='MOVE',formCost='free',editingPass=null,formPassCat='MOVE',whenCat=null,whenAct=null;
-let editingPlace=null,editingClass=null,editingClassPlace=null,classCat='MOVE',classDay=1;
+let editingPlace=null,editingClass=null,editingClassPlace=null,classCat='MOVE',classDay=1,formPlaceCat='MOVE';
 function openActivity(id,pre){
   editingId=id||null;
   let a=id?activities.find(x=>x.id===id):null;
@@ -611,11 +635,13 @@ function openActivity(id,pre){
   formDows=a&&a.daysOfWeek?[...a.daysOfWeek]:((pre&&pre.day!=null)?[pre.day]:[]);
   formCat=a&&a.category?a.category:((pre&&pre.category)?pre.category:'MOVE');
   formCost=a?(a.passId?'pass':(Number(a.cost)>0?'session':'free')):'free';
+  const compact=!!(pre||a);
   sheet(`
     <h2 class="serif">${id?'Edit activity':'Add activity'}</h2>
     <div class="sub">Anything you do for yourself — a class, a treatment, an appointment.</div>
     <label class="label" style="display:block;margin-bottom:9px">Category</label>
-    <div class="catgrid" id="catgrid">
+    ${compact?`<div class="catsum"><span class="cat-badge" style="--c:${CATS[formCat].color}">${CATS[formCat].emoji}</span><span id="catsumlbl">${CATS[formCat].label}</span><button type="button" class="linklike" onclick="toggleCatGrid()">change</button></div>`:''}
+    <div class="catgrid ${compact?'hidden':''}" id="catgrid">
       ${CAT_KEYS.map(k=>`<button type="button" class="catcell ${k===formCat?'on':''}" data-cat="${k}" style="--c:${CATS[k].color}" onclick="setCat('${k}')">
         <span class="ce">${CATS[k].emoji}</span>${CATS[k].label}</button>`).join('')}
     </div>
@@ -625,7 +651,7 @@ function openActivity(id,pre){
     </div>
     <div class="field"><label class="label">Activity</label>
       <input type="text" id="f-type" placeholder="e.g. ${CATS[formCat].types[0]}" value="${a?esc(a.type):((pre&&pre.type)?esc(pre.type):'')}">
-      <div class="typehint" id="typehint">${CATS[formCat].types.map(t=>`<button type="button" onclick="setType('${t}')">${t}</button>`).join('')}</div>
+      <div class="typehint ${compact?'hidden':''}" id="typehint">${CATS[formCat].types.map(t=>`<button type="button" onclick="setType('${t}')">${t}</button>`).join('')}</div>
     </div>
     <div class="field"><label class="label">Place</label>
       <input type="text" id="f-place" placeholder="e.g. Studio / clinic name" value="${a?esc(a.place):((pre&&pre.place)?esc(pre.place):'')}"></div>
@@ -660,10 +686,12 @@ function openActivity(id,pre){
 }
 function setCat(k){
   formCat=k;
-  document.querySelectorAll('.catcell').forEach(el=>el.classList.toggle('on',el.dataset.cat===k));
+  document.querySelectorAll('#catgrid .catcell').forEach(el=>el.classList.toggle('on',el.dataset.cat===k));
+  const sl=document.getElementById('catsumlbl');if(sl)sl.textContent=CATS[k].label;
   const ti=document.getElementById('f-type');if(ti&&!ti.value)ti.placeholder='e.g. '+CATS[k].types[0];
-  document.getElementById('typehint').innerHTML=CATS[k].types.map(t=>`<button type="button" onclick="setType('${t}')">${t}</button>`).join('');
+  const th=document.getElementById('typehint');if(th)th.innerHTML=CATS[k].types.map(t=>`<button type="button" onclick="setType('${t}')">${t}</button>`).join('');
 }
+function toggleCatGrid(){const g=document.getElementById('catgrid');if(g)g.classList.remove('hidden');const s=document.querySelector('.catsum');if(s)s.style.display='none';const th=document.getElementById('typehint');if(th)th.classList.remove('hidden');}
 function setMode(m){formMode=m;document.getElementById('seg-rec').classList.toggle('on',m==='recurring');
   document.getElementById('seg-one').classList.toggle('on',m==='oneoff');
   document.getElementById('m-rec').classList.toggle('hidden',m!=='recurring');
@@ -710,23 +738,29 @@ function openPlaces(){
     const rows=cl.length?cl.map(c=>{const cat=CATS[c.category]||CATS.MOVE;
       return `<button class="act" onclick="openClass('${p.id}','${c.id}')"><span class="cat-badge" style="--c:${cat.color}">${cat.emoji}</span><span class="body"><div class="a-top"><span class="a-name">${esc(c.name)}</span></div><div class="a-sub">${DOW_FULL[c.day]}${c.time?' · '+fmtTime(c.time):''}</div></span></button>`;
     }).join(''):'<div class="empty" style="margin:6px 0 2px">No classes yet.</div>';
-    return `<div class="placeblock"><div class="placehead"><span class="placename">${esc(p.name)}</span><button class="passadd" onclick="openPlace('${p.id}')">edit</button></div><div class="acts">${rows}</div><button class="addclass" onclick="openClass('${p.id}')">＋ Add class</button></div>`;
+    return `<div class="placeblock"><div class="placehead"><span class="placename">${(CATS[p.category]||CATS.MOVE).emoji} ${esc(p.name)}</span><button class="passadd" onclick="openPlace('${p.id}')">edit</button></div><div class="acts">${rows}</div><button class="addclass" onclick="openClass('${p.id}')">＋ Add class</button></div>`;
   }).join(''):'<div class="empty">No places yet — save a studio or clinic you love.</div>';
   sheet(`<h2 class="serif">Places & classes</h2><div class="sub">Save where you go and the classes that interest you — so suggestions can name a real class.</div><div style="margin:2px 0 16px">${list}</div><div class="sheet-actions"><button class="btn ghost" onclick="closeSheet()">Close</button><button class="btn primary" onclick="openPlace()">＋ Add place</button></div>`);
 }
+function setPlaceCat(k){formPlaceCat=k;document.querySelectorAll('#plcatgrid .catcell').forEach(el=>el.classList.toggle('on',el.dataset.cat===k))}
 function openPlace(id){
-  editingPlace=id||null;const p=id?places.find(x=>x.id===id):{name:''};
-  sheet(`<h2 class="serif">${id?'Edit place':'New place'}</h2><div class="field"><label class="label">Name</label><input type="text" id="pl-name" placeholder="e.g. Sala Studio" value="${esc(p.name)}"></div><div class="sheet-actions">${id?`<button class="btn danger" onclick="deletePlace('${id}')">Delete</button>`:'<button class="btn ghost" onclick="openPlaces()">Cancel</button>'}<button class="btn primary" onclick="savePlace()">Save</button></div>`);
+  editingPlace=id||null;const p=id?places.find(x=>x.id===id):{name:'',category:'MOVE'};formPlaceCat=p.category||'MOVE';
+  sheet(`<h2 class="serif">${id?'Edit place':'New place'}</h2>
+    <label class="label" style="display:block;margin-bottom:9px">Main service</label>
+    <div class="catgrid" id="plcatgrid">${CAT_KEYS.map(k=>`<button type="button" class="catcell ${k===formPlaceCat?'on':''}" data-cat="${k}" style="--c:${CATS[k].color}" onclick="setPlaceCat('${k}')"><span class="ce">${CATS[k].emoji}</span>${CATS[k].label}</button>`).join('')}</div>
+    <div class="field"><label class="label">Name</label><input type="text" id="pl-name" placeholder="e.g. Sala Studio" value="${esc(p.name)}"></div>
+    <div class="sheet-actions">${id?`<button class="btn danger" onclick="deletePlace('${id}')">Delete</button>`:'<button class="btn ghost" onclick="openPlaces()">Cancel</button>'}<button class="btn primary" onclick="savePlace()">Save</button></div>`);
 }
 function savePlace(){const name=document.getElementById('pl-name').value.trim();if(!name){alert('Name the place.');return}
-  if(editingPlace){const i=places.findIndex(x=>x.id===editingPlace);places[i]={...places[i],name}}else{places.push({id:'pl'+Date.now()+Math.random().toString(36).slice(2,5),name})}
+  const base={name,category:formPlaceCat};
+  if(editingPlace){const i=places.findIndex(x=>x.id===editingPlace);places[i]={...places[i],...base}}else{places.push({id:'pl'+Date.now()+Math.random().toString(36).slice(2,5),...base})}
   save(K_PLACES,places);openPlaces();}
 function deletePlace(id){classes=classes.filter(c=>c.placeId!==id);save(K_CLASSES,classes);places=places.filter(p=>p.id!==id);save(K_PLACES,places);openPlaces();}
 function setClassCat(k){classCat=k;document.querySelectorAll('#ccatgrid .catcell').forEach(el=>el.classList.toggle('on',el.dataset.cat===k))}
 function setClassDay(w,el){classDay=w;el.parentElement.querySelectorAll('.dow').forEach(x=>x.classList.toggle('on',+x.dataset.w===w))}
 function openClass(placeId,id){
-  editingClassPlace=placeId;editingClass=id||null;
-  const c=id?classes.find(x=>x.id===id):{name:'',category:'MOVE',day:1,time:''};
+  editingClassPlace=placeId;editingClass=id||null;const pl=places.find(x=>x.id===placeId);
+  const c=id?classes.find(x=>x.id===id):{name:'',category:(pl&&pl.category)||'MOVE',day:1,time:''};
   classCat=c.category||'MOVE';classDay=(c.day==null?1:c.day);
   sheet(`<h2 class="serif">${id?'Edit class':'New class'}</h2><div class="sub">at ${esc(placeName(placeId))}</div>
     <label class="label" style="display:block;margin-bottom:9px">Category</label>
@@ -792,6 +826,47 @@ function openWhen(cat,act){
   sheet(`<h2 class="serif">When should I…?</h2>
     <div class="sub">Pick something — I’ll tell you the best time in your cycle.</div>
     ${body}`);
+}
+
+/* ---------------- backup & calendar (.ics) ---------------- */
+function pad2(n){return String(n).padStart(2,'0')}
+function addHour(t){const[h,m]=(t||'09:00').split(':').map(Number);return pad2((h+1)%24)+':'+pad2(m||0)}
+function download(name,text,type){const blob=new Blob([text],{type});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+function exportData(){download('faze-backup-'+ymd(today())+'.json',JSON.stringify({_app:'faze',_v:1,_exported:new Date().toISOString(),cycle,periods,activities,passes,places,classes},null,2),'application/json');}
+function importData(input){const f=input.files&&input.files[0];if(!f)return;const r=new FileReader();
+  r.onload=function(){try{const d=JSON.parse(r.result);
+    if(d.cycle){cycle=d.cycle;save(K_CYCLE,cycle);} if(d.periods){periods=d.periods;save(K_PERIODS,periods);}
+    if(d.activities){activities=d.activities;save(K_ACTS,activities);} if(d.passes){passes=d.passes;save(K_PASSES,passes);}
+    if(d.places){places=d.places;save(K_PLACES,places);} if(d.classes){classes=d.classes;save(K_CLASSES,classes);}
+    closeSheet();render();alert('Backup restored ✓');
+  }catch(e){alert('Sorry — that file could not be read.');}};
+  r.readAsText(f);}
+function exportICS(){
+  const dowMap=['SU','MO','TU','WE','TH','FR','SA'];
+  const dt=(d,t)=>{const[h,m]=(t||'09:00').split(':');return d.getFullYear()+pad2(d.getMonth()+1)+pad2(d.getDate())+'T'+pad2(h)+pad2(m)+'00';};
+  const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Faze//EN','CALSCALE:GREGORIAN'];
+  activities.forEach(a=>{const cat=catOf(a);const title=((a.type||cat.label)+(a.place?' · '+a.place:'')).replace(/[,;\\]/g,' ');
+    L.push('BEGIN:VEVENT','UID:'+a.id+'@faze');
+    if(a.recurring){const w0=(a.daysOfWeek&&a.daysOfWeek.length)?a.daysOfWeek[0]:1;let f=new Date(today()),guard=0;while(f.getDay()!==w0&&guard++<7)f=addDays(f,1);
+      L.push('DTSTART:'+dt(f,a.time),'DTEND:'+dt(f,addHour(a.time)),'RRULE:FREQ=WEEKLY;BYDAY='+(a.daysOfWeek||[w0]).map(w=>dowMap[w]).join(','));
+    }else{const d=parseYMD(a.date);L.push('DTSTART:'+dt(d,a.time),'DTEND:'+dt(d,addHour(a.time)));}
+    L.push('SUMMARY:'+title,'END:VEVENT');
+  });
+  const np=nextPeriodStart();
+  if(np){L.push('BEGIN:VEVENT','UID:period-'+ymd(np)+'@faze','DTSTART;VALUE=DATE:'+np.getFullYear()+pad2(np.getMonth()+1)+pad2(np.getDate()),'SUMMARY:Period (predicted) — Fáze','END:VEVENT');}
+  L.push('END:VCALENDAR');
+  download('faze-plan.ics',L.join('\r\n'),'text/calendar');
+}
+function openBackup(){
+  sheet(`<h2 class="serif">Data & calendar</h2>
+    <div class="sub">Everything lives on this device — back it up so you never lose it.</div>
+    <div class="acts" style="margin:2px 0 16px">
+      <button class="act" onclick="exportData()"><span class="cat-badge" style="--c:#DEEBCE">💾</span><span class="body"><div class="a-name">Export backup</div><div class="a-sub">Download all your data as a file</div></span></button>
+      <button class="act" onclick="document.getElementById('imp').click()"><span class="cat-badge" style="--c:#D6E2F4">📥</span><span class="body"><div class="a-name">Restore from backup</div><div class="a-sub">Load a file you saved before</div></span></button>
+      <button class="act" onclick="exportICS()"><span class="cat-badge" style="--c:#F6DAD0">📅</span><span class="body"><div class="a-name">Add my plan to calendar</div><div class="a-sub">Your classes & next period (.ics)</div></span></button>
+    </div>
+    <input type="file" id="imp" accept="application/json,.json" onchange="importData(this)" style="display:none">
+    <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">Close</button></div>`);
 }
 
 /* ---------------- import placeholder ---------------- */
