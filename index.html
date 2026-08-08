@@ -116,7 +116,7 @@
   .acts{margin-top:12px;display:flex;flex-direction:column;gap:8px}
 
   /* activity row */
-  .act{display:flex;align-items:flex-start;gap:11px;background:rgba(255,255,255,.62);border-radius:16px;padding:11px 13px;text-align:left;width:100%}
+  .act{display:flex;align-items:flex-start;gap:11px;background:#F6F3EC;border-radius:16px;padding:11px 13px;text-align:left;width:100%}
   .act:active{transform:scale(.99)}
   .cat-badge{width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;
     font-size:17px;background:var(--c,#eee);flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.04)}
@@ -160,7 +160,7 @@
   .phasedates{font-size:12px;color:var(--muted);font-weight:600}
   .phaseintro{font-size:13px;color:var(--ink);opacity:.82;font-style:italic;font-family:'Fraunces',serif;margin-bottom:13px}
   .nicelist{display:flex;flex-wrap:wrap;gap:7px}
-  .nicechip{background:rgba(255,255,255,.62);border-radius:999px;padding:7px 13px;font-size:12.5px;font-weight:500;cursor:pointer;transition:transform .08s;color:var(--ink)}
+  .nicechip{background:#F4F0E8;border-radius:999px;padding:7px 13px;font-size:12.5px;font-weight:500;cursor:pointer;transition:transform .08s;color:var(--ink)}
   .nicechip:active{transform:scale(.95)}
   .nicechip .np{opacity:.5;font-weight:700;margin-right:5px}
   .dateline{margin-top:12px;font-size:12.5px;color:var(--muted);font-weight:600;letter-spacing:.02em}
@@ -391,11 +391,11 @@ function renderHome(){
         </span></button>`;
     }).join('');
     if(!acts.length)actsHtml=`<div class="empty">— nothing planned</div>`;
-    daysHtml+=`<div class="day ${isToday?'today':''}" style="background:${p.tint}">
+    daysHtml+=`<div class="day ${isToday?'today':''}" style="background:var(--card);border:1.6px solid ${p.accent}">
       <div class="day-head">
         <div><span class="day-name">${DOW_FULL[d.getDay()]}</span><span class="day-date">${d.getDate()} ${MON[d.getMonth()]}</span>
         ${isToday?'<div class="todaytag">Today</div>':''}</div>
-        <span class="pill" style="color:${p.accent}">${icon}${p.label}</span>
+        <span class="pill" style="color:${p.accent};background:${p.tint}">${icon}${p.label}</span>
       </div>
       <div class="nudge">${p.nudge}</div>
       <div class="acts">${actsHtml}</div>
@@ -456,7 +456,7 @@ function renderMonth(){
   const guide=['men','foll','ovu','lut'].map(k=>{
     const ph=PHASES[k],g=PHASE_GUIDE[k],ranges=phaseRanges(k,y,m);
     if(!ranges.length)return '';
-    return `<div class="phasecard" style="background:${ph.tint}">
+    return `<div class="phasecard" style="background:var(--card);border:1.6px solid ${ph.accent}">
       <div class="phasehead"><span class="phasename" style="color:${ph.accent}">${ph.label}</span><span class="phasedates">${ranges.map(fmtR).join(', ')} ${MON[m]}</span></div>
       <div class="phaseintro">${g.intro}</div>
       <div class="nicelist">${g.nice.map(n=>`<button class="nicechip" onclick="openActivity(null,{category:'${n[1]}',type:'${n[0]}'})"><span class="np">＋</span>${n[0]}</button>`).join('')}</div>
