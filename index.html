@@ -289,6 +289,11 @@
   .hidden{display:none!important}
   .typehint{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
   .typehint button{font-size:11.5px;padding:5px 10px;border-radius:999px;background:#EDF0EB;color:var(--muted);font-weight:600}
+  .typehint .tchip{display:inline-flex;align-items:center;background:#EDF0EB;border-radius:999px;overflow:hidden}
+  .typehint .tchip button{background:none;border-radius:0}
+  .typehint .tchip>button:first-child{padding:5px 3px 5px 11px}
+  .typehint .tchip .tdel{padding:5px 9px 5px 4px;color:#B58A8A;font-weight:700;font-size:13px}
+  .typehint .tadd{background:#F1E7D6;color:var(--energy-deep)}
 </style>
 </head>
 <body>
@@ -367,6 +372,15 @@ function registerCat(id,c){CATS[id]={label:c.label,desc:'custom',emoji:c.emoji,c
   REC[id]={men:['y','flexible — your call'],foll:['g','a good window'],ovu:['g','a good window'],lut:['y','flexible — your call']};}
 Object.keys(customCats).forEach(id=>registerCat(id,customCats[id]));
 CAT_KEYS=Object.keys(CATS);
+const K_TYPEADDS='whenTo.typeAdds', K_TYPEHIDES='whenTo.typeHides';
+let typeAdds=(function(){try{return JSON.parse(localStorage.getItem(K_TYPEADDS))||{}}catch(e){return{}}})();
+let typeHides=(function(){try{return JSON.parse(localStorage.getItem(K_TYPEHIDES))||{}}catch(e){return{}}})();
+function catTypes(cat){const base=(CATS[cat]&&CATS[cat].types)||[];const hid=typeHides[cat]||[];return [...base.filter(t=>!hid.includes(t)),...(typeAdds[cat]||[])];}
+function typeHintsHtml(cat){return catTypes(cat).map(t=>{const s=t.split("'").join("\\'");return `<span class="tchip"><button type="button" onclick="setType('${s}')">${esc(t)}</button><button type="button" class="tdel" onclick="delType('${cat}','${s}')" aria-label="remove">×</button></span>`;}).join('')+`<button type="button" class="tadd" onclick="addTypedType()">＋ add</button>`;}
+function delType(cat,name){if(((CATS[cat]&&CATS[cat].types)||[]).includes(name)){typeHides[cat]=typeHides[cat]||[];if(!typeHides[cat].includes(name))typeHides[cat].push(name);}else{typeAdds[cat]=(typeAdds[cat]||[]).filter(x=>x!==name);}save(K_TYPEHIDES,typeHides);save(K_TYPEADDS,typeAdds);refreshTypeHints();}
+function addType(cat,name){typeHides[cat]=(typeHides[cat]||[]).filter(x=>x!==name);if(!catTypes(cat).includes(name)){typeAdds[cat]=typeAdds[cat]||[];typeAdds[cat].push(name);}save(K_TYPEHIDES,typeHides);save(K_TYPEADDS,typeAdds);}
+function addTypedType(){const ti=document.getElementById('f-type');let name=(ti&&ti.value.trim())||'';if(!name){name=(prompt('New activity type:')||'').trim();if(name&&ti)ti.value=name;}if(!name)return;addType(formCat,name);refreshTypeHints();}
+function refreshTypeHints(){const th=document.getElementById('typehint');if(th)th.innerHTML=typeHintsHtml(formCat);}
 
 /* ---------------- date helpers ---------------- */
 const DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -738,7 +752,7 @@ function openActivity(id,pre){
     </div>
     <div class="field"><label class="label">Activity</label>
       <input type="text" id="f-type" placeholder="e.g. ${CATS[formCat].types[0]}" value="${a?esc(a.type):((pre&&pre.type)?esc(pre.type):'')}">
-      <div class="typehint ${compact?'hidden':''}" id="typehint">${CATS[formCat].types.map(t=>`<button type="button" onclick="setType('${t}')">${t}</button>`).join('')}</div>
+      <div class="typehint ${compact?'hidden':''}" id="typehint">${typeHintsHtml(formCat)}</div>
     </div>
     <div class="field"><label class="label">Place</label>
       <input type="text" id="f-place" placeholder="e.g. Studio / clinic name" value="${a?esc(a.place):((pre&&pre.place)?esc(pre.place):'')}"></div>
@@ -776,7 +790,7 @@ function setCat(k){
   document.querySelectorAll('#catgrid .catcell').forEach(el=>el.classList.toggle('on',el.dataset.cat===k));
   const sl=document.getElementById('catsumlbl');if(sl)sl.textContent=CATS[k].label;
   const ti=document.getElementById('f-type');if(ti&&!ti.value)ti.placeholder='e.g. '+CATS[k].types[0];
-  const th=document.getElementById('typehint');if(th)th.innerHTML=CATS[k].types.map(t=>`<button type="button" onclick="setType('${t}')">${t}</button>`).join('');
+  const th=document.getElementById('typehint');if(th)th.innerHTML=typeHintsHtml(k);
 }
 function toggleCatGrid(){const g=document.getElementById('catgrid');if(g)g.classList.remove('hidden');const s=document.querySelector('.catsum');if(s)s.style.display='none';const th=document.getElementById('typehint');if(th)th.classList.remove('hidden');}
 function openNewCat(id){
@@ -813,6 +827,7 @@ function saveActivity(){
   const place=document.getElementById('f-place').value.trim();
   const time=document.getElementById('f-time').value;
   if(!type){alert('What’s the activity?');return}
+  if(type)addType(formCat,type);
   let passId=null,cost=0;
   if(formCost==='pass'){const sel=document.getElementById('f-pass');passId=sel?sel.value:null;if(!passId){alert('Pick a pass, or choose another cost option.');return}}
   else if(formCost==='session'){cost=parseFloat(document.getElementById('f-cost').value)||0}
