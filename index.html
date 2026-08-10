@@ -40,6 +40,14 @@
   header.hero{margin-bottom:20px}
   .brand{font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--energy-deep);font-weight:600;margin-bottom:14px}
   .brandlogo{height:28px;width:auto;max-width:100%;display:block;margin:0 auto 14px}
+  header.hero{position:relative}
+  .menubtn{position:absolute;top:-4px;right:0;width:42px;height:42px;border-radius:999px;background:var(--card);box-shadow:var(--shadow-sm);font-size:18px;color:var(--ink);display:flex;align-items:center;justify-content:center;line-height:1}
+  .menubtn:active{transform:scale(.94)}
+  .tallylist{display:flex;flex-direction:column}
+  .tally{display:flex;align-items:center;gap:12px;padding:10px 4px;border-bottom:1px solid #EFE9DD}
+  .tally:last-child{border-bottom:none}
+  .tally .t-name{flex:1;font-size:14px;font-weight:600}
+  .tally .t-count{font-family:'Fraunces',serif;font-size:17px;font-weight:600}
   h1.title{font-size:40px;line-height:1.04;margin:0;letter-spacing:-.01em}
   h1.title em{font-style:italic;color:var(--energy);font-weight:500}
   .wave{width:120px;height:16px;margin-top:14px;color:var(--energy);opacity:.9}
@@ -87,7 +95,7 @@
   .pday .pd-dot{width:6px;height:6px;border-radius:50%;margin-top:2px}
   .pday .pd-hint{font-size:15px;height:18px;line-height:1.1}
   .pday .pd-count{position:absolute;bottom:6px;font-size:10px;font-weight:700;color:var(--muted);background:#F1ECE2;border-radius:8px;padding:0 5px}
-  .pday.t{outline:2px solid var(--energy);outline-offset:-2px}
+  .pday.t{outline:2px solid var(--ink);outline-offset:-2px}
   .pday.over{transform:scale(1.05)}
   .pday.over-good{background:#E6F2EA;border-color:#4E9B63}
   .pday.over-warn{background:#FBEEE9;border-color:#D0514A}
@@ -128,7 +136,7 @@
 
   /* day cards */
   .day{border-radius:var(--radius);padding:16px 18px;margin-bottom:14px;box-shadow:var(--shadow);position:relative;overflow:hidden}
-  .day.today{outline:2px solid var(--energy);outline-offset:2px}
+  .day.today{outline:2px solid var(--ink);outline-offset:2px}
   .day.high{background:var(--hi)}
   .day.low{background:var(--lo)}
   .day-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
@@ -168,7 +176,7 @@
   .mcell{aspect-ratio:1;border-radius:13px;padding:7px 8px;position:relative;font-size:12.5px;font-weight:600;color:var(--ink);text-align:left;overflow:hidden}
   .mcell.blank{background:transparent!important;pointer-events:none}
   .mcell.high{background:var(--hi)} .mcell.low{background:var(--lo)}
-  .mcell.today{outline:2px solid var(--energy);outline-offset:-2px}
+  .mcell.today{outline:2px solid var(--ink);outline-offset:-2px}
   .mcell .mmark{position:absolute;bottom:7px;right:8px;width:7px;height:7px;border-radius:50%;background:rgba(46,40,35,.32)}
   .mcell .mmark.cau{background:#D0514A}
   /* best-windows list */
@@ -280,6 +288,7 @@ let monthCursor=null;       // Date of displayed month
 let spendPeriod='month';    // 'week' | 'month'
 let prevCalView='week';     // where to return from the spend/plan screen
 let planSel=null;           // tapped-then-place suggestion
+let planWeekOffset=0;       // plan board week navigation
 
 /* ---------------- categories ---------------- */
 const CATS={
@@ -446,6 +455,7 @@ function renderHome(){
   }
   document.getElementById('app').innerHTML=`
     <header class="hero">
+      <button class="menubtn" onclick="openMenu()" aria-label="Menu">☰</button>
       <img class="brandlogo" src="faze-logo.png" alt="fáze — cycle × wellness planner">
 
       <div class="dateline">Today · ${DOW_FULL[tt.getDay()]} ${tt.getDate()} ${MON[tt.getMonth()]} ${tt.getFullYear()}</div>
@@ -463,14 +473,20 @@ function renderHome(){
     </div>
     ${daysHtml}
     <div class="footer">
-      <button class="btn ghost" onclick="openPlaces()">Places & classes</button>
-      <button class="btn ghost" onclick="openBackup()">Data & calendar</button>
-      <button class="btn ghost" onclick="openPasses()">Passes & memberships</button>
-      <button class="btn ghost" onclick="openCycle()">Edit cycle dates</button>
-      <button class="btn disabled" onclick="importInfo()">📷 Import schedule from photo</button>
-      <div class="importnote">Turns on paid AI extraction — off during free testing.</div>
       <div class="disclaimer">A gentle guideline synced to your cycle — not medical advice.</div>
     </div>`;
+}
+
+function openMenu(){
+  sheet(`<h2 class="serif">Menu</h2>
+    <div class="acts" style="margin:8px 0 14px">
+      <button class="act" onclick="closeSheet();openPlaces()"><span class="cat-badge" style="--c:#D7E9E3">📍</span><span class="body"><div class="a-name">Places & classes</div></span></button>
+      <button class="act" onclick="closeSheet();openPasses()"><span class="cat-badge" style="--c:#F3E7C9">🎟️</span><span class="body"><div class="a-name">Passes & memberships</div></span></button>
+      <button class="act" onclick="closeSheet();openBackup()"><span class="cat-badge" style="--c:#D6E2F4">💾</span><span class="body"><div class="a-name">Data & calendar</div></span></button>
+      <button class="act" onclick="closeSheet();openCycle()"><span class="cat-badge" style="--c:#E0EAF3">🩸</span><span class="body"><div class="a-name">Cycle & period log</div></span></button>
+      <button class="act" onclick="importInfo()"><span class="cat-badge" style="--c:#ECEAE4">📷</span><span class="body"><div class="a-name">Import from photo</div><div class="a-sub">Off during free testing</div></span></button>
+    </div>
+    <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">Close</button></div>`);
 }
 
 /* ---------------- render: month (best windows) ---------------- */
@@ -491,6 +507,9 @@ function monthWindows(cat,y,m){
   if(bs!=null)best.push([bs,days]);if(as!=null)avoid.push([as,days]);
   return {best,avoid,days};
 }
+function monthTallyHtml(from,to){const tally={};let d=new Date(from);while(d<=to){actsOn(d).forEach(a=>{tally[a.category]=(tally[a.category]||0)+1;});d=addDays(d,1);}
+  const rows=CAT_KEYS.filter(k=>tally[k]).sort((a,b)=>tally[b]-tally[a]).map(k=>`<div class="tally"><span class="cat-badge" style="--c:${CATS[k].color}">${CATS[k].emoji}</span><span class="t-name">${CATS[k].label}</span><span class="t-count">×${tally[k]}</span></div>`).join('');
+  return rows?`<div class="label" style="margin:24px 2px 10px">This month you did</div><div class="tallylist">${rows}</div>`:'';}
 function renderMonth(){
   document.getElementById('fab').classList.remove('hidden');
   const base=monthCursor||today();const y=base.getFullYear(),m=base.getMonth();const tt=today();
@@ -514,6 +533,7 @@ function renderMonth(){
     return `<button class="act" onclick="openDay('${ymd(d)}')"><span class="cat-badge" style="--c:${c.color}">${c.emoji}</span><span class="body"><div class="a-top"><span class="a-name">${esc(a.type)||c.label}</span><span class="cost" style="color:#BE4A41">${DOW[d.getDay()]} ${d.getDate()}</span></div><div class="a-sub">better ${better}</div></span></button>`;}).join('')}</div>`:'';
   document.getElementById('app').innerHTML=`
     <header class="hero">
+      <button class="menubtn" onclick="openMenu()" aria-label="Menu">☰</button>
       <img class="brandlogo" src="faze-logo.png" alt="fáze — cycle × wellness planner">
 
       <div class="dateline">Today · ${DOW_FULL[tt.getDay()]} ${tt.getDate()} ${MON[tt.getMonth()]} ${tt.getFullYear()}</div>
@@ -532,11 +552,8 @@ function renderMonth(){
     <div class="label" style="margin:2px 2px 12px">This month, phase by phase</div>
     ${guide}
     ${clashHtml}
+    ${monthTallyHtml(first,last)}
     <div class="footer">
-      <button class="btn ghost" onclick="openPlaces()">Places & classes</button>
-      <button class="btn ghost" onclick="openBackup()">Data & calendar</button>
-      <button class="btn ghost" onclick="openPasses()">Passes & memberships</button>
-      <button class="btn ghost" onclick="openCycle()">Edit cycle dates</button>
       <div class="disclaimer">A gentle guideline synced to your cycle — not medical advice.</div>
     </div>`;
 }
@@ -860,11 +877,12 @@ function openWhen(cat,act){
 }
 
 /* ---------------- plan board (drag suggestions onto days) ---------------- */
-function openPlan(){prevCalView=(viewMode==='plan')?prevCalView:viewMode;viewMode='plan';renderPlan();window.scrollTo(0,0);}
+function openPlan(){prevCalView=(viewMode==='plan')?prevCalView:viewMode;planWeekOffset=0;viewMode='plan';renderPlan();window.scrollTo(0,0);}
+function changePlanWeek(d){planWeekOffset+=d;planSel=null;renderPlan();window.scrollTo(0,0);}
 function exitPlan(){planSel=null;viewMode=prevCalView||'week';render();window.scrollTo(0,0);}
 function renderPlan(){
   document.getElementById('fab').classList.add('hidden');
-  const mon=mondayOf(today());const tday=ymd(today());
+  const mon=addDays(mondayOf(today()),planWeekOffset*7);const tday=ymd(today());
   let days='';
   for(let i=0;i<7;i++){const d=addDays(mon,i);const p=phaseForDate(d);const n=actsOn(d).length;const isT=ymd(d)===tday;
     days+=`<div class="pday${isT?' t':''}" data-date="${ymd(d)}" style="border-color:${p.accent}">
@@ -888,6 +906,11 @@ function renderPlan(){
   document.getElementById('app').innerHTML=`
     <div class="planhead"><button class="wbtn" onclick="exitPlan()">‹</button>
       <div><div class="plantitle serif">When should I…?</div><div class="dateline" style="margin-top:0">Drag a card onto a day — or tap it, then a day.</div></div></div>
+    <div class="weeknav" style="margin-bottom:14px">
+      <button class="wbtn" onclick="changePlanWeek(-1)" aria-label="Previous week">‹</button>
+      <button class="wnow" onclick="planWeekOffset=0;renderPlan()">${weekLabel(planWeekOffset,mon)}<span class="wrange">${mon.getDate()} ${MON[mon.getMonth()]} – ${addDays(mon,6).getDate()} ${MON[addDays(mon,6).getMonth()]}</span></button>
+      <button class="wbtn" onclick="changePlanWeek(1)" aria-label="Next week">›</button>
+    </div>
     <div class="pweek">${days}</div>
     <div class="label" style="margin:20px 2px 10px">Recommended this week</div>
     <div class="ptray">${recTiles}</div>
@@ -898,7 +921,7 @@ function renderPlan(){
 }
 function dayElAt(x,y){let el=document.elementFromPoint(x,y);while(el&&!(el.classList&&el.classList.contains('pday')))el=el.parentElement;return el;}
 function planClearHi(){document.querySelectorAll('.pday').forEach(d=>{d.classList.remove('over','over-good','over-warn');const h=d.querySelector('.pd-hint');if(h)h.textContent='';});}
-function planHighlight(x,y,cat){planClearHi();const d=dayElAt(x,y);if(!d)return;const p=phaseForDate(parseYMD(d.dataset.date));const r=(REC[cat]||REC.MOVE)[p.key][0];const good=r==='g',warn=(r==='r'||r==='o');d.classList.add('over');d.classList.toggle('over-good',good);d.classList.toggle('over-warn',warn);const h=d.querySelector('.pd-hint');if(h)h.textContent=good?'✓':(warn?'⚠':'·');}
+function planHighlight(x,y,cat){planClearHi();const d=dayElAt(x,y);if(!d)return;const p=phaseForDate(parseYMD(d.dataset.date));const r=(REC[cat]||REC.MOVE)[p.key][0];const good=r==='g',warn=(r==='r'||r==='o');d.classList.add('over');d.classList.toggle('over-good',good);d.classList.toggle('over-warn',warn);const h=d.querySelector('.pd-hint');if(h)h.textContent=good?'✓':'';}
 function planDrop(dateStr,cat,type,classId){let place='',time='';if(classId){const c=classes.find(x=>x.id===classId);if(c){place=placeName(c.placeId);time=c.time||'';}}
   activities.push({id:'a'+Date.now()+Math.random().toString(36).slice(2,6),category:cat,type,place,time,passId:null,includedInPass:false,cost:0,recurring:false,daysOfWeek:null,date:dateStr});save(K_ACTS,activities);}
 function attachPlanDnD(){
