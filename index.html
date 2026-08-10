@@ -250,10 +250,13 @@
   /* sheet */
   .scrim{position:fixed;inset:0;background:rgba(24,32,26,.44);backdrop-filter:blur(3px);z-index:50;display:none;align-items:flex-end;justify-content:center}
   .scrim.open{display:flex}
-  .sheet{background:linear-gradient(165deg,var(--bg1),#fff 60%);width:100%;max-width:560px;border-radius:28px 28px 0 0;
+  .sheet{position:relative;background:linear-gradient(165deg,var(--bg1),#fff 60%);width:100%;max-width:560px;border-radius:28px 28px 0 0;
     padding:22px 22px 30px;box-shadow:0 -20px 50px -20px rgba(24,32,26,.5);max-height:92vh;overflow-y:auto;
     animation:rise .28s cubic-bezier(.2,.8,.25,1)}
   @keyframes rise{from{transform:translateY(30px);opacity:.4}to{transform:translateY(0);opacity:1}}
+  .sheetclose{position:absolute;top:15px;right:15px;width:34px;height:34px;border-radius:999px;background:#EFEAE0;color:var(--ink);font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;z-index:3}
+  .sheetclose:active{transform:scale(.92)}
+  @media(min-width:640px){.scrim{align-items:center}.sheet{border-radius:28px;max-height:88vh}}
   .sheet h2{font-family:'Fraunces',serif;font-size:24px;font-weight:600;margin:0 0 4px}
   .sheet .sub{color:var(--muted);font-size:13px;margin-bottom:18px}
   .field{margin-bottom:16px}
@@ -266,6 +269,12 @@
     align-items:center;gap:4px;font-size:11.5px;font-weight:600;color:var(--muted)}
   .catcell .ce{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;background:var(--c)}
   .catcell.on{border-color:var(--c);color:var(--ink);box-shadow:0 6px 16px -10px var(--c)}
+  .catcell.addcat{border-style:dashed}
+  .catcell .editcat{position:absolute;top:5px;right:7px;font-size:11px;opacity:.5}
+  .catcell{position:relative}
+  .swatches{display:flex;gap:8px;flex-wrap:wrap}
+  .swatch{width:34px;height:34px;border-radius:10px;border:2px solid transparent}
+  .swatch.on{border-color:var(--ink)}
   .seg{display:flex;background:#E6EAE4;border-radius:14px;padding:4px;gap:4px;margin-bottom:18px}
   .seg button{flex:1;padding:10px;border-radius:11px;font-weight:600;font-size:13.5px;color:var(--muted)}
   .seg button.on{background:#fff;color:var(--ink);box-shadow:var(--shadow-sm)}
@@ -290,7 +299,7 @@
   Add
 </button>
 
-<div class="scrim" id="scrim"><div class="sheet" id="sheet"></div></div>
+<div class="scrim" id="scrim"><div class="sheet"><button class="sheetclose" onclick="closeSheet()" aria-label="Close">✕</button><div id="sheet"></div></div></div>
 
 <script>
 /* ---------------- storage ---------------- */
@@ -313,7 +322,7 @@ let planSel=null;           // tapped-then-place suggestion
 let planWeekOffset=0;       // plan board week navigation
 
 /* ---------------- categories ---------------- */
-const CATS={
+let CATS={
   MOVE:  {label:'Fitness',  desc:'movement & sport',  emoji:'🏃', color:'#F6DAD0', dot:'#EC6142',
           types:['Strength','HIIT','CrossFit','Running','Cycling','Swimming','Pilates','Yoga','Walking','Hiking','Stretching','Recovery']},
   SPA:   {label:'Spa & Body',desc:'massage & recovery',emoji:'💆', color:'#D7E9E3', dot:'#2F8072',
@@ -331,7 +340,7 @@ const CATS={
   TRAVEL:{label:'Travel',   desc:'trips & getaways',   emoji:'✈️', color:'#F7E4CE', dot:'#E08A2E',
           types:['Flight','Road trip','Getaway','City break','Beach','Hiking trip']}
 };
-const CAT_KEYS=Object.keys(CATS);
+let CAT_KEYS=Object.keys(CATS);
 
 /* rating meta */
 const RATE={
@@ -341,7 +350,7 @@ const RATE={
   r:{dot:'🔴',text:'Consider postponing'}
 };
 /* recommendation matrix: category × phase → [rating, reason]  (a gentle guideline, not medical advice) */
-const REC={
+let REC={
   MOVE:  {men:['y','honour low energy — keep it gentle'], foll:['g','prime time for strength & new challenges'], ovu:['g','peak power — go for a PR'], lut:['o','ease into steady, lower-intensity work']},
   SPA:   {men:['g','rest & recovery land beautifully now'], foll:['y','lovely, though your energy wants to move'], ovu:['y','a nice reward after high-energy days'], lut:['g','winding down — massage & sauna feel great']},
   FACIAL:{men:['o','skin’s most sensitive — treatments sting more'], foll:['g','calmest, clearest skin — best for facials'], ovu:['y','skin looks great but can be reactive'], lut:['o','breakouts & sensitivity rising — go gentle']},
@@ -351,6 +360,13 @@ const REC={
   MIND:  {men:['g','exactly what your body wants now'], foll:['g','a clear head for planning & focus'], ovu:['g','social energy peaks — enjoy it'], lut:['g','protect calm & sleep as you wind down']},
   TRAVEL:{men:['y','fine — plan in rest & comfort'], foll:['g','great energy for an active trip'], ovu:['g','peak energy — adventure away'], lut:['y','fine — build in some downtime']}
 };
+const K_CUSTOMCATS='whenTo.customCats';
+let customCats=(function(){try{const v=localStorage.getItem(K_CUSTOMCATS);return v?JSON.parse(v):{};}catch(e){return {}}})();
+const CAT_COLORS=['#F6DAD0','#D7E9E3','#F4DCEA','#F1E6C6','#E7DCF0','#D6E2F4','#DEEBCE','#F7E4CE'];
+function registerCat(id,c){CATS[id]={label:c.label,desc:'custom',emoji:c.emoji,color:c.color,dot:c.dot||c.color,custom:true,types:c.types||[]};
+  REC[id]={men:['y','flexible — your call'],foll:['g','a good window'],ovu:['g','a good window'],lut:['y','flexible — your call']};}
+Object.keys(customCats).forEach(id=>registerCat(id,customCats[id]));
+CAT_KEYS=Object.keys(CATS);
 
 /* ---------------- date helpers ---------------- */
 const DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -696,7 +712,7 @@ function saveCycle(){
 }
 
 /* ---------------- add / edit activity ---------------- */
-let editingId=null,formMode='recurring',formDows=[],formCat='MOVE',formCost='free',editingPass=null,formPassCat='MOVE',whenCat=null,whenAct=null;
+let editingId=null,formMode='recurring',formDows=[],formCat='MOVE',formCost='free',editingPass=null,formPassCat='MOVE',whenCat=null,whenAct=null,editingCat=null,newCatColor='#F6DAD0';
 let editingPlace=null,editingClass=null,editingClassPlace=null,classCat='MOVE',classDay=1,formPlaceCat='MOVE';
 function openActivity(id,pre){
   editingId=id||null;
@@ -713,7 +729,8 @@ function openActivity(id,pre){
     ${compact?`<div class="catsum"><span class="cat-badge" style="--c:${CATS[formCat].color}">${CATS[formCat].emoji}</span><span id="catsumlbl">${CATS[formCat].label}</span><button type="button" class="linklike" onclick="toggleCatGrid()">change</button></div>`:''}
     <div class="catgrid ${compact?'hidden':''}" id="catgrid">
       ${CAT_KEYS.map(k=>`<button type="button" class="catcell ${k===formCat?'on':''}" data-cat="${k}" style="--c:${CATS[k].color}" onclick="setCat('${k}')">
-        <span class="ce">${CATS[k].emoji}</span>${CATS[k].label}</button>`).join('')}
+        <span class="ce">${CATS[k].emoji}</span>${CATS[k].label}${CATS[k].custom?` <span class="editcat" onclick="event.stopPropagation();openNewCat('${k}')">✎</span>`:''}</button>`).join('')}
+      <button type="button" class="catcell addcat" onclick="openNewCat()"><span class="ce" style="background:#EFEAE0">＋</span>New</button>
     </div>
     <div class="seg">
       <button id="seg-rec" class="${formMode==='recurring'?'on':''}" onclick="setMode('recurring')">Recurring</button>
@@ -762,6 +779,25 @@ function setCat(k){
   const th=document.getElementById('typehint');if(th)th.innerHTML=CATS[k].types.map(t=>`<button type="button" onclick="setType('${t}')">${t}</button>`).join('');
 }
 function toggleCatGrid(){const g=document.getElementById('catgrid');if(g)g.classList.remove('hidden');const s=document.querySelector('.catsum');if(s)s.style.display='none';const th=document.getElementById('typehint');if(th)th.classList.remove('hidden');}
+function openNewCat(id){
+  editingCat=id||null;const c=id?customCats[id]:{label:'',emoji:'⭐',color:'#F6DAD0'};newCatColor=c.color||'#F6DAD0';
+  sheet(`<h2 class="serif">${id?'Edit category':'New category'}</h2>
+    <div class="sub">Your own category — it stays flexible across your cycle.</div>
+    <div class="row2"><div class="field" style="flex:0 0 84px"><label class="label">Icon</label><input type="text" id="nc-emoji" maxlength="2" value="${esc(c.emoji||'⭐')}" style="text-align:center;font-size:22px"></div>
+      <div class="field"><label class="label">Name</label><input type="text" id="nc-name" placeholder="e.g. Dance" value="${esc(c.label||'')}"></div></div>
+    <div class="field"><label class="label">Colour</label><div class="swatches">${CAT_COLORS.map(col=>`<button type="button" class="swatch${col===newCatColor?' on':''}" data-c="${col}" style="background:${col}" onclick="setNewCatColor('${col}')"></button>`).join('')}</div></div>
+    <div class="sheet-actions">${id?`<button class="btn danger" onclick="deleteCat('${id}')">Delete</button>`:'<button class="btn ghost" onclick="openActivity()">Cancel</button>'}<button class="btn primary" onclick="saveNewCat()">Save</button></div>`);
+}
+function setNewCatColor(c){newCatColor=c;document.querySelectorAll('.swatch').forEach(s=>s.classList.toggle('on',s.dataset.c===c));}
+function saveNewCat(){
+  const label=document.getElementById('nc-name').value.trim();const emoji=document.getElementById('nc-emoji').value.trim()||'⭐';
+  if(!label){alert('Name the category.');return}
+  let id=editingCat||('cat'+Date.now().toString(36));
+  customCats[id]={label,emoji,color:newCatColor,dot:newCatColor};save(K_CUSTOMCATS,customCats);
+  registerCat(id,customCats[id]);CAT_KEYS=Object.keys(CATS);formCat=id;openActivity(null,{category:id});
+}
+function deleteCat(id){delete customCats[id];save(K_CUSTOMCATS,customCats);delete CATS[id];delete REC[id];CAT_KEYS=Object.keys(CATS);
+  if(formCat===id)formCat='MOVE';openActivity(null,{category:formCat});}
 function setMode(m){formMode=m;document.getElementById('seg-rec').classList.toggle('on',m==='recurring');
   document.getElementById('seg-one').classList.toggle('on',m==='oneoff');
   document.getElementById('m-rec').classList.toggle('hidden',m!=='recurring');
