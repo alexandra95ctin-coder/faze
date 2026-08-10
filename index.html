@@ -96,6 +96,14 @@
   .ptile .cat-badge{width:28px;height:28px;font-size:14px}
   .ptile.sel{border-color:var(--energy);box-shadow:0 0 0 2px rgba(236,97,66,.25)}
   .ptile-clone{position:fixed;pointer-events:none;z-index:200;opacity:.95;box-shadow:0 14px 30px -10px rgba(30,45,35,.5);transform:translate(-50%,-50%)}
+  .ptile .pt-body{display:flex;flex-direction:column;line-height:1.15;text-align:left}
+  .ptile .pt-sub{font-size:10.5px;color:var(--muted);font-weight:500;margin-top:1px}
+  .ptile .pt-mem{font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:var(--sage);border-radius:6px;padding:1px 5px;vertical-align:middle}
+  .ptile.mem{border-color:var(--sage)}
+  .risknote{font-size:11.5px;color:var(--muted);margin:0 2px 11px}
+  .ptray.risk .ptile{opacity:.6}
+  .ptoast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);z-index:300;background:var(--ink);color:#F7F3EC;padding:12px 20px;border-radius:999px;font-size:13.5px;font-weight:600;box-shadow:0 14px 30px -10px rgba(30,45,35,.6);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;max-width:90vw}
+  .ptoast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
   /* passes */
   .passwrap{margin:0 0 16px}
@@ -369,6 +377,7 @@ function catOf(a){return CATS[a.category]||CATS.MOVE}
 function passById(id){return passes.find(p=>p.id===id)}
 function passUsed(id){return activities.filter(a=>a.passId===id&&!a.recurring).length}
 function passRemaining(p){return p.total==null?null:Math.max(0,p.total-passUsed(p.id))}
+function passExpiryTxt(p){if(!p||!p.expiry)return '';const d=parseYMD(p.expiry);const du=daysBetween(today(),d);if(du<0)return 'expired';return du===0?'expires today':(du<=31?'expires in '+du+'d':'valid to '+d.getDate()+' '+MON[d.getMonth()]);}
 function weekSpend(mon){mon=mon||mondayOf(today());let s=0;for(let i=0;i<7;i++)actsOn(addDays(mon,i)).forEach(a=>s+=costOf(a));return s}
 function monthSpend(base){base=base||today();const y=base.getFullYear(),m=base.getMonth(),days=new Date(y,m+1,0).getDate();let s=0;
   for(let d=1;d<=days;d++)actsOn(new Date(y,m,d)).forEach(a=>s+=costOf(a));return s}
@@ -576,6 +585,7 @@ function openPass(id){
     <div class="catgrid" id="pcatgrid">${CAT_KEYS.map(k=>`<button type="button" class="catcell ${k===formPassCat?'on':''}" data-cat="${k}" style="--c:${CATS[k].color}" onclick="setPassCat('${k}')"><span class="ce">${CATS[k].emoji}</span>${CATS[k].label}</button>`).join('')}</div>
     <div class="field"><label class="label">Name</label><input type="text" id="p-name" placeholder="e.g. F45 10-pack" value="${esc(p.name)}"></div>
     <div class="field"><label class="label">Price (€)</label><input type="number" id="p-price" min="0" step="1" placeholder="0" value="${p.price!=null&&p.price!==''?p.price:''}"></div>
+    <div class="field"><label class="label">Valid until <span style="text-transform:none;letter-spacing:0;font-weight:500;color:var(--muted)">(optional)</span></label><input type="date" id="p-exp" value="${p.expiry||''}" min="${ymd(today())}"></div>
     <div class="field"><label class="toggle"><input type="checkbox" id="p-unl" ${unlimited?'checked':''} onchange="togglePassUnl()"> <span>Unlimited membership (no class count)</span></label>
       <div id="p-total-wrap" class="${unlimited?'hidden':''}" style="margin-top:12px">
         <label class="label" style="display:block;margin-bottom:7px">Total classes${id&&!unlimited?` · ${used} booked so far`:''}</label>
@@ -593,7 +603,8 @@ function savePass(){
   const unl=document.getElementById('p-unl').checked;
   const total=unl?null:(parseInt(document.getElementById('p-total').value)||null);
   if(!name){alert('Name your pass.');return}
-  const base={category:formPassCat,name,price,total};
+  const expiry=document.getElementById('p-exp').value||null;
+  const base={category:formPassCat,name,price,total,expiry};
   if(editingPass){const i=passes.findIndex(x=>x.id===editingPass);passes[i]={...passes[i],...base}}
   else{passes.push({id:'p'+Date.now()+Math.random().toString(36).slice(2,5),...base})}
   save(K_PASSES,passes);closeSheet();render();
@@ -608,7 +619,7 @@ function openPasses(){
     return `<button class="act" onclick="openPass('${p.id}')">
       <span class="cat-badge" style="--c:${cat.color}">${cat.emoji}</span>
       <span class="body"><div class="a-top"><span class="a-name">${esc(p.name)}</span>${p.price?`<span class="cost">${EUR(p.price)}</span>`:''}</div>
-      <div class="a-sub" ${low?'style="color:#B5722A;font-weight:600"':''}>${remTxt}</div></span></button>`;
+      <div class="a-sub" ${low?'style="color:#B5722A;font-weight:600"':''}>${remTxt}${passExpiryTxt(p)?' · '+passExpiryTxt(p):''}</div></span></button>`;
   }).join(''):'<div class="empty">No passes yet — add your gym membership or a class pack.</div>';
   sheet(`<h2 class="serif">Passes & memberships</h2>
     <div class="sub">Track what you’ve paid and how many classes are left.</div>
@@ -862,38 +873,52 @@ function renderPlan(){
       ${n?`<span class="pd-count">${n}</span>`:''}</div>`;
   }
   const weekPhases=[...new Set([...Array(7)].map((_,i)=>phaseForDate(addDays(mon,i)).key))];
-  let seen={},tiles='';
-  weekPhases.forEach(pk=>PHASE_GUIDE[pk].nice.forEach(n=>{const name=n[0],cat=n[1],key=name+cat;if(seen[key])return;seen[key]=1;
-    tiles+=`<button class="ptile" data-cat="${cat}" data-type="${name}"><span class="cat-badge" style="--c:${CATS[cat].color}">${CATS[cat].emoji}</span><span class="pt-name">${name}</span></button>`;}));
+  const niceSet=ks=>{const s={},a=[];ks.forEach(pk=>PHASE_GUIDE[pk].nice.forEach(n=>{const k=n[0]+n[1];if(!s[k]){s[k]=1;a.push(n);}}));return a;};
+  const recNice=niceSet(weekPhases);const recK={};recNice.forEach(n=>recK[n[0]+n[1]]=1);
+  const riskNice=niceSet(['men','foll','ovu','lut']).filter(n=>!recK[n[0]+n[1]]);
+  const catGood=cat=>{for(let i=0;i<7;i++){if((REC[cat]||REC.MOVE)[phaseForDate(addDays(mon,i)).key][0]==='g')return true;}return false;};
+  const passCats={};passes.forEach(p=>passCats[p.category]=1);
+  const tileHTML=(cat,name,cid)=>{const C=CATS[cat]||CATS.MOVE;const mem=!!passCats[cat];const c=cid?classes.find(x=>x.id===cid):null;const sub=c?`<span class="pt-sub">${esc(placeName(c.placeId))}${c.time?' · '+fmtTime(c.time):''}</span>`:'';
+    return `<button class="ptile${mem?' mem':''}" data-cat="${cat}" data-type="${esc(name)}"${cid?` data-classid="${cid}"`:''}><span class="cat-badge" style="--c:${C.color}">${C.emoji}</span><span class="pt-body"><span class="pt-name">${esc(name)}${mem?' <span class="pt-mem">pass</span>':''}</span>${sub}</span></button>`;};
+  const byMem=(a,b)=>(passCats[b.cat]?1:0)-(passCats[a.cat]?1:0);
+  const recItems=[...classes.filter(c=>catGood(c.category)).map(c=>({cat:c.category,name:c.name,cid:c.id})),...recNice.map(n=>({cat:n[1],name:n[0]}))].sort(byMem);
+  const riskItems=[...classes.filter(c=>!catGood(c.category)).map(c=>({cat:c.category,name:c.name,cid:c.id})),...riskNice.map(n=>({cat:n[1],name:n[0]}))].sort(byMem);
+  const recTiles=recItems.map(i=>tileHTML(i.cat,i.name,i.cid)).join('');
+  const riskTiles=riskItems.map(i=>tileHTML(i.cat,i.name,i.cid)).join('');
   document.getElementById('app').innerHTML=`
     <div class="planhead"><button class="wbtn" onclick="exitPlan()">‹</button>
       <div><div class="plantitle serif">When should I…?</div><div class="dateline" style="margin-top:0">Drag a card onto a day — or tap it, then a day.</div></div></div>
     <div class="pweek">${days}</div>
-    <div class="label" style="margin:20px 2px 10px">Nice this week — pick &amp; place</div>
-    <div class="ptray">${tiles}</div>
-    <div class="disclaimer" style="margin-top:20px">Drop on a green day for the best timing.</div>`;
+    <div class="label" style="margin:20px 2px 10px">Recommended this week</div>
+    <div class="ptray">${recTiles}</div>
+    ${riskTiles?`<div class="label" style="margin:24px 2px 4px">Other activities</div><div class="risknote">Better suited to another phase this cycle — but your call.</div><div class="ptray risk">${riskTiles}</div>`:''}
+    <div style="text-align:center;margin-top:20px"><button class="linklike" onclick="openPlaces()">＋ Add your studios &amp; classes</button></div>
+    <div class="disclaimer" style="margin-top:14px">Drop on a green day for the best timing.</div>`;
   attachPlanDnD();
 }
 function dayElAt(x,y){let el=document.elementFromPoint(x,y);while(el&&!(el.classList&&el.classList.contains('pday')))el=el.parentElement;return el;}
 function planClearHi(){document.querySelectorAll('.pday').forEach(d=>{d.classList.remove('over','over-good','over-warn');const h=d.querySelector('.pd-hint');if(h)h.textContent='';});}
 function planHighlight(x,y,cat){planClearHi();const d=dayElAt(x,y);if(!d)return;const p=phaseForDate(parseYMD(d.dataset.date));const r=(REC[cat]||REC.MOVE)[p.key][0];const good=r==='g',warn=(r==='r'||r==='o');d.classList.add('over');d.classList.toggle('over-good',good);d.classList.toggle('over-warn',warn);const h=d.querySelector('.pd-hint');if(h)h.textContent=good?'✓':(warn?'⚠':'·');}
-function planDrop(dateStr,cat,type){activities.push({id:'a'+Date.now()+Math.random().toString(36).slice(2,6),category:cat,type,place:'',time:'',passId:null,includedInPass:false,cost:0,recurring:false,daysOfWeek:null,date:dateStr});save(K_ACTS,activities);}
+function planDrop(dateStr,cat,type,classId){let place='',time='';if(classId){const c=classes.find(x=>x.id===classId);if(c){place=placeName(c.placeId);time=c.time||'';}}
+  activities.push({id:'a'+Date.now()+Math.random().toString(36).slice(2,6),category:cat,type,place,time,passId:null,includedInPass:false,cost:0,recurring:false,daysOfWeek:null,date:dateStr});save(K_ACTS,activities);}
 function attachPlanDnD(){
   let drag=null,clone=null;
   const pos=(x,y)=>{if(clone){clone.style.left=x+'px';clone.style.top=y+'px';}};
   const cleanup=()=>{if(clone){clone.remove();clone=null;}planClearHi();drag=null;};
   document.querySelectorAll('.ptile').forEach(tile=>{
     tile.addEventListener('pointerdown',e=>{e.preventDefault();tile.setPointerCapture(e.pointerId);
-      drag={cat:tile.dataset.cat,type:tile.dataset.type,x:e.clientX,y:e.clientY,moved:false};
+      drag={cat:tile.dataset.cat,type:tile.dataset.type,cid:tile.dataset.classid||null,x:e.clientX,y:e.clientY,moved:false};
       clone=tile.cloneNode(true);clone.className='ptile ptile-clone';document.body.appendChild(clone);pos(e.clientX,e.clientY);});
     tile.addEventListener('pointermove',e=>{if(!drag)return;if(Math.abs(e.clientX-drag.x)+Math.abs(e.clientY-drag.y)>6)drag.moved=true;pos(e.clientX,e.clientY);if(drag.moved)planHighlight(e.clientX,e.clientY,drag.cat);});
-    tile.addEventListener('pointerup',e=>{if(!drag)return;const day=dayElAt(e.clientX,e.clientY);const moved=drag.moved,cat=drag.cat,type=drag.type;cleanup();
-      if(moved&&day){planDrop(day.dataset.date,cat,type);renderPlan();}
-      else if(!moved){const on=planSel&&planSel.cat===cat&&planSel.type===type;document.querySelectorAll('.ptile.sel').forEach(t=>t.classList.remove('sel'));if(on){planSel=null;}else{planSel={cat,type};tile.classList.add('sel');}}});
+    tile.addEventListener('pointerup',e=>{if(!drag)return;const day=dayElAt(e.clientX,e.clientY);const moved=drag.moved,cat=drag.cat,type=drag.type,cid=drag.cid;cleanup();
+      if(moved&&day){planDrop(day.dataset.date,cat,type,cid);planToast(type,day.dataset.date);renderPlan();}
+      else if(!moved){const on=planSel&&planSel.cat===cat&&planSel.type===type;document.querySelectorAll('.ptile.sel').forEach(t=>t.classList.remove('sel'));if(on){planSel=null;}else{planSel={cat,type,cid};tile.classList.add('sel');}}});
     tile.addEventListener('pointercancel',cleanup);
   });
-  document.querySelectorAll('.pday').forEach(day=>{day.addEventListener('click',()=>{if(planSel){planDrop(day.dataset.date,planSel.cat,planSel.type);planSel=null;renderPlan();}});});
+  document.querySelectorAll('.pday').forEach(day=>{day.addEventListener('click',()=>{if(planSel){planDrop(day.dataset.date,planSel.cat,planSel.type,planSel.cid);planToast(planSel.type,day.dataset.date);planSel=null;renderPlan();}else{openDay(day.dataset.date);}});});
 }
+function planToast(type,ds){const d=parseYMD(ds);let t=document.getElementById('ptoast');if(!t){t=document.createElement('div');t.id='ptoast';t.className='ptoast';document.body.appendChild(t);}
+  t.textContent='✓ '+type+' → '+DOW_FULL[d.getDay()]+' '+d.getDate()+' '+MON[d.getMonth()];t.classList.add('show');clearTimeout(planToast._t);planToast._t=setTimeout(()=>t.classList.remove('show'),2100);}
 
 /* ---------------- backup & calendar (.ics) ---------------- */
 function pad2(n){return String(n).padStart(2,'0')}
