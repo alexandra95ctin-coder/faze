@@ -257,6 +257,18 @@
   .sheetclose{position:absolute;top:15px;right:15px;width:34px;height:34px;border-radius:999px;background:#EFEAE0;color:var(--ink);font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;z-index:3}
   .sheetclose:active{transform:scale(.92)}
   @media(min-width:640px){.scrim{align-items:center}.sheet{border-radius:28px;max-height:88vh}}
+  .tw-overlay{position:fixed;inset:0;background:rgba(24,32,26,.5);z-index:60;display:flex;align-items:center;justify-content:center;padding:20px}
+  .tw-panel{background:linear-gradient(165deg,var(--bg1),#fff 60%);border-radius:24px;padding:20px;width:300px;max-width:92vw;box-shadow:var(--shadow)}
+  .tw-title{font-size:18px;font-weight:600;text-align:center;margin-bottom:14px}
+  .timewheel{position:relative;display:flex;align-items:center;justify-content:center;gap:2px;height:132px;background:#fff;border-radius:14px;border:1.5px solid #DCE2DB;overflow:hidden;margin-bottom:16px}
+  .tw-col{height:132px;overflow-y:scroll;scroll-snap-type:y mandatory;text-align:center;scrollbar-width:none;flex:1;-webkit-overflow-scrolling:touch}
+  .tw-col::-webkit-scrollbar{display:none}
+  .tw-i{height:44px;line-height:44px;font-size:19px;font-weight:600;scroll-snap-align:center;color:var(--ink)}
+  .tw-sp{height:44px}
+  .tw-colon{font-size:19px;font-weight:600;flex:0 0 auto}
+  .tw-sel{position:absolute;left:10px;right:10px;top:44px;height:44px;border-top:1.5px solid #E7DFD1;border-bottom:1.5px solid #E7DFD1;pointer-events:none;border-radius:8px;background:rgba(46,40,35,.03)}
+  .timefield{width:100%;padding:13px 14px;border-radius:14px;border:1.5px solid #DCE2DB;background:#fff;text-align:left;font-size:15px;color:var(--ink);font-weight:500}
+  .timefield.empty{color:var(--muted)}
   .sheet h2{font-family:'Fraunces',serif;font-size:24px;font-weight:600;margin:0 0 4px}
   .sheet .sub{color:var(--muted);font-size:13px;margin-bottom:18px}
   .field{margin-bottom:16px}
@@ -280,6 +292,12 @@
   .seg button.on{background:#fff;color:var(--ink);box-shadow:var(--shadow-sm)}
   .dows{display:flex;gap:6px;flex-wrap:wrap}
   .dow{width:40px;height:40px;border-radius:12px;background:#fff;border:1.5px solid #DCE2DB;font-size:13px;font-weight:600;color:var(--muted)}
+  .dows.sm .dow{width:34px;height:34px;font-size:12px;border-radius:10px}
+  .slotrow{padding:12px;border:1.5px solid #E7DFD1;border-radius:14px;margin-bottom:10px;background:rgba(255,255,255,.5)}
+  .slotrow2{display:flex;gap:8px;align-items:center;margin-top:9px}
+  .slotrow2 .timefield{flex:1}
+  .slotdel{width:38px;height:38px;flex:none;border-radius:10px;background:#FBE7E4;color:#BE4A41;font-size:16px;font-weight:700}
+  .addslot{width:100%;padding:11px;border-radius:12px;border:1.5px dashed #DCE2DB;color:var(--energy-deep);font-weight:600;font-size:13.5px;background:none}
   .dow.on{background:var(--energy);color:#fff;border-color:var(--energy)}
   .toggle{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
   .toggle input{width:20px;height:20px;accent-color:var(--energy)}
@@ -727,7 +745,7 @@ function saveCycle(){
 
 /* ---------------- add / edit activity ---------------- */
 let editingId=null,formMode='recurring',formDows=[],formCat='MOVE',formCost='free',editingPass=null,formPassCat='MOVE',whenCat=null,whenAct=null,editingCat=null,newCatColor='#F6DAD0';
-let editingPlace=null,editingClass=null,editingClassPlace=null,classCat='MOVE',classDay=1,formPlaceCat='MOVE';
+let editingPlace=null,editingClass=null,editingClassPlace=null,classCat='MOVE',classDay=1,formPlaceCat='MOVE',formSlots=[];
 function openActivity(id,pre){
   editingId=id||null;
   let a=id?activities.find(x=>x.id===id):null;
@@ -765,7 +783,7 @@ function openActivity(id,pre){
         <input type="date" id="f-date" value="${a&&a.date?a.date:((pre&&pre.date)?pre.date:ymd(today()))}"></div>
     </div>
     <div class="field"><label class="label">Time</label>
-      <input type="time" id="f-time" value="${a?a.time||'':((pre&&pre.time)?pre.time:'')}"></div>
+      <button type="button" class="timefield ${(a?a.time:((pre&&pre.time)?pre.time:''))?'':'empty'}" id="f-time" data-value="${a?a.time||'':((pre&&pre.time)?pre.time:'')}" onclick="pickTime(this)">${(a&&a.time)?fmtTime(a.time):((pre&&pre.time)?fmtTime(pre.time):'Set time')}</button></div>
     <div class="field"><label class="label">Cost</label>
       <div class="seg costseg">
         <button type="button" id="cs-free" class="${formCost==='free'?'on':''}" onclick="setCost('free')">Free</button>
@@ -825,7 +843,7 @@ function toggleInc(){document.getElementById('f-cost-wrap').classList.toggle('hi
 function saveActivity(){
   const type=document.getElementById('f-type').value.trim();
   const place=document.getElementById('f-place').value.trim();
-  const time=document.getElementById('f-time').value;
+  const time=document.getElementById('f-time').dataset.value||'';
   if(!type){alert('What’s the activity?');return}
   if(type)addType(formCat,type);
   let passId=null,cost=0;
@@ -852,12 +870,13 @@ function openActivityMenu(id){
 
 /* ---------------- places & classes ---------------- */
 function classesFor(id){return classes.filter(c=>c.placeId===id)}
+function classSlots(c){return (c.slots&&c.slots.length)?c.slots:(c.day!=null?[{day:c.day,time:c.time||''}]:[]);}
 function placeName(id){const p=places.find(x=>x.id===id);return p?p.name:''}
 function openPlaces(){
   const list=places.length?places.map(p=>{
     const cl=classesFor(p.id);
     const rows=cl.length?cl.map(c=>{const cat=CATS[c.category]||CATS.MOVE;
-      return `<button class="act" onclick="openClass('${p.id}','${c.id}')"><span class="cat-badge" style="--c:${cat.color}">${cat.emoji}</span><span class="body"><div class="a-top"><span class="a-name">${esc(c.name)}</span></div><div class="a-sub">${DOW_FULL[c.day]}${c.time?' · '+fmtTime(c.time):''}</div></span></button>`;
+      return `<button class="act" onclick="openClass('${p.id}','${c.id}')"><span class="cat-badge" style="--c:${cat.color}">${cat.emoji}</span><span class="body"><div class="a-top"><span class="a-name">${esc(c.name)}</span></div><div class="a-sub">${classSlots(c).map(s=>DOW[s.day]+(s.time?' '+fmtTime(s.time):'')).join(' · ')||'no times yet'}</div></span></button>`;
     }).join(''):'<div class="empty" style="margin:6px 0 2px">No classes yet.</div>';
     return `<div class="placeblock"><div class="placehead"><span class="placename">${(CATS[p.category]||CATS.MOVE).emoji} ${esc(p.name)}</span><button class="passadd" onclick="openPlace('${p.id}')">edit</button></div><div class="acts">${rows}</div><button class="addclass" onclick="openClass('${p.id}')">＋ Add class</button></div>`;
   }).join(''):'<div class="empty">No places yet — save a studio or clinic you love.</div>';
@@ -879,24 +898,54 @@ function savePlace(){const name=document.getElementById('pl-name').value.trim();
 function deletePlace(id){classes=classes.filter(c=>c.placeId!==id);save(K_CLASSES,classes);places=places.filter(p=>p.id!==id);save(K_PLACES,places);openPlaces();}
 function setClassCat(k){classCat=k;document.querySelectorAll('#ccatgrid .catcell').forEach(el=>el.classList.toggle('on',el.dataset.cat===k))}
 function setClassDay(w,el){classDay=w;el.parentElement.querySelectorAll('.dow').forEach(x=>x.classList.toggle('on',+x.dataset.w===w))}
+/* ---- rolling time wheel ---- */
+let timeWheelDone=null;
+function wheelCol(id,items){return `<div class="tw-col" id="${id}"><div class="tw-sp"></div>${items.map(x=>`<div class="tw-i">${x}</div>`).join('')}<div class="tw-sp"></div></div>`;}
+function openTimeWheel(value,onDone){
+  timeWheelDone=onDone;let h24=9,mm=0;if(value&&/^\d{1,2}:\d{2}/.test(value)){const p=value.split(':');h24=+p[0];mm=+p[1];}
+  const pm=h24>=12;let h12=h24%12;if(h12===0)h12=12;
+  const hours=[12,1,2,3,4,5,6,7,8,9,10,11];const mins=[...Array(60)].map((_,i)=>String(i).padStart(2,'0'));
+  const ov=document.createElement('div');ov.className='tw-overlay';ov.id='twov';
+  ov.innerHTML=`<div class="tw-panel"><div class="tw-title serif">Set time</div>
+    <div class="timewheel">${wheelCol('tw-h',hours)}<span class="tw-colon">:</span>${wheelCol('tw-m',mins)}${wheelCol('tw-ap',['AM','PM'])}<div class="tw-sel"></div></div>
+    <div class="sheet-actions"><button class="btn ghost" onclick="closeTimeWheel()">Cancel</button><button class="btn primary" onclick="confirmTimeWheel()">Done</button></div></div>`;
+  document.body.appendChild(ov);
+  const hi=hours.indexOf(h12);
+  setTimeout(()=>{const H=document.getElementById('tw-h'),M=document.getElementById('tw-m'),A=document.getElementById('tw-ap');if(H)H.scrollTop=hi*44;if(M)M.scrollTop=mm*44;if(A)A.scrollTop=(pm?1:0)*44;},20);
+}
+function readCol(id,len){const el=document.getElementById(id);if(!el)return 0;return Math.max(0,Math.min(len-1,Math.round(el.scrollTop/44)));}
+function confirmTimeWheel(){const hours=[12,1,2,3,4,5,6,7,8,9,10,11];const h12=hours[readCol('tw-h',12)];const mm=readCol('tw-m',60);const pm=readCol('tw-ap',2)===1;let h24=(h12%12)+(pm?12:0);const val=String(h24).padStart(2,'0')+':'+String(mm).padStart(2,'0');const cb=timeWheelDone;closeTimeWheel();if(cb)cb(val);}
+function closeTimeWheel(){const ov=document.getElementById('twov');if(ov)ov.remove();timeWheelDone=null;}
+function pickTime(btn){openTimeWheel(btn.dataset.value,v=>{btn.dataset.value=v;btn.textContent=fmtTime(v);});}
 function openClass(placeId,id){
   editingClassPlace=placeId;editingClass=id||null;const pl=places.find(x=>x.id===placeId);
-  const c=id?classes.find(x=>x.id===id):{name:'',category:(pl&&pl.category)||'MOVE',day:1,time:''};
-  classCat=c.category||'MOVE';classDay=(c.day==null?1:c.day);
-  sheet(`<h2 class="serif">${id?'Edit class':'New class'}</h2><div class="sub">at ${esc(placeName(placeId))}</div>
+  const c=id?classes.find(x=>x.id===id):{name:'',category:(pl&&pl.category)||'MOVE'};
+  classCat=c.category||'MOVE';formSlots=id?classSlots(c).map(s=>({day:s.day,time:s.time||''})):[{day:1,time:''}];
+  sheet(`<h2 class="serif">${id?'Edit class':'New class'}</h2><div class="sub">at ${esc(placeName(placeId))} — add every time it runs</div>
     <label class="label" style="display:block;margin-bottom:9px">Category</label>
     <div class="catgrid" id="ccatgrid">${CAT_KEYS.map(k=>`<button type="button" class="catcell ${k===classCat?'on':''}" data-cat="${k}" style="--c:${CATS[k].color}" onclick="setClassCat('${k}')"><span class="ce">${CATS[k].emoji}</span>${CATS[k].label}</button>`).join('')}</div>
     <div class="field"><label class="label">Class name</label><input type="text" id="cl-name" placeholder="e.g. Reformer Flow" value="${esc(c.name)}"></div>
-    <div class="field"><label class="label">Day</label><div class="dows">${[1,2,3,4,5,6,0].map(w=>`<button type="button" class="dow ${classDay===w?'on':''}" data-w="${w}" onclick="setClassDay(${w},this)">${DOW[w][0]}</button>`).join('')}</div></div>
-    <div class="field"><label class="label">Time</label><input type="time" id="cl-time" value="${c.time||''}"></div>
+    <div class="field"><label class="label">Times it runs</label><div id="slotrows"></div></div>
     <div class="sheet-actions">${id?`<button class="btn danger" onclick="deleteClass('${id}')">Delete</button>`:`<button class="btn ghost" onclick="openPlaces()">Cancel</button>`}<button class="btn primary" onclick="saveClass()">Save</button></div>`);
+  renderSlotRows();
 }
-function saveClass(){const name=document.getElementById('cl-name').value.trim();const time=document.getElementById('cl-time').value;if(!name){alert('Name the class.');return}
-  const base={placeId:editingClassPlace,name,category:classCat,day:classDay,time};
+function renderSlotRows(){const wrap=document.getElementById('slotrows');if(!wrap)return;
+  wrap.innerHTML=formSlots.map((s,i)=>`<div class="slotrow">
+    <div class="dows sm">${[1,2,3,4,5,6,0].map(w=>`<button type="button" class="dow ${s.day===w?'on':''}" onclick="setSlotDay(${i},${w})">${DOW[w][0]}</button>`).join('')}</div>
+    <div class="slotrow2"><button type="button" class="timefield ${s.time?'':'empty'}" data-value="${s.time||''}" onclick="pickSlotTime(${i},this)">${s.time?fmtTime(s.time):'Set time'}</button>${formSlots.length>1?`<button type="button" class="slotdel" onclick="removeSlot(${i})" aria-label="remove">×</button>`:''}</div>
+  </div>`).join('')+`<button type="button" class="addslot" onclick="addSlot()">＋ Add another time</button>`;
+}
+function setSlotDay(i,w){formSlots[i].day=w;renderSlotRows();}
+function pickSlotTime(i){openTimeWheel(formSlots[i].time,v=>{formSlots[i].time=v;renderSlotRows();});}
+function addSlot(){formSlots.push({day:1,time:''});renderSlotRows();}
+function removeSlot(i){formSlots.splice(i,1);renderSlotRows();}
+function saveClass(){const name=document.getElementById('cl-name').value.trim();if(!name){alert('Name the class.');return}
+  const slots=formSlots.filter(s=>s.day!=null);if(!slots.length){alert('Add at least one time.');return}
+  const base={placeId:editingClassPlace,name,category:classCat,slots};
   if(editingClass){const i=classes.findIndex(x=>x.id===editingClass);classes[i]={...classes[i],...base}}else{classes.push({id:'cl'+Date.now()+Math.random().toString(36).slice(2,5),...base})}
   save(K_CLASSES,classes);openPlaces();}
 function deleteClass(id){classes=classes.filter(c=>c.id!==id);save(K_CLASSES,classes);openPlaces();}
-function planClass(cid){const c=classes.find(x=>x.id===cid);if(!c)return;closeSheet();openActivity(null,{category:c.category,type:c.name,place:placeName(c.placeId),day:c.day,time:c.time,recurring:true});}
+function planClass(cid){const c=classes.find(x=>x.id===cid);if(!c)return;const sl=classSlots(c)[0]||{};closeSheet();openActivity(null,{category:c.category,type:c.name,place:placeName(c.placeId),day:sl.day,time:sl.time,recurring:true});}
 
 /* ---------------- "when should I…?" ---------------- */
 function nextGoodWindow(cat){
@@ -963,9 +1012,9 @@ function renderPlan(){
     const booked=actsOn(d);
     const bookedChips=booked.map(a=>{const cat=catOf(a);
       return `<button class="slot booked" onclick="openActivityMenu('${a.id}')"><span class="cat-badge sm" style="--c:${cat.color}">${cat.emoji}</span><span class="slot-b"><span class="slot-n">${esc(a.type)||cat.label}</span><span class="slot-s">${a.time?fmtTime(a.time)+' · ':''}${esc(a.place)||cat.label}</span></span><span class="slot-chk">✓</span></button>`;}).join('');
-    const avail=classes.filter(c=>c.day===d.getDay()&&!booked.some(a=>a.type===c.name&&a.date===ds));
-    const availChips=avail.map(c=>{const cat=CATS[c.category]||CATS.MOVE;const good=(REC[c.category]||REC.MOVE)[p.key][0]==='g';
-      return `<button class="slot avail${good?' good':''}" onclick="bookSlot('${c.id}','${ds}')"><span class="cat-badge sm" style="--c:${cat.color}">${cat.emoji}</span><span class="slot-b"><span class="slot-n">${esc(c.name)}${passCats[c.category]?' <span class="pt-mem">pass</span>':''}</span><span class="slot-s">${c.time?fmtTime(c.time):''} · ${esc(placeName(c.placeId))}</span></span><span class="slot-add">＋</span></button>`;}).join('');
+    const avail=[];classes.forEach(c=>classSlots(c).forEach(sl=>{if(sl.day===d.getDay()&&!booked.some(a=>a.type===c.name&&a.date===ds&&(a.time||'')===(sl.time||'')))avail.push({c,time:sl.time||''});}));
+    const availChips=avail.map(e=>{const c=e.c;const cat=CATS[c.category]||CATS.MOVE;const good=(REC[c.category]||REC.MOVE)[p.key][0]==='g';
+      return `<button class="slot avail${good?' good':''}" onclick="bookSlot('${c.id}','${ds}','${e.time}')"><span class="cat-badge sm" style="--c:${cat.color}">${cat.emoji}</span><span class="slot-b"><span class="slot-n">${esc(c.name)}${passCats[c.category]?' <span class="pt-mem">pass</span>':''}</span><span class="slot-s">${e.time?fmtTime(e.time):''} · ${esc(placeName(c.placeId))}</span></span><span class="slot-add">＋</span></button>`;}).join('');
     const addBtn=`<button class="slot add" onclick="openActivity(null,{date:'${ds}'})"><span class="slot-add">＋</span><span class="slot-b"><span class="slot-n">Add something</span></span></button>`;
     rows+=`<div class="prow${isT?' t':''}">
       <div class="prow-head"><span class="prow-day">${DOW_FULL[d.getDay()]} <span class="prow-date">${d.getDate()} ${MON[d.getMonth()]}${isT?' · today':''}</span></span><span class="pill" style="color:${p.accent};background:${p.tint}">${p.label}</span></div>
@@ -984,8 +1033,8 @@ function renderPlan(){
     <div style="text-align:center;margin-top:18px"><button class="linklike" onclick="openPlaces()">＋ Add studios &amp; class times</button></div>
     <div class="disclaimer" style="margin-top:12px">Faint = an available class you can book · green = good timing this cycle.</div>`;
 }
-function bookSlot(cid,ds){const c=classes.find(x=>x.id===cid);if(!c)return;
-  activities.push({id:'a'+Date.now()+Math.random().toString(36).slice(2,6),category:c.category,type:c.name,place:placeName(c.placeId),time:c.time||'',passId:null,includedInPass:false,cost:0,recurring:false,daysOfWeek:null,date:ds});
+function bookSlot(cid,ds,time){const c=classes.find(x=>x.id===cid);if(!c)return;
+  activities.push({id:'a'+Date.now()+Math.random().toString(36).slice(2,6),category:c.category,type:c.name,place:placeName(c.placeId),time:time||'',passId:null,includedInPass:false,cost:0,recurring:false,daysOfWeek:null,date:ds});
   save(K_ACTS,activities);planToast(c.name,ds);renderPlan();}
 function dayElAt(x,y){let el=document.elementFromPoint(x,y);while(el&&!(el.classList&&el.classList.contains('pday')))el=el.parentElement;return el;}
 function planClearHi(){document.querySelectorAll('.pday').forEach(d=>{d.classList.remove('over','over-good','over-warn');const h=d.querySelector('.pd-hint');if(h)h.textContent='';});}
