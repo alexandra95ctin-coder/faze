@@ -39,7 +39,7 @@
   /* header */
   header.hero{margin-bottom:20px}
   .brand{font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--energy-deep);font-weight:600;margin-bottom:14px}
-  .brandlogo{height:34px;width:auto;max-width:100%;display:block;margin:0 0 14px -2px}
+  .brandlogo{height:28px;width:auto;max-width:100%;display:block;margin:0 auto 14px}
   h1.title{font-size:40px;line-height:1.04;margin:0;letter-spacing:-.01em}
   h1.title em{font-style:italic;color:var(--energy);font-weight:500}
   .wave{width:120px;height:16px;margin-top:14px;color:var(--energy);opacity:.9}
@@ -77,6 +77,25 @@
   .whenwin{font-family:'Fraunces',serif;font-size:34px;font-weight:600;line-height:1.05}
   .whenphase{font-size:13px;font-style:italic;font-family:'Fraunces',serif;margin-top:5px}
   .whenweek{margin-top:18px;font-size:13.5px;display:flex;flex-direction:column;gap:5px}
+  /* plan board */
+  .planhead{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+  .plantitle{font-size:22px;font-weight:600}
+  .pweek{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+  .pday{position:relative;aspect-ratio:.6;border:1.6px solid #ccc;border-radius:13px;background:var(--card);display:flex;flex-direction:column;align-items:center;padding:8px 2px 16px;gap:2px;transition:transform .1s,background .1s}
+  .pday .pd-dow{font-size:10px;color:var(--muted);font-weight:600}
+  .pday .pd-num{font-size:14px;font-weight:600}
+  .pday .pd-dot{width:6px;height:6px;border-radius:50%;margin-top:2px}
+  .pday .pd-hint{font-size:15px;height:18px;line-height:1.1}
+  .pday .pd-count{position:absolute;bottom:6px;font-size:10px;font-weight:700;color:var(--muted);background:#F1ECE2;border-radius:8px;padding:0 5px}
+  .pday.t{outline:2px solid var(--energy);outline-offset:-2px}
+  .pday.over{transform:scale(1.05)}
+  .pday.over-good{background:#E6F2EA;border-color:#4E9B63}
+  .pday.over-warn{background:#FBEEE9;border-color:#D0514A}
+  .ptray{display:flex;flex-wrap:wrap;gap:9px}
+  .ptile{display:inline-flex;align-items:center;gap:8px;background:var(--card);border:1.5px solid #E7DFD1;border-radius:14px;padding:8px 14px 8px 8px;box-shadow:var(--shadow-sm);font-weight:600;font-size:13.5px;color:var(--ink);touch-action:none;cursor:grab}
+  .ptile .cat-badge{width:28px;height:28px;font-size:14px}
+  .ptile.sel{border-color:var(--energy);box-shadow:0 0 0 2px rgba(236,97,66,.25)}
+  .ptile-clone{position:fixed;pointer-events:none;z-index:200;opacity:.95;box-shadow:0 14px 30px -10px rgba(30,45,35,.5);transform:translate(-50%,-50%)}
 
   /* passes */
   .passwrap{margin:0 0 16px}
@@ -251,7 +270,8 @@ let weekOffset=0;
 let viewMode='week';        // 'week' | 'month' | 'spend'
 let monthCursor=null;       // Date of displayed month
 let spendPeriod='month';    // 'week' | 'month'
-let prevCalView='week';     // where to return from the spend screen
+let prevCalView='week';     // where to return from the spend/plan screen
+let planSel=null;           // tapped-then-place suggestion
 
 /* ---------------- categories ---------------- */
 const CATS={
@@ -421,7 +441,7 @@ function renderHome(){
 
       <div class="dateline">Today · ${DOW_FULL[tt.getDay()]} ${tt.getDate()} ${MON[tt.getMonth()]} ${tt.getFullYear()}</div>
     </header>
-    <button class="whenbtn" onclick="openWhen()"><span class="q">When should I…?</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button class="whenbtn" onclick="openPlan()"><span class="q">When should I…?</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
     <div class="viewtog"><button class="on" onclick="setView('week')">Week</button><button onclick="setView('month')">Month</button></div>
     <div class="spendbar">
       <div class="chip" onclick="openSpend('${wFrom}','${wTo}','${esc(wLabel)} spend')"><div class="label">${esc(wLabel)}</div><div class="v">${EUR(wSpend)} <small>spend</small></div></div>
@@ -489,7 +509,7 @@ function renderMonth(){
 
       <div class="dateline">Today · ${DOW_FULL[tt.getDay()]} ${tt.getDate()} ${MON[tt.getMonth()]} ${tt.getFullYear()}</div>
     </header>
-    <button class="whenbtn" onclick="openWhen()"><span class="q">When should I…?</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button class="whenbtn" onclick="openPlan()"><span class="q">When should I…?</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
     <div class="viewtog"><button onclick="setView('week')">Week</button><button class="on" onclick="setView('month')">Month</button></div>
     <div class="spendbar">
       <div class="chip" onclick="openSpend('${ymd(first)}','${ymd(last)}','${MON[m]} ${y} spend')"><div class="label">${MON[m]} ${y}</div><div class="v">${EUR(monthSpend(base))} <small>spend</small></div></div>
@@ -530,7 +550,7 @@ function openDay(ds){
 function setView(v){viewMode=v;if(v==='month'&&!monthCursor)monthCursor=today();render();window.scrollTo(0,0)}
 function changeMonth(n){const b=monthCursor||today();monthCursor=new Date(b.getFullYear(),b.getMonth()+n,1);renderMonth();window.scrollTo(0,0)}
 function goThisMonth(){monthCursor=today();renderMonth();window.scrollTo(0,0)}
-function render(){viewMode==='month'?renderMonth():renderHome()}
+function render(){viewMode==='plan'?renderPlan():viewMode==='month'?renderMonth():renderHome()}
 
 /* ---------------- passes ---------------- */
 function passesStripHtml(){
@@ -826,6 +846,53 @@ function openWhen(cat,act){
   sheet(`<h2 class="serif">When should I…?</h2>
     <div class="sub">Pick something — I’ll tell you the best time in your cycle.</div>
     ${body}`);
+}
+
+/* ---------------- plan board (drag suggestions onto days) ---------------- */
+function openPlan(){prevCalView=(viewMode==='plan')?prevCalView:viewMode;viewMode='plan';renderPlan();window.scrollTo(0,0);}
+function exitPlan(){planSel=null;viewMode=prevCalView||'week';render();window.scrollTo(0,0);}
+function renderPlan(){
+  document.getElementById('fab').classList.add('hidden');
+  const mon=mondayOf(today());const tday=ymd(today());
+  let days='';
+  for(let i=0;i<7;i++){const d=addDays(mon,i);const p=phaseForDate(d);const n=actsOn(d).length;const isT=ymd(d)===tday;
+    days+=`<div class="pday${isT?' t':''}" data-date="${ymd(d)}" style="border-color:${p.accent}">
+      <span class="pd-dow">${DOW[d.getDay()]}</span><span class="pd-num">${d.getDate()}</span>
+      <span class="pd-dot" style="background:${p.accent}"></span><span class="pd-hint"></span>
+      ${n?`<span class="pd-count">${n}</span>`:''}</div>`;
+  }
+  const weekPhases=[...new Set([...Array(7)].map((_,i)=>phaseForDate(addDays(mon,i)).key))];
+  let seen={},tiles='';
+  weekPhases.forEach(pk=>PHASE_GUIDE[pk].nice.forEach(n=>{const name=n[0],cat=n[1],key=name+cat;if(seen[key])return;seen[key]=1;
+    tiles+=`<button class="ptile" data-cat="${cat}" data-type="${name}"><span class="cat-badge" style="--c:${CATS[cat].color}">${CATS[cat].emoji}</span><span class="pt-name">${name}</span></button>`;}));
+  document.getElementById('app').innerHTML=`
+    <div class="planhead"><button class="wbtn" onclick="exitPlan()">‹</button>
+      <div><div class="plantitle serif">When should I…?</div><div class="dateline" style="margin-top:0">Drag a card onto a day — or tap it, then a day.</div></div></div>
+    <div class="pweek">${days}</div>
+    <div class="label" style="margin:20px 2px 10px">Nice this week — pick &amp; place</div>
+    <div class="ptray">${tiles}</div>
+    <div class="disclaimer" style="margin-top:20px">Drop on a green day for the best timing.</div>`;
+  attachPlanDnD();
+}
+function dayElAt(x,y){let el=document.elementFromPoint(x,y);while(el&&!(el.classList&&el.classList.contains('pday')))el=el.parentElement;return el;}
+function planClearHi(){document.querySelectorAll('.pday').forEach(d=>{d.classList.remove('over','over-good','over-warn');const h=d.querySelector('.pd-hint');if(h)h.textContent='';});}
+function planHighlight(x,y,cat){planClearHi();const d=dayElAt(x,y);if(!d)return;const p=phaseForDate(parseYMD(d.dataset.date));const r=(REC[cat]||REC.MOVE)[p.key][0];const good=r==='g',warn=(r==='r'||r==='o');d.classList.add('over');d.classList.toggle('over-good',good);d.classList.toggle('over-warn',warn);const h=d.querySelector('.pd-hint');if(h)h.textContent=good?'✓':(warn?'⚠':'·');}
+function planDrop(dateStr,cat,type){activities.push({id:'a'+Date.now()+Math.random().toString(36).slice(2,6),category:cat,type,place:'',time:'',passId:null,includedInPass:false,cost:0,recurring:false,daysOfWeek:null,date:dateStr});save(K_ACTS,activities);}
+function attachPlanDnD(){
+  let drag=null,clone=null;
+  const pos=(x,y)=>{if(clone){clone.style.left=x+'px';clone.style.top=y+'px';}};
+  const cleanup=()=>{if(clone){clone.remove();clone=null;}planClearHi();drag=null;};
+  document.querySelectorAll('.ptile').forEach(tile=>{
+    tile.addEventListener('pointerdown',e=>{e.preventDefault();tile.setPointerCapture(e.pointerId);
+      drag={cat:tile.dataset.cat,type:tile.dataset.type,x:e.clientX,y:e.clientY,moved:false};
+      clone=tile.cloneNode(true);clone.className='ptile ptile-clone';document.body.appendChild(clone);pos(e.clientX,e.clientY);});
+    tile.addEventListener('pointermove',e=>{if(!drag)return;if(Math.abs(e.clientX-drag.x)+Math.abs(e.clientY-drag.y)>6)drag.moved=true;pos(e.clientX,e.clientY);if(drag.moved)planHighlight(e.clientX,e.clientY,drag.cat);});
+    tile.addEventListener('pointerup',e=>{if(!drag)return;const day=dayElAt(e.clientX,e.clientY);const moved=drag.moved,cat=drag.cat,type=drag.type;cleanup();
+      if(moved&&day){planDrop(day.dataset.date,cat,type);renderPlan();}
+      else if(!moved){const on=planSel&&planSel.cat===cat&&planSel.type===type;document.querySelectorAll('.ptile.sel').forEach(t=>t.classList.remove('sel'));if(on){planSel=null;}else{planSel={cat,type};tile.classList.add('sel');}}});
+    tile.addEventListener('pointercancel',cleanup);
+  });
+  document.querySelectorAll('.pday').forEach(day=>{day.addEventListener('click',()=>{if(planSel){planDrop(day.dataset.date,planSel.cat,planSel.type);planSel=null;renderPlan();}});});
 }
 
 /* ---------------- backup & calendar (.ics) ---------------- */
