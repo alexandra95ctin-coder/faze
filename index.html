@@ -157,7 +157,9 @@
   .field select{width:100%;padding:13px 14px;border-radius:14px;border:1.5px solid #DCE2DB;background:#fff;outline:none}
 
   /* day cards */
-  .day{border-radius:var(--radius);padding:16px 18px;margin-bottom:14px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .day{border-radius:var(--radius);padding:13px 16px;margin-bottom:10px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden}
+  .day.slim{padding:11px 16px}
+  .day-when{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
   .day.today{outline:2px solid var(--ink);outline-offset:2px}
   .day.high{background:var(--hi)}
   .day.low{background:var(--lo)}
@@ -512,15 +514,12 @@ function renderHome(){
           ${caution?`<div class="a-flag ${rec[0]}">${rec[1]}${betterWhen(a.category)?` · <b>${betterWhen(a.category)}</b>`:''}</div>`:''}
         </span></button>`;
     }).join('');
-    if(!acts.length)actsHtml=`<div class="empty">— nothing planned</div>`;
-    daysHtml+=`<div class="day ${isToday?'today':''}" style="background:var(--card);border:1.6px solid ${p.accent}">
+    daysHtml+=`<div class="day ${isToday?'today':''} ${acts.length?'':'slim'}" style="background:var(--card);border:1.6px solid ${p.accent}">
       <div class="day-head">
-        <div><span class="day-name">${DOW_FULL[d.getDay()]}</span><span class="day-date">${d.getDate()} ${MON[d.getMonth()]}</span>
-        ${isToday?'<div class="todaytag">Today</div>':''}</div>
+        <div class="day-when"><span class="day-name">${DOW_FULL[d.getDay()]}</span><span class="day-date">${d.getDate()} ${MON[d.getMonth()]}</span>${isToday?'<span class="todaytag">Today</span>':''}</div>
         <span class="pill" style="color:${p.accent};background:${p.tint}">${icon}${p.label}</span>
       </div>
-      <div class="nudge">${p.nudge}</div>
-      <div class="acts">${actsHtml}</div>
+      ${acts.length?`<div class="acts">${actsHtml}</div>`:''}
     </div>`;
   }
   document.getElementById('app').innerHTML=`
@@ -1005,33 +1004,41 @@ function exitPlan(){planSel=null;viewMode=prevCalView||'week';render();window.sc
 function renderPlan(){
   document.getElementById('fab').classList.add('hidden');
   const mon=addDays(mondayOf(today()),planWeekOffset*7);const tday=ymd(today());
-  const passCats={};passes.forEach(p=>passCats[p.category]=1);
-  let rows='';
-  for(let i=0;i<7;i++){
-    const d=addDays(mon,i);const ds=ymd(d);const p=phaseForDate(d);const isT=ds===tday;
-    const booked=actsOn(d);
-    const bookedChips=booked.map(a=>{const cat=catOf(a);
-      return `<button class="slot booked" onclick="openActivityMenu('${a.id}')"><span class="cat-badge sm" style="--c:${cat.color}">${cat.emoji}</span><span class="slot-b"><span class="slot-n">${esc(a.type)||cat.label}</span><span class="slot-s">${a.time?fmtTime(a.time)+' · ':''}${esc(a.place)||cat.label}</span></span><span class="slot-chk">✓</span></button>`;}).join('');
-    const avail=[];classes.forEach(c=>classSlots(c).forEach(sl=>{if(sl.day===d.getDay()&&!booked.some(a=>a.type===c.name&&a.date===ds&&(a.time||'')===(sl.time||'')))avail.push({c,time:sl.time||''});}));
-    const availChips=avail.map(e=>{const c=e.c;const cat=CATS[c.category]||CATS.MOVE;const good=(REC[c.category]||REC.MOVE)[p.key][0]==='g';
-      return `<button class="slot avail${good?' good':''}" onclick="bookSlot('${c.id}','${ds}','${e.time}')"><span class="cat-badge sm" style="--c:${cat.color}">${cat.emoji}</span><span class="slot-b"><span class="slot-n">${esc(c.name)}${passCats[c.category]?' <span class="pt-mem">pass</span>':''}</span><span class="slot-s">${e.time?fmtTime(e.time):''} · ${esc(placeName(c.placeId))}</span></span><span class="slot-add">＋</span></button>`;}).join('');
-    const addBtn=`<button class="slot add" onclick="openActivity(null,{date:'${ds}'})"><span class="slot-add">＋</span><span class="slot-b"><span class="slot-n">Add something</span></span></button>`;
-    rows+=`<div class="prow${isT?' t':''}">
-      <div class="prow-head"><span class="prow-day">${DOW_FULL[d.getDay()]} <span class="prow-date">${d.getDate()} ${MON[d.getMonth()]}${isT?' · today':''}</span></span><span class="pill" style="color:${p.accent};background:${p.tint}">${p.label}</span></div>
-      <div class="slots">${bookedChips}${availChips}${addBtn}</div>
-    </div>`;
+  let days='';
+  for(let i=0;i<7;i++){const d=addDays(mon,i);const p=phaseForDate(d);const n=actsOn(d).length;const isT=ymd(d)===tday;
+    days+=`<div class="pday${isT?' t':''}" data-date="${ymd(d)}" style="border-color:${p.accent}">
+      <span class="pd-dow">${DOW[d.getDay()]}</span><span class="pd-num">${d.getDate()}</span>
+      <span class="pd-dot" style="background:${p.accent}"></span><span class="pd-hint"></span>
+      ${n?`<span class="pd-count">${n}</span>`:''}</div>`;
   }
+  const weekPhases=[...new Set([...Array(7)].map((_,i)=>phaseForDate(addDays(mon,i)).key))];
+  const niceSet=ks=>{const s={},a=[];ks.forEach(pk=>PHASE_GUIDE[pk].nice.forEach(n=>{const k=n[0]+n[1];if(!s[k]){s[k]=1;a.push(n);}}));return a;};
+  const recNice=niceSet(weekPhases);const recK={};recNice.forEach(n=>recK[n[0]+n[1]]=1);
+  const riskNice=niceSet(['men','foll','ovu','lut']).filter(n=>!recK[n[0]+n[1]]);
+  const catGood=cat=>{for(let i=0;i<7;i++){if((REC[cat]||REC.MOVE)[phaseForDate(addDays(mon,i)).key][0]==='g')return true;}return false;};
+  const passCats={};passes.forEach(p=>passCats[p.category]=1);
+  const tileHTML=(cat,name,cid)=>{const C=CATS[cat]||CATS.MOVE;const mem=!!passCats[cat];const c=cid?classes.find(x=>x.id===cid):null;const sub=c?`<span class="pt-sub">${esc(placeName(c.placeId))}</span>`:'';
+    return `<button class="ptile${mem?' mem':''}" data-cat="${cat}" data-type="${esc(name)}"${cid?` data-classid="${cid}"`:''}><span class="cat-badge" style="--c:${C.color}">${C.emoji}</span><span class="pt-body"><span class="pt-name">${esc(name)}${mem?' <span class="pt-mem">pass</span>':''}</span>${sub}</span></button>`;};
+  const byMem=(a,b)=>(passCats[b.cat]?1:0)-(passCats[a.cat]?1:0);
+  const recItems=[...classes.filter(c=>catGood(c.category)).map(c=>({cat:c.category,name:c.name,cid:c.id})),...recNice.map(n=>({cat:n[1],name:n[0]}))].sort(byMem);
+  const riskItems=[...classes.filter(c=>!catGood(c.category)).map(c=>({cat:c.category,name:c.name,cid:c.id})),...riskNice.map(n=>({cat:n[1],name:n[0]}))].sort(byMem);
+  const recTiles=recItems.map(i=>tileHTML(i.cat,i.name,i.cid)).join('');
+  const riskTiles=riskItems.map(i=>tileHTML(i.cat,i.name,i.cid)).join('');
   document.getElementById('app').innerHTML=`
     <div class="planhead"><button class="wbtn" onclick="exitPlan()">‹</button>
-      <div><div class="plantitle serif">Your week</div><div class="dateline" style="margin-top:0">Tap a class to book it — solid = booked.</div></div></div>
-    <div class="weeknav" style="margin-bottom:16px">
+      <div><div class="plantitle serif">When should I…?</div><div class="dateline" style="margin-top:0">Drag a card onto a day — or tap it, then a day.</div></div></div>
+    <div class="weeknav" style="margin-bottom:14px">
       <button class="wbtn" onclick="changePlanWeek(-1)" aria-label="Previous week">‹</button>
       <button class="wnow" onclick="planWeekOffset=0;renderPlan()">${weekLabel(planWeekOffset,mon)}<span class="wrange">${mon.getDate()} ${MON[mon.getMonth()]} – ${addDays(mon,6).getDate()} ${MON[addDays(mon,6).getMonth()]}</span></button>
       <button class="wbtn" onclick="changePlanWeek(1)" aria-label="Next week">›</button>
     </div>
-    ${rows}
-    <div style="text-align:center;margin-top:18px"><button class="linklike" onclick="openPlaces()">＋ Add studios &amp; class times</button></div>
-    <div class="disclaimer" style="margin-top:12px">Faint = an available class you can book · green = good timing this cycle.</div>`;
+    <div class="pweek">${days}</div>
+    <div class="label" style="margin:20px 2px 10px">Recommended this week</div>
+    <div class="ptray">${recTiles}</div>
+    ${riskTiles?`<div class="label" style="margin:24px 2px 4px">Other activities</div><div class="risknote">Better suited to another phase this cycle — but your call.</div><div class="ptray risk">${riskTiles}</div>`:''}
+    <div style="text-align:center;margin-top:20px"><button class="linklike" onclick="openPlaces()">＋ Add your studios &amp; classes</button></div>
+    <div class="disclaimer" style="margin-top:14px">Drop on a green day for the best timing.</div>`;
+  attachPlanDnD();
 }
 function bookSlot(cid,ds,time){const c=classes.find(x=>x.id===cid);if(!c)return;
   activities.push({id:'a'+Date.now()+Math.random().toString(36).slice(2,6),category:c.category,type:c.name,place:placeName(c.placeId),time:time||'',passId:null,includedInPass:false,cost:0,recurring:false,daysOfWeek:null,date:ds});
@@ -1039,7 +1046,7 @@ function bookSlot(cid,ds,time){const c=classes.find(x=>x.id===cid);if(!c)return;
 function dayElAt(x,y){let el=document.elementFromPoint(x,y);while(el&&!(el.classList&&el.classList.contains('pday')))el=el.parentElement;return el;}
 function planClearHi(){document.querySelectorAll('.pday').forEach(d=>{d.classList.remove('over','over-good','over-warn');const h=d.querySelector('.pd-hint');if(h)h.textContent='';});}
 function planHighlight(x,y,cat){planClearHi();const d=dayElAt(x,y);if(!d)return;const p=phaseForDate(parseYMD(d.dataset.date));const r=(REC[cat]||REC.MOVE)[p.key][0];const good=r==='g',warn=(r==='r'||r==='o');d.classList.add('over');d.classList.toggle('over-good',good);d.classList.toggle('over-warn',warn);const h=d.querySelector('.pd-hint');if(h)h.textContent=good?'✓':'';}
-function planDrop(dateStr,cat,type,classId){let place='',time='';if(classId){const c=classes.find(x=>x.id===classId);if(c){place=placeName(c.placeId);time=c.time||'';}}
+function planDrop(dateStr,cat,type,classId){let place='',time='';if(classId){const c=classes.find(x=>x.id===classId);if(c){place=placeName(c.placeId);const wd=parseYMD(dateStr).getDay();const sl=classSlots(c).find(s=>s.day===wd)||classSlots(c)[0]||{};time=sl.time||'';}}
   activities.push({id:'a'+Date.now()+Math.random().toString(36).slice(2,6),category:cat,type,place,time,passId:null,includedInPass:false,cost:0,recurring:false,daysOfWeek:null,date:dateStr});save(K_ACTS,activities);}
 function attachPlanDnD(){
   let drag=null,clone=null;
