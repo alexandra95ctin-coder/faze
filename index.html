@@ -184,8 +184,8 @@
 
   /* activity row */
   .act{display:flex;align-items:flex-start;gap:11px;background:#F6F3EC;border-radius:16px;padding:11px 13px;text-align:left;width:100%}
-  .acts.menu .act{align-items:center;justify-content:center;padding:14px 13px}
-  .acts.menu .act .body{flex:0 1 auto;text-align:center}
+  .acts.menu .act{align-items:center;justify-content:flex-start;padding:14px 13px}
+  .acts.menu .act .body{flex:1;text-align:left}
   .hist{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid #EFE9DD}
   .hist:last-child{border-bottom:none}
   .hist .hist-d{flex:1;font-size:13.5px;font-weight:600}
@@ -261,6 +261,16 @@
   .btn.disabled{background:#E4E7E2;color:var(--muted);box-shadow:none;cursor:not-allowed}
   .importnote{font-size:11.5px;color:var(--muted);text-align:center;margin-top:-2px}
   .disclaimer{font-size:11px;color:var(--muted);text-align:center;margin-top:6px;opacity:.85}
+  .discbtn{display:block;width:100%;line-height:1.5}
+  .disc-why{color:var(--energy-deep);font-weight:600;text-decoration:underline;white-space:nowrap}
+  .soon{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--calm);background:var(--lo);border-radius:6px;padding:2px 6px;margin-left:auto;flex:0 0 auto}
+  .act.dim2{opacity:.9}
+  .sci-list{display:flex;flex-direction:column;gap:12px;margin:6px 0 14px}
+  .sci{display:flex;gap:11px;align-items:flex-start}
+  .sci .dot{flex:0 0 auto;width:9px;height:9px;border-radius:999px;margin-top:6px}
+  .sci .body{font-size:13.5px;line-height:1.5}
+  .sci .body a{color:var(--energy-deep);font-weight:600}
+  .sci .src{display:block;font-size:11px;color:var(--muted);margin-top:2px}
 
   .fab{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:40;background:var(--energy);color:#fff;
     border-radius:999px;padding:15px 26px;font-weight:600;font-size:15px;box-shadow:0 16px 34px -12px rgba(236,97,66,.95);
@@ -403,16 +413,28 @@ const RATE={
   o:{dot:'🟠',text:'More sensitive'},
   r:{dot:'🔴',text:'Consider postponing'}
 };
-/* recommendation matrix: category × phase → [rating, reason]  (a gentle guideline, not medical advice) */
+/* recommendation matrix: category × phase → [rating, reason]  —  a gentle guideline, NOT medical advice.
+   Ratings lean on the areas with real evidence: pain sensitivity is higher during menstruation and the days
+   before it, and lowest in the follicular phase (meta-analytic pain research); skin is more reactive/breakout-prone
+   in the late-luteal & menstrual days and calmest post-period (dermatology). Where evidence is weak or absent
+   (exercise performance by phase, massage, nails, travel) we stay neutral & positive rather than prescriptive. */
 let REC={
-  MOVE:  {men:['y','honour low energy — keep it gentle'], foll:['g','prime time for strength & new challenges'], ovu:['g','peak power — go for a PR'], lut:['o','ease into steady, lower-intensity work']},
-  SPA:   {men:['g','rest & recovery land beautifully now'], foll:['y','lovely, though your energy wants to move'], ovu:['y','a nice reward after high-energy days'], lut:['g','winding down — massage & sauna feel great']},
-  FACIAL:{men:['o','skin’s most sensitive — treatments sting more'], foll:['g','calmest, clearest skin — best for facials'], ovu:['y','skin looks great but can be reactive'], lut:['o','breakouts & sensitivity rising — go gentle']},
-  HAIR:  {men:['r','pain’s highest now — waxing really stings'], foll:['g','least sensitive — the best time to book'], ovu:['y','fine, though sensitivity ticks up'], lut:['o','sensitivity rising toward your period']},
-  AESTH: {men:['r','more bruising & tenderness — best to wait'], foll:['g','calmest window — less bruising'], ovu:['y','fine, a touch more reactive'], lut:['o','sensitivity rising — go gentle']},
-  NAILS: {men:['y','totally fine — routine upkeep'], foll:['g','great window — nails & brows at their best'], ovu:['g','you’re glowing — perfect for a refresh'], lut:['y','fine — brows & lashes can feel tender']},
-  MIND:  {men:['g','exactly what your body wants now'], foll:['g','a clear head for planning & focus'], ovu:['g','social energy peaks — enjoy it'], lut:['g','protect calm & sleep as you wind down']},
-  TRAVEL:{men:['y','fine — plan in rest & comfort'], foll:['g','great energy for an active trip'], ovu:['g','peak energy — adventure away'], lut:['y','fine — build in some downtime']}
+  /* Fitness — reviews find no reliable performance difference by phase, so no phase is "off". Move anytime; adjust to feel. */
+  MOVE:  {men:['g','movement is good any time — go as gentle or hard as feels right'], foll:['g','a good time to move — as with any phase'], ovu:['g','a good time to move — as with any phase'], lut:['g','a good time to move — ease off only if you want to']},
+  /* Spa & body — comfort, no evidence for phase timing. */
+  SPA:   {men:['g','rest & recovery feel especially welcome now'], foll:['y','lovely any time'], ovu:['y','lovely any time'], lut:['g','winding down — a massage or sauna feels good']},
+  /* Facials & skin — skin calmest post-period, more reactive premenstrually/on period (dermatology). */
+  FACIAL:{men:['o','skin tends to be more reactive now — go gentle on strong peels'], foll:['g','skin is usually calmest — a good window for facials'], ovu:['y','skin often looks great, though it can be a little reactive'], lut:['o','oil & breakouts often rise — easier on strong treatments']},
+  /* Hair removal — pain sensitivity highest on period & premenstrually, lowest in follicular (pain research). */
+  HAIR:  {men:['o','can feel more tender now — some prefer to book a few days after'], foll:['g','usually the least sensitive — a comfortable time to book'], ovu:['y','generally fine — comfort dips a little for some'], lut:['o','sensitivity often rises toward your period']},
+  /* Aesthetics — same pain pattern; clinics also report less predictable results on-period (lower-tier evidence). */
+  AESTH: {men:['o','more tender & bruise-prone for some — many clinics suggest a week after your period'], foll:['g','often the calmest window — less bruising for some'], ovu:['y','generally fine — a touch more reactive for some'], lut:['o','sensitivity often rises toward your period']},
+  /* Nails & beauty — no meaningful phase evidence. */
+  NAILS: {men:['y','totally fine — routine upkeep'], foll:['g','a nice time for a refresh'], ovu:['g','a nice time for a refresh'], lut:['y','fine — brows & lashes can feel a touch tender for some']},
+  /* Mind & recovery — supportive lifestyle, not a medical claim. */
+  MIND:  {men:['g','rest & calm are a good fit now'], foll:['g','a clear head for planning'], ovu:['g','enjoy the social energy many feel now'], lut:['g','protect your sleep & calm as you wind down']},
+  /* Travel — no phase evidence; just plan comfort in. */
+  TRAVEL:{men:['y','fine — build in rest & comfort'], foll:['y','fine any time — plan comfort in if you need it'], ovu:['y','fine any time'], lut:['y','fine — build in some downtime']}
 };
 const K_CUSTOMCATS='whenTo.customCats';
 let customCats=(function(){try{const v=localStorage.getItem(K_CUSTOMCATS);return v?JSON.parse(v):{};}catch(e){return {}}})();
@@ -451,16 +473,16 @@ function mondayOf(d){const x=new Date(d);const wd=(x.getDay()+6)%7;return addDay
 
 /* ---------------- phase logic (guideline only) ---------------- */
 const PHASES={
-  men: {key:'men', label:'Menstrual', energy:'low',  tint:'#E0EAF3', accent:'#5B86A6', nudge:'Rest & gentle movement.'},
-  foll:{key:'foll',label:'Follicular',energy:'high', tint:'#E2EDD7', accent:'#5E9A57', nudge:'Energy rising — strength & new things.'},
-  ovu: {key:'ovu', label:'Ovulatory', energy:'high', tint:'#FBE2D4', accent:'#DD6236', nudge:'Peak energy — go hard, chase a PR.'},
-  lut: {key:'lut', label:'Luteal',    energy:'low',  tint:'#E9E2F1', accent:'#8073A8', nudge:'Winding down — steady & calm.'}
+  men: {key:'men', label:'Menstrual', energy:'low',  tint:'#E0EAF3', accent:'#5B86A6', nudge:'Many feel lower energy — rest is welcome.'},
+  foll:{key:'foll',label:'Follicular',energy:'high', tint:'#E2EDD7', accent:'#5E9A57', nudge:'Many feel energy returning.'},
+  ovu: {key:'ovu', label:'Ovulatory', energy:'high', tint:'#FBE2D4', accent:'#DD6236', nudge:'Many feel more social & upbeat.'},
+  lut: {key:'lut', label:'Luteal',    energy:'low',  tint:'#E9E2F1', accent:'#8073A8', nudge:'Often a wind-down — steady & calm.'}
 };
 const PHASE_GUIDE={
-  men: {intro:'Low energy — your body wants rest. Nothing intense; keep it kind.', nice:[['Gentle yoga','MOVE'],['Walking','MOVE'],['Stretching','MOVE'],['Massage','SPA'],['Sauna','SPA'],['Sleep','MIND'],['Journaling','MIND']]},
-  foll:{intro:'Energy’s rising — a great time to build and try new things.', nice:[['Strength','MOVE'],['HIIT','MOVE'],['New class','MOVE'],['Facial','FACIAL'],['Waxing','HAIR'],['Laser','HAIR'],['Haircut','NAILS']]},
-  ovu: {intro:'Peak energy and confidence — go big and be social.', nice:[['HIIT','MOVE'],['Running','MOVE'],['CrossFit','MOVE'],['Socialising','MIND'],['Manicure','NAILS'],['Travel','TRAVEL']]},
-  lut: {intro:'Winding down — steadier movement and a little more self-care.', nice:[['Pilates','MOVE'],['Yoga','MOVE'],['Steady cardio','MOVE'],['Walking','MOVE'],['Massage','SPA'],['Lymphatic drainage','SPA'],['Sleep','MIND']]}
+  men: {intro:'Many feel lower energy — rest is welcome, and gentle movement is still fine if you’re up for it.', nice:[['Gentle yoga','MOVE'],['Walking','MOVE'],['Stretching','MOVE'],['Massage','SPA'],['Sauna','SPA'],['Sleep','MIND'],['Journaling','MIND']]},
+  foll:{intro:'Energy often returns now, and skin tends to be calmest — a comfortable window for facials, waxing or laser.', nice:[['Strength','MOVE'],['New class','MOVE'],['Facial','FACIAL'],['Waxing','HAIR'],['Laser','HAIR'],['Haircut','NAILS']]},
+  ovu: {intro:'Many feel more social and upbeat around now — enjoy it, whatever that looks like for you.', nice:[['Socialising','MIND'],['Manicure','NAILS'],['Travel','TRAVEL'],['A class you enjoy','MOVE']]},
+  lut: {intro:'Often a wind-down — a little more self-care, and go gentle on strong skin treatments if yours get reactive.', nice:[['Yoga','MOVE'],['Walking','MOVE'],['Massage','SPA'],['Lymphatic drainage','SPA'],['Sleep','MIND']]}
 };
 function recentGaps(){const p=[...periods].filter(Boolean).sort();const g=[];for(let i=1;i<p.length;i++)g.push(daysBetween(parseYMD(p[i-1]),parseYMD(p[i])));return g;}
 function cycleLen(){const g=recentGaps().slice(-6);if(g.length){const a=Math.round(g.reduce((x,y)=>x+y,0)/g.length);return Math.max(18,Math.min(45,a));}return (cycle&&cycle.cycleLength)||28;}
@@ -478,6 +500,25 @@ function phaseForDate(date){
 }
 const ICON_FLAME='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 3-2 4-2 7 0 1.5 1 2.5 1 2.5S9 12 8 13c-2 2-2 5 0 7 1.4 1.4 3 1.5 4 1.5 3 0 5-2 5-5 0-3-2-4-2-6 0 1-1 1.5-1.5 1.5.5-2-1-4-1.5-5-1-2-1-4 1-6-3 0-5 1.5-5 4 0 0-2-1-2-4z"/></svg>';
 const ICON_MOON='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>';
+
+/* ---------------- moon phase (folk haircut tradition, just for fun) ---------------- */
+const MOON_SYNODIC=29.53058867;                 // average days between new moons
+const MOON_NEW_REF=Date.UTC(2000,0,6,18,14,0);  // a known new moon
+const MOON_PHASES=[
+  {name:'New moon',emoji:'🌑'},{name:'Waxing crescent',emoji:'🌒'},
+  {name:'First quarter',emoji:'🌓'},{name:'Waxing gibbous',emoji:'🌔'},
+  {name:'Full moon',emoji:'🌕'},{name:'Waning gibbous',emoji:'🌖'},
+  {name:'Last quarter',emoji:'🌗'},{name:'Waning crescent',emoji:'🌘'}
+];
+function moonAge(date){const noon=new Date(date.getFullYear(),date.getMonth(),date.getDate(),12,0,0).getTime();
+  let a=((noon-MOON_NEW_REF)/86400000)%MOON_SYNODIC;if(a<0)a+=MOON_SYNODIC;return a;}
+function moonPhase(date){const a=moonAge(date);const idx=Math.floor(a/MOON_SYNODIC*8+0.5)%8;
+  return {...MOON_PHASES[idx],idx,age:a,waxing:a<MOON_SYNODIC/2};}
+/* traditional lunar-hair reading: waxing → fuller/faster regrowth; waning → cut lasts longer */
+function haircutMoon(date){const m=moonPhase(date);
+  return m.waxing
+    ? {...m,tone:'grow',tag:'Grow it out',tip:'Waxing moon — folk tradition says a trim now grows back faster and fuller.'}
+    : {...m,tone:'hold',tag:'Keep your shape',tip:'Waning moon — folklore says hair grows back slower, so your cut holds longer.'};}
 
 /* ---------------- money ---------------- */
 const K_CURRENCY='whenTo.currency';
@@ -582,7 +623,7 @@ function renderHome(){
     ${daysHtml}
     <div class="footer">
       <button class="btn ghost" onclick="exportWeekICS()">📅 Add this week to calendar</button>
-      <div class="disclaimer">A gentle guideline synced to your cycle — not medical advice.</div>
+      <button class="disclaimer discbtn" onclick="openScience()">A gentle guideline synced to your cycle — not medical advice. <span class="disc-why">Why?</span></button>
     </div>`;
 }
 
@@ -595,7 +636,10 @@ function openMenu(){
       <button class="act" onclick="closeSheet();openBackup()"><span class="cat-badge" style="--c:#D6E2F4">💾</span><span class="body"><div class="a-name">Data & calendar</div></span></button>
       <button class="act" onclick="closeSheet();openCycle()"><span class="cat-badge" style="--c:#E0EAF3">🩸</span><span class="body"><div class="a-name">Cycle & period log</div></span></button>
       <button class="act" onclick="closeSheet();openCurrency()"><span class="cat-badge" style="--c:#DEEBCE">💰</span><span class="body"><div class="a-name">Currency</div><div class="a-sub">${(CURRENCIES[currency]||{}).sym||'€'} ${currency}</div></span></button>
-      <button class="act" onclick="importInfo()"><span class="cat-badge" style="--c:#ECEAE4">📷</span><span class="body"><div class="a-name">Import from photo</div><div class="a-sub">Off during free testing</div></span></button>
+      <button class="act" onclick="importInfo()"><span class="cat-badge" style="--c:#ECEAE4">📷</span><span class="body"><div class="a-name">Import from photo</div><div class="a-sub">Coming soon</div></span></button>
+      <button class="act" onclick="closeSheet();openMoonHair()"><span class="cat-badge" style="--c:#E7DCF0">🌙</span><span class="body"><div class="a-name">Haircut by the moon</div><div class="a-sub">A folk tradition, just for fun</div></span></button>
+      <button class="act" onclick="closeSheet();openScience()"><span class="cat-badge" style="--c:#E2EDD7">🔬</span><span class="body"><div class="a-name">Why these suggestions?</div><div class="a-sub">The research behind the tips</div></span></button>
+      <button class="act" onclick="closeSheet();openHorizon()"><span class="cat-badge" style="--c:#E7DCF0">✨</span><span class="body"><div class="a-name">On the horizon</div><div class="a-sub">What we’re exploring next</div></span></button>
     </div>
     <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">Close</button></div>`);
 }
@@ -672,7 +716,7 @@ function renderMonth(){
     ${clashHtml}
     ${monthTallyHtml(first,last)}
     <div class="footer">
-      <div class="disclaimer">A gentle guideline synced to your cycle — not medical advice.</div>
+      <button class="disclaimer discbtn" onclick="openScience()">A gentle guideline synced to your cycle — not medical advice. <span class="disc-why">Why?</span></button>
     </div>`;
 }
 function openDay(ds){
@@ -1244,6 +1288,75 @@ function importInfo(){
   <div class="sub" style="margin-bottom:20px">Snap a studio or clinic timetable and let AI turn it into rows you just confirm.</div>
   <p class="muted" style="font-size:14px;margin-top:0">This uses paid AI extraction, so it’s <strong>off during free testing</strong>. Everything else runs 100% on your device, for free.</p>
   <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">Got it</button></div>`);
+}
+
+/* ---------------- on the horizon (future teasers) ---------------- */
+function openHorizon(){
+  const items=[
+    ['🔗','#D7E9E3','Auto-import timetables','Paste a studio’s link and Fáze pulls its class times for you — no more typing.'],
+    ['📍','#F4DCEA','Discover classes nearby','Find studios & classes around you on a map.'],
+    ['✨','#E7DCF0','Smarter suggestions','Hints that learn from what you actually book and enjoy.'],
+    ['🎟️','#F3E7C9','Deals on your passes','Keep an eye on savings for passes you already buy — never ads, never tracking.']
+  ];
+  sheet(`<h2 class="serif">On the horizon</h2>
+    <div class="sub">Ideas we’re exploring for later. Whatever we add, Fáze stays free and private.</div>
+    <div class="acts menu" style="margin:10px 0 14px">
+      ${items.map(([e,c,n,d])=>`<button class="act dim2" onclick="event.preventDefault()"><span class="cat-badge" style="--c:${c}">${e}</span><span class="body"><div class="a-name">${n}</div><div class="a-sub" style="white-space:normal">${d}</div></span><span class="soon">soon</span></button>`).join('')}
+    </div>
+    <div class="disclaimer">Got a wish? These are just early ideas — nothing’s promised yet.</div>
+    <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">Close</button></div>`);
+}
+
+/* ---------------- why these suggestions (the science) ---------------- */
+function openScience(){
+  const rows=[
+    ['#EC6142','<b>Pain & sensitivity</b> tends to be highest on your period and the days just before, and lowest in the follicular phase — so waxing, laser and injectables often feel most comfortable then.','Meta-analysis of pain across the menstrual cycle','https://pubmed.ncbi.nlm.nih.gov/10431710/'],
+    ['#D46AA0','<b>Skin</b> is usually calmest just after your period and more reactive or breakout-prone in the days before it — so facials and stronger peels tend to be gentler post-period.','Dermatology research on cyclical skin changes','https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3807835/'],
+    ['#5E9A57','<b>Exercise</b> is where we hold back: reviews find no reliable link between cycle phase and performance, so Fáze keeps movement good in every phase — listen to your body, not a rule.','Systematic review of cycle phase & performance','https://pmc.ncbi.nlm.nih.gov/articles/PMC8170151/'],
+    ['#8073A8','<b>Everything else</b> — massage, nails, travel — has little solid phase evidence, so Fáze stays flexible rather than making things up.','','']
+  ];
+  sheet(`<h2 class="serif">Why these suggestions?</h2>
+    <div class="sub">Fáze leans on the areas with real evidence, and stays neutral where the science is thin. A general wellness guide — not medical advice.</div>
+    <div class="sci-list">
+      ${rows.map(([c,txt,src,url])=>`<div class="sci"><span class="dot" style="background:${c}"></span><span class="body">${txt}${src?`<span class="src">${url?`<a href="${url}" target="_blank" rel="noopener">${src} ↗</a>`:src}</span>`:''}</span></div>`).join('')}
+    </div>
+    <div class="disclaimer">Everything runs on your device. For anything health-related, check with a professional.</div>
+    <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">Got it</button></div>`);
+}
+
+/* ---------------- haircut by the moon (folk tradition) ---------------- */
+function openMoonHair(){
+  const t=today();const now=haircutMoon(t);const age=now.age;
+  const dToFull=(((MOON_SYNODIC/2)-age)+MOON_SYNODIC)%MOON_SYNODIC;
+  const dToNew=((MOON_SYNODIC-age)+MOON_SYNODIC)%MOON_SYNODIC;
+  const fullD=addDays(t,Math.round(dToFull)),newD=addDays(t,Math.round(dToNew));
+  const fD=d=>`${DOW[d.getDay()]} ${d.getDate()} ${MON[d.getMonth()]}`;
+  let growTxt,holdTxt;
+  if(now.waxing){const newAfterFull=addDays(fullD,Math.round(MOON_SYNODIC/2));
+    growTxt=`Now until the full moon, ${fD(fullD)}`;holdTxt=`${fD(fullD)} until the new moon, ${fD(newAfterFull)}`;
+  }else{const fullAfterNew=addDays(newD,Math.round(MOON_SYNODIC/2));
+    holdTxt=`Now until the new moon, ${fD(newD)}`;growTxt=`${fD(newD)} until the full moon, ${fD(fullAfterNew)}`;}
+  let strip='';
+  for(let i=0;i<14;i++){const d=addDays(t,i);const h=haircutMoon(d);
+    const bg=h.tone==='grow'?'#E2EDD7':'#E9E2F1',ac=h.tone==='grow'?'#5E9A57':'#8073A8';
+    strip+=`<div style="flex:0 0 auto;width:44px;text-align:center;padding:8px 0;border-radius:12px;background:${bg};${i===0?'outline:2px solid '+ac+';outline-offset:1px;':''}">
+      <div style="font-size:18px;line-height:1">${h.emoji}</div>
+      <div style="font-size:11px;color:#8a8a86;margin-top:3px">${DOW[d.getDay()]}</div>
+      <div style="font-size:13px;font-weight:600;color:${ac}">${d.getDate()}</div></div>`;}
+  sheet(`<h2 class="serif">Haircut by the moon</h2>
+    <div class="sub">A folk tradition, just for fun — not science. Some like to time a trim to the moon; here's the old rule of thumb.</div>
+    <div style="display:flex;align-items:center;gap:14px;margin:6px 0 4px;padding:14px;border-radius:16px;background:${now.tone==='grow'?'#E2EDD7':'#E9E2F1'}">
+      <div style="font-size:40px;line-height:1">${now.emoji}</div>
+      <div><div style="font-weight:700">${now.name} · ${now.tag}</div><div style="font-size:13.5px;color:#5a5a56;margin-top:2px">${now.tip}</div></div>
+    </div>
+    <div class="acts" style="margin:14px 0 6px">
+      <div class="act" style="cursor:default"><span class="cat-badge" style="--c:#E2EDD7">🌱</span><span class="body"><div class="a-name">For fuller, faster growth</div><div class="a-sub">${growTxt}</div></span></div>
+      <div class="act" style="cursor:default"><span class="cat-badge" style="--c:#E9E2F1">✂️</span><span class="body"><div class="a-name">To keep your shape longer</div><div class="a-sub">${holdTxt}</div></span></div>
+    </div>
+    <div class="label" style="margin:16px 2px 8px">Next 14 days</div>
+    <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:6px">${strip}</div>
+    <div class="disclaimer" style="margin-top:14px">Just a bit of lunar folklore — cut your hair whenever suits you.</div>
+    <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">Got it</button></div>`);
 }
 
 /* ---------------- sheet plumbing ---------------- */
