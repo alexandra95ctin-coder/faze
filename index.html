@@ -3,8 +3,15 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<meta name="theme-color" content="#F9F5EC" />
+<meta name="theme-color" content="#FBFAF5" />
 <title>Fáze</title>
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="icon" href="icon-192.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Fáze" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -457,7 +464,10 @@ const ICON_FLAME='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 
 const ICON_MOON='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>';
 
 /* ---------------- money ---------------- */
-const EUR=n=>'€'+(Math.round(n*100)/100).toLocaleString(undefined,{minimumFractionDigits:(n%1?2:0),maximumFractionDigits:2});
+const K_CURRENCY='whenTo.currency';
+const CURRENCIES={EUR:{sym:'€'},USD:{sym:'$'},GBP:{sym:'£'},RON:{sym:'lei',suffix:true},CHF:{sym:'CHF',suffix:true},PLN:{sym:'zł',suffix:true},SEK:{sym:'kr',suffix:true}};
+let currency=load(K_CURRENCY,'EUR');
+const EUR=n=>{const c=CURRENCIES[currency]||CURRENCIES.EUR;const v=(Math.round(n*100)/100).toLocaleString(undefined,{minimumFractionDigits:(n%1?2:0),maximumFractionDigits:2});return c.suffix?v+' '+c.sym:c.sym+v;};
 
 /* activities occurring on a given date */
 function actsOn(date){
@@ -566,10 +576,18 @@ function openMenu(){
       <button class="act" onclick="closeSheet();openPasses()"><span class="cat-badge" style="--c:#F3E7C9">🎟️</span><span class="body"><div class="a-name">Passes & memberships</div></span></button>
       <button class="act" onclick="closeSheet();openBackup()"><span class="cat-badge" style="--c:#D6E2F4">💾</span><span class="body"><div class="a-name">Data & calendar</div></span></button>
       <button class="act" onclick="closeSheet();openCycle()"><span class="cat-badge" style="--c:#E0EAF3">🩸</span><span class="body"><div class="a-name">Cycle & period log</div></span></button>
+      <button class="act" onclick="closeSheet();openCurrency()"><span class="cat-badge" style="--c:#DEEBCE">💰</span><span class="body"><div class="a-name">Currency</div><div class="a-sub">${(CURRENCIES[currency]||{}).sym||'€'} ${currency}</div></span></button>
       <button class="act" onclick="importInfo()"><span class="cat-badge" style="--c:#ECEAE4">📷</span><span class="body"><div class="a-name">Import from photo</div><div class="a-sub">Off during free testing</div></span></button>
     </div>
     <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">Close</button></div>`);
 }
+
+function openCurrency(){
+  sheet(`<h2 class="serif">Currency</h2><div class="sub">Shown on all your spend.</div>
+    <div class="acts" style="margin:8px 0 14px">${Object.keys(CURRENCIES).map(code=>{const c=CURRENCIES[code];return `<button class="act" onclick="setCurrency('${code}')"><span class="cat-badge" style="--c:#DEEBCE">${c.sym}</span><span class="body"><div class="a-name">${code}</div></span>${currency===code?'<span class="cost" style="color:var(--sage)">✓</span>':''}</button>`;}).join('')}</div>
+    <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">Close</button></div>`);
+}
+function setCurrency(code){currency=code;save(K_CURRENCY,code);render();openCurrency();}
 
 /* ---------------- render: month (best windows) ---------------- */
 function fmtR(r){return r[0]===r[1]?`${r[0]}`:`${r[0]}–${r[1]}`}
@@ -942,12 +960,12 @@ function openPlace(id){
     <label class="label" style="display:block;margin-bottom:9px">Main service</label>
     <div class="catgrid" id="plcatgrid">${CAT_KEYS.map(k=>`<button type="button" class="catcell ${k===formPlaceCat?'on':''}" data-cat="${k}" style="--c:${CATS[k].color}" onclick="setPlaceCat('${k}')"><span class="ce">${CATS[k].emoji}</span>${CATS[k].label}</button>`).join('')}</div>
     <div class="field"><label class="label">Name</label><input type="text" id="pl-name" placeholder="e.g. Sala Studio" value="${esc(p.name)}"></div>
-    <div class="sheet-actions">${id?`<button class="btn danger" onclick="deletePlace('${id}')">Delete</button>`:'<button class="btn ghost" onclick="openPlaces()">Cancel</button>'}<button class="btn primary" onclick="savePlace()">Save</button></div>`);
+    <div class="sheet-actions">${id?`<button class="btn danger" onclick="deletePlace('${id}')">Delete</button>`:'<button class="btn ghost" onclick="openPlaces()">Cancel</button>'}<button class="btn primary" onclick="savePlace()">${id?'Save':'Next: add class times'}</button></div>`);
 }
 function savePlace(){const name=document.getElementById('pl-name').value.trim();if(!name){alert('Name the place.');return}
   const base={name,category:formPlaceCat};
-  if(editingPlace){const i=places.findIndex(x=>x.id===editingPlace);places[i]={...places[i],...base}}else{places.push({id:'pl'+Date.now()+Math.random().toString(36).slice(2,5),...base})}
-  save(K_PLACES,places);openPlaces();}
+  if(editingPlace){const i=places.findIndex(x=>x.id===editingPlace);places[i]={...places[i],...base};save(K_PLACES,places);openPlaces();}
+  else{const id='pl'+Date.now()+Math.random().toString(36).slice(2,5);places.push({id,...base});save(K_PLACES,places);openClass(id);}}
 function deletePlace(id){classes=classes.filter(c=>c.placeId!==id);save(K_CLASSES,classes);places=places.filter(p=>p.id!==id);save(K_PLACES,places);openPlaces();}
 function setClassCat(k){classCat=k;document.querySelectorAll('#ccatgrid .catcell').forEach(el=>el.classList.toggle('on',el.dataset.cat===k))}
 function setClassDay(w,el){classDay=w;el.parentElement.querySelectorAll('.dow').forEach(x=>x.classList.toggle('on',+x.dataset.w===w))}
