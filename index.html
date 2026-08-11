@@ -581,6 +581,7 @@ function renderHome(){
     </div>
     ${daysHtml}
     <div class="footer">
+      <button class="btn ghost" onclick="exportWeekICS()">📅 Add this week to calendar</button>
       <div class="disclaimer">A gentle guideline synced to your cycle — not medical advice.</div>
     </div>`;
 }
@@ -980,24 +981,20 @@ function openActivityMenu(id){
   const a=activities.find(x=>x.id===id);if(!a)return;const cat=catOf(a);
   sheet(`<h2 class="serif">${esc(a.type)||cat.label}</h2>
     <div class="sub">${esc(a.place)||cat.label}${a.time?' · '+fmtTime(a.time):''}${a.recurring?' · weekly':''}</div>
-    <div class="acts" style="margin:2px 0 14px">
-      <button class="act" onclick="exportActivityICS('${id}')"><span class="cat-badge" style="--c:#F6DAD0">📅</span><span class="body"><div class="a-name">Add to calendar</div><div class="a-sub">Google · Apple · Outlook (.ics)</div></span></button>
-    </div>
     <div class="sheet-actions">
       <button class="btn danger" onclick="deleteActivity('${id}')">Delete</button>
       <button class="btn primary" onclick="openActivity('${id}')">Modify</button>
     </div>`);
 }
-function exportActivityICS(id){const a=activities.find(x=>x.id===id);if(!a)return;
-  const dowMap=['SU','MO','TU','WE','TH','FR','SA'];
+function exportWeekICS(){
+  const mon=addDays(mondayOf(today()),weekOffset*7);
   const dt=(d,t)=>{const[h,m]=(t||'09:00').split(':');return d.getFullYear()+pad2(d.getMonth()+1)+pad2(d.getDate())+'T'+pad2(h)+pad2(m)+'00';};
-  const cat=catOf(a);const title=((a.type||cat.label)+(a.place?' · '+a.place:'')).replace(/[,;\\]/g,' ');
-  const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Faze//EN','CALSCALE:GREGORIAN','BEGIN:VEVENT','UID:'+a.id+'@faze'];
-  if(a.recurring){const w0=(a.daysOfWeek&&a.daysOfWeek.length)?a.daysOfWeek[0]:1;let f=new Date(today()),g=0;while(f.getDay()!==w0&&g++<7)f=addDays(f,1);
-    L.push('DTSTART:'+dt(f,a.time),'DTEND:'+dt(f,addHour(a.time)),'RRULE:FREQ=WEEKLY;BYDAY='+(a.daysOfWeek||[w0]).map(w=>dowMap[w]).join(','));}
-  else{const d=parseYMD(a.date);L.push('DTSTART:'+dt(d,a.time),'DTEND:'+dt(d,addHour(a.time)));}
-  L.push('SUMMARY:'+title,'END:VEVENT','END:VCALENDAR');
-  download(((a.type||'event').replace(/[^\w]+/g,'-').toLowerCase())+'.ics',L.join('\r\n'),'text/calendar');
+  const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Faze//EN','CALSCALE:GREGORIAN'];let count=0;
+  for(let i=0;i<7;i++){const d=addDays(mon,i);actsOn(d).forEach(a=>{const cat=catOf(a);const title=((a.type||cat.label)+(a.place?' · '+a.place:'')).replace(/[,;\\]/g,' ');
+    L.push('BEGIN:VEVENT','UID:'+a.id+'-'+ymd(d)+'@faze','DTSTART:'+dt(d,a.time),'DTEND:'+dt(d,addHour(a.time)),'SUMMARY:'+title,'END:VEVENT');count++;});}
+  L.push('END:VCALENDAR');
+  if(!count){alert('Nothing planned this week yet.');return;}
+  download('faze-week-'+ymd(mon)+'.ics',L.join('\r\n'),'text/calendar');
 }
 
 /* ---------------- places & classes ---------------- */
