@@ -308,6 +308,15 @@
   .swatches{display:flex;gap:8px;flex-wrap:wrap}
   .swatch{width:34px;height:34px;border-radius:10px;border:2px solid transparent}
   .swatch.on{border-color:var(--ink)}
+  .catrows{display:flex;flex-direction:column;gap:8px}
+  .catrow{display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid #E4E8E1;border-radius:14px;padding:9px 10px}
+  .catrow.dim{opacity:.62;background:transparent;border-style:dashed}
+  .catrow-n{flex:1;font-weight:500;font-size:14.5px;display:flex;align-items:center;gap:7px}
+  .catrow-tag{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .ordbtn{width:32px;height:32px;border-radius:9px;background:var(--bg2);color:var(--ink);font-size:15px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .ordbtn:active{transform:scale(.92)}
+  .ordbtn:disabled{opacity:.3}
+  .ordbtn.del{color:var(--energy-deep);background:#FBEDE8}
   .seg{display:flex;background:#E6EAE4;border-radius:14px;padding:4px;gap:4px;margin-bottom:18px}
   .seg button{flex:1;padding:10px;border-radius:11px;font-weight:600;font-size:13.5px;color:var(--muted)}
   .seg button.on{background:#fff;color:var(--ink);box-shadow:var(--shadow-sm)}
@@ -411,7 +420,14 @@ const CAT_COLORS=['#F6DAD0','#D7E9E3','#F4DCEA','#F1E6C6','#E7DCF0','#D6E2F4','#
 function registerCat(id,c){CATS[id]={label:c.label,desc:'custom',emoji:c.emoji,color:c.color,dot:c.dot||c.color,custom:true,types:c.types||[]};
   REC[id]={men:['y','flexible — your call'],foll:['g','a good window'],ovu:['g','a good window'],lut:['y','flexible — your call']};}
 Object.keys(customCats).forEach(id=>registerCat(id,customCats[id]));
-CAT_KEYS=Object.keys(CATS);
+const K_CATORDER='whenTo.catOrder', K_CATHIDES='whenTo.catHides';
+let catOrder=(function(){try{return JSON.parse(localStorage.getItem(K_CATORDER))||[]}catch(e){return[]}})();
+let catHides=(function(){try{return JSON.parse(localStorage.getItem(K_CATHIDES))||[]}catch(e){return[]}})();
+function allCatKeys(){const ord=catOrder.filter(k=>CATS[k]);Object.keys(CATS).forEach(k=>{if(!ord.includes(k))ord.push(k);});return ord;}
+function recomputeCatKeys(){CAT_KEYS=allCatKeys().filter(k=>!catHides.includes(k));}
+function persistCatMeta(){catOrder=allCatKeys();save(K_CATORDER,catOrder);save(K_CATHIDES,catHides);}
+function defCat(){return CAT_KEYS.includes('MOVE')?'MOVE':(CAT_KEYS[0]||'MOVE');}
+recomputeCatKeys();
 const K_TYPEADDS='whenTo.typeAdds', K_TYPEHIDES='whenTo.typeHides';
 let typeAdds=(function(){try{return JSON.parse(localStorage.getItem(K_TYPEADDS))||{}}catch(e){return{}}})();
 let typeHides=(function(){try{return JSON.parse(localStorage.getItem(K_TYPEHIDES))||{}}catch(e){return{}}})();
@@ -574,6 +590,7 @@ function openMenu(){
     <div class="acts menu" style="margin:8px 0 14px">
       <button class="act" onclick="closeSheet();openPlaces()"><span class="cat-badge" style="--c:#D7E9E3">📍</span><span class="body"><div class="a-name">Places & classes</div></span></button>
       <button class="act" onclick="closeSheet();openPasses()"><span class="cat-badge" style="--c:#F3E7C9">🎟️</span><span class="body"><div class="a-name">Passes & memberships</div></span></button>
+      <button class="act" onclick="closeSheet();openCats()"><span class="cat-badge" style="--c:#F4DCEA">🗂️</span><span class="body"><div class="a-name">Categories</div><div class="a-sub">Reorder &amp; tidy your grid</div></span></button>
       <button class="act" onclick="closeSheet();openBackup()"><span class="cat-badge" style="--c:#D6E2F4">💾</span><span class="body"><div class="a-name">Data & calendar</div></span></button>
       <button class="act" onclick="closeSheet();openCycle()"><span class="cat-badge" style="--c:#E0EAF3">🩸</span><span class="body"><div class="a-name">Cycle & period log</div></span></button>
       <button class="act" onclick="closeSheet();openCurrency()"><span class="cat-badge" style="--c:#DEEBCE">💰</span><span class="body"><div class="a-name">Currency</div><div class="a-sub">${(CURRENCIES[currency]||{}).sym||'€'} ${currency}</div></span></button>
@@ -822,13 +839,13 @@ function openActivity(id,pre){
   let a=id?activities.find(x=>x.id===id):null;
   formMode=a?(a.recurring?'recurring':'oneoff'):((pre&&pre.date)?'oneoff':'recurring');
   formDows=a&&a.daysOfWeek?[...a.daysOfWeek]:((pre&&pre.day!=null)?[pre.day]:[]);
-  formCat=a&&a.category?a.category:((pre&&pre.category)?pre.category:'MOVE');
+  formCat=a&&a.category?a.category:((pre&&pre.category)?pre.category:defCat());
   formCost=a?(a.passId?'pass':(Number(a.cost)>0?'session':'free')):'free';
   const compact=!!(pre||a);
   sheet(`
     <h2 class="serif">${id?'Edit activity':'Add activity'}</h2>
     <div class="sub">Anything you do for yourself — a class, a treatment, an appointment.</div>
-    <label class="label" style="display:block;margin-bottom:9px">Category</label>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px"><label class="label">Category</label><button type="button" class="linklike" onclick="openCats()">edit</button></div>
     ${compact?`<div class="catsum"><span class="cat-badge" style="--c:${CATS[formCat].color}">${CATS[formCat].emoji}</span><span id="catsumlbl">${CATS[formCat].label}</span><button type="button" class="linklike" onclick="toggleCatGrid()">change</button></div>`:''}
     <div class="catgrid ${compact?'hidden':''}" id="catgrid">
       ${CAT_KEYS.map(k=>`<button type="button" class="catcell ${k===formCat?'on':''}" data-cat="${k}" style="--c:${CATS[k].color}" onclick="setCat('${k}')">
@@ -836,8 +853,8 @@ function openActivity(id,pre){
       <button type="button" class="catcell addcat" onclick="openNewCat()"><span class="ce" style="background:#EFEAE0">＋</span>New</button>
     </div>
     <div class="seg">
-      <button id="seg-rec" class="${formMode==='recurring'?'on':''}" onclick="setMode('recurring')">Recurring</button>
       <button id="seg-one" class="${formMode==='oneoff'?'on':''}" onclick="setMode('oneoff')">One-off</button>
+      <button id="seg-rec" class="${formMode==='recurring'?'on':''}" onclick="setMode('recurring')">Recurring</button>
     </div>
     <div class="field"><label class="label">Activity</label>
       <input type="text" id="f-type" placeholder="e.g. ${CATS[formCat].types[0]}" value="${a?esc(a.type):((pre&&pre.type)?esc(pre.type):'')}">
@@ -897,10 +914,40 @@ function saveNewCat(){
   if(!label){alert('Name the category.');return}
   let id=editingCat||('cat'+Date.now().toString(36));
   customCats[id]={label,emoji,color:newCatColor,dot:newCatColor};save(K_CUSTOMCATS,customCats);
-  registerCat(id,customCats[id]);CAT_KEYS=Object.keys(CATS);formCat=id;openActivity(null,{category:id});
+  registerCat(id,customCats[id]);persistCatMeta();recomputeCatKeys();formCat=id;openActivity(null,{category:id});
 }
-function deleteCat(id){delete customCats[id];save(K_CUSTOMCATS,customCats);delete CATS[id];delete REC[id];CAT_KEYS=Object.keys(CATS);
-  if(formCat===id)formCat='MOVE';openActivity(null,{category:formCat});}
+function deleteCat(id){delete customCats[id];save(K_CUSTOMCATS,customCats);delete CATS[id];delete REC[id];
+  catHides=catHides.filter(x=>x!==id);catOrder=allCatKeys().filter(x=>x!==id);recomputeCatKeys();persistCatMeta();
+  if(formCat===id)formCat=defCat();openActivity(null,{category:formCat});}
+/* ---- category manager: reorder & hide ---- */
+function openCats(){
+  const vis=CAT_KEYS.slice();
+  const rows=vis.map((k,i)=>{const c=CATS[k];return `<div class="catrow">
+    <span class="cat-badge" style="--c:${c.color}">${c.emoji}</span>
+    <span class="catrow-n">${esc(c.label)}${c.custom?' <span class="catrow-tag">custom</span>':''}</span>
+    <button class="ordbtn" ${i===0?'disabled':''} onclick="moveCat('${k}',-1)" aria-label="Move up">↑</button>
+    <button class="ordbtn" ${i===vis.length-1?'disabled':''} onclick="moveCat('${k}',1)" aria-label="Move down">↓</button>
+    ${c.custom?`<button class="ordbtn" onclick="openNewCat('${k}')" aria-label="Edit">✎</button>`:''}
+    <button class="ordbtn del" onclick="removeCat('${k}')" aria-label="Remove">✕</button></div>`;}).join('');
+  const hidden=allCatKeys().filter(k=>catHides.includes(k));
+  const hiddenHtml=hidden.length?`<div class="label" style="margin:20px 2px 8px">Hidden</div>${hidden.map(k=>{const c=CATS[k];return `<div class="catrow dim">
+    <span class="cat-badge" style="--c:${c.color}">${c.emoji}</span>
+    <span class="catrow-n">${esc(c.label)}</span>
+    <button class="linklike" onclick="restoreCat('${k}')">restore</button>
+    ${c.custom?`<button class="ordbtn del" onclick="deleteCatFully('${k}')" aria-label="Delete for good">🗑</button>`:''}</div>`;}).join('')}`:'';
+  sheet(`<h2 class="serif">Categories</h2><div class="sub">Reorder with ↑ ↓, or remove the ones you don't use. Removed ones drop off your grid — you can restore them here anytime.</div>
+    <div class="catrows" style="margin:10px 0 4px">${rows}</div>
+    ${hiddenHtml}
+    <div class="sheet-actions"><button class="btn ghost" onclick="openNewCat()">＋ New</button><button class="btn primary" onclick="closeSheet()">Done</button></div>`);
+}
+function moveCat(k,dir){const ord=allCatKeys();const vis=ord.filter(x=>!catHides.includes(x));const i=vis.indexOf(k),j=i+dir;
+  if(j<0||j>=vis.length)return;const a=ord.indexOf(vis[i]),b=ord.indexOf(vis[j]);[ord[a],ord[b]]=[ord[b],ord[a]];
+  catOrder=ord;recomputeCatKeys();persistCatMeta();openCats();}
+function removeCat(k){if(!catHides.includes(k))catHides.push(k);recomputeCatKeys();persistCatMeta();if(formCat===k)formCat=defCat();openCats();}
+function restoreCat(k){catHides=catHides.filter(x=>x!==k);recomputeCatKeys();persistCatMeta();openCats();}
+function deleteCatFully(id){delete customCats[id];save(K_CUSTOMCATS,customCats);delete CATS[id];delete REC[id];
+  catHides=catHides.filter(x=>x!==id);catOrder=allCatKeys().filter(x=>x!==id);recomputeCatKeys();persistCatMeta();
+  if(formCat===id)formCat=defCat();openCats();}
 function setMode(m){formMode=m;document.getElementById('seg-rec').classList.toggle('on',m==='recurring');
   document.getElementById('seg-one').classList.toggle('on',m==='oneoff');
   document.getElementById('m-rec').classList.toggle('hidden',m!=='recurring');
@@ -933,10 +980,24 @@ function openActivityMenu(id){
   const a=activities.find(x=>x.id===id);if(!a)return;const cat=catOf(a);
   sheet(`<h2 class="serif">${esc(a.type)||cat.label}</h2>
     <div class="sub">${esc(a.place)||cat.label}${a.time?' · '+fmtTime(a.time):''}${a.recurring?' · weekly':''}</div>
+    <div class="acts" style="margin:2px 0 14px">
+      <button class="act" onclick="exportActivityICS('${id}')"><span class="cat-badge" style="--c:#F6DAD0">📅</span><span class="body"><div class="a-name">Add to calendar</div><div class="a-sub">Google · Apple · Outlook (.ics)</div></span></button>
+    </div>
     <div class="sheet-actions">
       <button class="btn danger" onclick="deleteActivity('${id}')">Delete</button>
       <button class="btn primary" onclick="openActivity('${id}')">Modify</button>
     </div>`);
+}
+function exportActivityICS(id){const a=activities.find(x=>x.id===id);if(!a)return;
+  const dowMap=['SU','MO','TU','WE','TH','FR','SA'];
+  const dt=(d,t)=>{const[h,m]=(t||'09:00').split(':');return d.getFullYear()+pad2(d.getMonth()+1)+pad2(d.getDate())+'T'+pad2(h)+pad2(m)+'00';};
+  const cat=catOf(a);const title=((a.type||cat.label)+(a.place?' · '+a.place:'')).replace(/[,;\\]/g,' ');
+  const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Faze//EN','CALSCALE:GREGORIAN','BEGIN:VEVENT','UID:'+a.id+'@faze'];
+  if(a.recurring){const w0=(a.daysOfWeek&&a.daysOfWeek.length)?a.daysOfWeek[0]:1;let f=new Date(today()),g=0;while(f.getDay()!==w0&&g++<7)f=addDays(f,1);
+    L.push('DTSTART:'+dt(f,a.time),'DTEND:'+dt(f,addHour(a.time)),'RRULE:FREQ=WEEKLY;BYDAY='+(a.daysOfWeek||[w0]).map(w=>dowMap[w]).join(','));}
+  else{const d=parseYMD(a.date);L.push('DTSTART:'+dt(d,a.time),'DTEND:'+dt(d,addHour(a.time)));}
+  L.push('SUMMARY:'+title,'END:VEVENT','END:VCALENDAR');
+  download(((a.type||'event').replace(/[^\w]+/g,'-').toLowerCase())+'.ics',L.join('\r\n'),'text/calendar');
 }
 
 /* ---------------- places & classes ---------------- */
