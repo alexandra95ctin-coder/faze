@@ -177,6 +177,17 @@
 
   /* activity row */
   .act{display:flex;align-items:flex-start;gap:11px;background:#F6F3EC;border-radius:16px;padding:11px 13px;text-align:left;width:100%}
+  .acts.menu .act{align-items:center;justify-content:center;padding:14px 13px}
+  .acts.menu .act .body{flex:0 1 auto;text-align:center}
+  .hist{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid #EFE9DD}
+  .hist:last-child{border-bottom:none}
+  .hist .hist-d{flex:1;font-size:13.5px;font-weight:600}
+  .hist .hist-g{font-size:12px;color:var(--muted)}
+  .hist .hist-x{width:26px;height:26px;border-radius:8px;background:#FBE7E4;color:#BE4A41;font-size:13px;font-weight:700}
+  .cyclesum{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#E0EAF3;border-radius:16px;padding:13px 16px;margin-bottom:14px}
+  .cyclesum .label{color:#5B86A6}
+  .cyclesum .pv{font-family:'Fraunces',serif;font-size:22px;font-weight:600;margin-top:2px;color:var(--ink)}
+  .cyclesum .pdays{font-size:12.5px;color:#5B86A6;font-weight:600;white-space:nowrap}
   .act:active{transform:scale(.99)}
   .cat-badge{width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;
     font-size:17px;background:var(--c,#eee);flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.04)}
@@ -550,7 +561,7 @@ function renderHome(){
 
 function openMenu(){
   sheet(`<h2 class="serif">Menu</h2>
-    <div class="acts" style="margin:8px 0 14px">
+    <div class="acts menu" style="margin:8px 0 14px">
       <button class="act" onclick="closeSheet();openPlaces()"><span class="cat-badge" style="--c:#D7E9E3">📍</span><span class="body"><div class="a-name">Places & classes</div></span></button>
       <button class="act" onclick="closeSheet();openPasses()"><span class="cat-badge" style="--c:#F3E7C9">🎟️</span><span class="body"><div class="a-name">Passes & memberships</div></span></button>
       <button class="act" onclick="closeSheet();openBackup()"><span class="cat-badge" style="--c:#D6E2F4">💾</span><span class="body"><div class="a-name">Data & calendar</div></span></button>
@@ -754,22 +765,27 @@ function openPasses(){
 /* ---------------- onboarding / cycle ---------------- */
 function openCycle(first){
   const c=cycle||{lastPeriodStart:ymd(today()),cycleLength:28};
+  const sorted=[...periods].filter(Boolean).sort().reverse();
+  const last=sorted[0]?parseYMD(sorted[0]):null;const ago=last?daysBetween(last,today()):null;
+  const histRows=sorted.map((ds,i)=>{const d=parseYMD(ds);const older=sorted[i+1]?parseYMD(sorted[i+1]):null;const gap=older?daysBetween(older,d):null;
+    return `<div class="hist"><span class="hist-d">${d.getDate()} ${MON[d.getMonth()]} ${d.getFullYear()}</span><span class="hist-g">${gap?gap+'-day cycle':'first log'}</span><button type="button" class="hist-x" onclick="delPeriod('${ds}')" aria-label="remove">×</button></div>`;}).join('');
   sheet(`
     <h2 class="serif">${first?'Let’s sync up':'Your cycle'}</h2>
-    <div class="sub">A simple guideline — not medical advice. Edit anytime.</div>
-    <div class="field"><label class="label">First day of last period</label>
+    <div class="sub">A simple guideline — not medical advice.</div>
+    ${last?`<div class="cyclesum"><div><div class="label">Last period</div><div class="pv">${last.getDate()} ${MON[last.getMonth()]}</div></div><div class="pdays">${ago===0?'today':(ago===1?'1 day ago':ago+' days ago')}</div></div>`:''}
+    <button type="button" class="btn primary" style="margin-bottom:14px" onclick="logPeriodToday()">＋ I started my period today</button>
+    <div class="muted" style="font-size:13px;margin-bottom:16px">${cycleRange()?`Your cycles average <b>${cycleLen()} days</b> (${cycleRange()[0]}–${cycleRange()[1]}) across ${periods.length} logs — predictions use this.`:'Log each period start and Fáze sharpens its prediction over time.'}</div>
+    ${histRows?`<div class="label" style="margin:2px 2px 6px">Period history</div><div style="margin-bottom:18px">${histRows}</div>`:''}
+    <div class="field"><label class="label">Or adjust manually — last period</label>
       <input type="date" id="c-start" value="${c.lastPeriodStart}" max="${ymd(today())}"></div>
     <div class="field"><label class="label">Typical cycle length (days)</label>
       <input type="number" id="c-len" value="${c.cycleLength}" min="18" max="45" step="1"></div>
-    <div class="field"><label class="label">Period log</label>
-      <div class="muted" style="font-size:13px">${cycleRange()?`Your cycles average <b>${cycleLen()} days</b> (${cycleRange()[0]}–${cycleRange()[1]}) across ${periods.length} logs — predictions use this.`:'Log each period start and Fáze sharpens its prediction over time.'}</div>
-      <button type="button" class="linklike" style="margin-top:9px;display:inline-block" onclick="logPeriodToday()">＋ I started my period today</button>
-    </div>
     <div class="sheet-actions">
-      ${first?'':'<button class="btn ghost" onclick="closeSheet()">Cancel</button>'}
+      ${first?'':'<button class="btn ghost" onclick="closeSheet()">Close</button>'}
       <button class="btn primary" onclick="saveCycle()">Save</button>
     </div>`);
 }
+function delPeriod(ds){periods=periods.filter(x=>x!==ds);save(K_PERIODS,periods);if(cycle&&periods.length){cycle.lastPeriodStart=[...periods].sort().pop();cycle.cycleLength=cycleLen();save(K_CYCLE,cycle);}render();openCycle();}
 function logPeriodToday(){logPeriod(ymd(today()));render();openCycle();}
 function saveCycle(){
   const start=document.getElementById('c-start').value;
