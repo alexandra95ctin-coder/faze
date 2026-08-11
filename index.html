@@ -383,7 +383,6 @@ let spendPeriod='month';    // 'week' | 'month'
 let prevCalView='week';     // where to return from the spend/plan screen
 let planSel=null;           // tapped-then-place suggestion
 let planWeekOffset=0;       // plan board week navigation
-let ttWeekOffset=0;         // timetable week navigation
 
 /* ---------------- categories ---------------- */
 let CATS={
@@ -578,28 +577,21 @@ function renderHome(){
   const tt=today();const mFirst=ymd(new Date(tt.getFullYear(),tt.getMonth(),1)),mLast=ymd(new Date(tt.getFullYear(),tt.getMonth()+1,0)),mName=MON[tt.getMonth()];
   const wFrom=ymd(mon),wEnd=addDays(mon,6),wTo=ymd(wEnd);
   const wRange=mon.getDate()+' '+MON[mon.getMonth()]+' – '+wEnd.getDate()+' '+MON[wEnd.getMonth()];
-  let daysHtml='';
+  const passCats={};passes.forEach(p=>passCats[p.category]=1);const anyClasses=classes.length>0;
+  let rows='';
   for(let i=0;i<7;i++){
-    const d=addDays(mon,i);const p=phaseForDate(d);const isToday=ymd(d)===tday;const acts=actsOn(d);
-    const icon=p.energy==='high'?ICON_FLAME:ICON_MOON;
-    let actsHtml=acts.map(a=>{
-      const cat=catOf(a);const c=costOf(a);
-      const cost=(a.passId||a.includedInPass)?'<span class="cost free">on pass</span>':(c?`<span class="cost">${EUR(c)}</span>`:'<span class="cost free">free</span>');
-      const rec=(REC[a.category]||REC.MOVE)[p.key];const caution=rec[0]==='o'||rec[0]==='r';
-      return `<button class="act" onclick="openActivityMenu('${a.id}')">
-        <span class="cat-badge" style="--c:${cat.color}">${cat.emoji}</span>
-        <span class="body">
-          <div class="a-top"><span class="a-name">${esc(a.type)||cat.label}${a.recurring?'<span class="rep">↻</span>':''}</span>${cost}</div>
-          <div class="a-sub">${fmtTime(a.time)?fmtTime(a.time)+' · ':''}${esc(a.place)||cat.label}</div>
-          ${caution?`<div class="a-flag ${rec[0]}">${rec[1]}${betterWhen(a.category)?` · <b>${betterWhen(a.category)}</b>`:''}</div>`:''}
-        </span></button>`;
-    }).join('');
-    daysHtml+=`<div class="day ${isToday?'today':''} ${acts.length?'':'slim'}" style="background:var(--card);border:1.6px solid ${p.accent}">
-      <div class="day-head">
-        <div class="day-when"><span class="day-name">${DOW_FULL[d.getDay()]}</span><span class="day-date">${d.getDate()} ${MON[d.getMonth()]}</span>${isToday?'<span class="todaytag">Today</span>':''}</div>
-        <span class="pill" style="color:${p.accent};background:${p.tint}">${icon}${p.label}</span>
-      </div>
-      ${acts.length?`<div class="acts">${actsHtml}</div>`:''}
+    const d=addDays(mon,i);const ds=ymd(d);const p=phaseForDate(d);const isT=ds===tday;
+    const booked=actsOn(d);
+    const bookedChips=booked.map(a=>{const cat=catOf(a);
+      return `<button class="slot booked" onclick="openActivityMenu('${a.id}')"><span class="cat-badge sm" style="--c:${cat.color}">${cat.emoji}</span><span class="slot-b"><span class="slot-n">${esc(a.type)||cat.label}</span><span class="slot-s">${a.time?fmtTime(a.time)+' · ':''}${esc(a.place)||cat.label}</span></span><span class="slot-chk">✓</span></button>`;}).join('');
+    const avail=[];classes.forEach(c=>classSlots(c).forEach(sl=>{if(sl.day===d.getDay()&&!booked.some(a=>a.type===c.name&&a.date===ds&&(a.time||'')===(sl.time||'')))avail.push({c,time:sl.time||''});}));
+    avail.sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+    const availChips=avail.map(e=>{const c=e.c;const cat=CATS[c.category]||CATS.MOVE;const good=(REC[c.category]||REC.MOVE)[p.key][0]==='g';
+      return `<button class="slot avail${good?' good':''}" onclick="bookSlot('${c.id}','${ds}','${e.time}')"><span class="cat-badge sm" style="--c:${cat.color}">${cat.emoji}</span><span class="slot-b"><span class="slot-n">${esc(c.name)}${passCats[c.category]?' <span class="pt-mem">pass</span>':''}</span><span class="slot-s">${e.time?fmtTime(e.time):''} · ${esc(placeName(c.placeId))}</span></span><span class="slot-add">＋</span></button>`;}).join('');
+    const none=(!bookedChips&&!availChips)?`<div class="tt-none">— no lessons</div>`:'';
+    rows+=`<div class="prow${isT?' t':''}">
+      <div class="prow-head"><span class="prow-day">${DOW_FULL[d.getDay()]} <span class="prow-date">${d.getDate()} ${MON[d.getMonth()]}${isT?' · today':''}</span></span><span class="pill" style="color:${p.accent};background:${p.tint}">${p.label}</span></div>
+      <div class="slots">${bookedChips}${availChips}${none}</div>
     </div>`;
   }
   document.getElementById('app').innerHTML=`
@@ -610,7 +602,7 @@ function renderHome(){
       <div class="dateline">Today · ${DOW_FULL[tt.getDay()]} ${tt.getDate()} ${MON[tt.getMonth()]} ${tt.getFullYear()}</div>
     </header>
     <button class="whenbtn" onclick="openPlan()"><span class="q">When should I…?</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
-    <div class="viewtog"><button class="on" onclick="setView('week')">Week</button><button onclick="setView('month')">Month</button><button onclick="setView('timetable')">Timetable</button></div>
+    <div class="viewtog"><button class="on" onclick="setView('week')">Week</button><button onclick="setView('month')">Month</button></div>
     <div class="spendbar">
       <div class="chip" onclick="openSpend('${wFrom}','${wTo}','${esc(wLabel)} spend')"><div class="label">${esc(wLabel)}</div><div class="v">${EUR(wSpend)} <small>spend</small></div></div>
       <div class="chip" onclick="openSpend('${mFirst}','${mLast}','${mName} spend')"><div class="label">${mName}</div><div class="v">${EUR(mSpend)} <small>so far</small></div></div>
@@ -620,7 +612,9 @@ function renderHome(){
       <button class="wnow ${weekOffset===0?'here':''}" onclick="goThisWeek()">${esc(wLabel)}<span class="wrange">${wRange}</span></button>
       <button class="wbtn" onclick="changeWeek(1)" aria-label="Next week">›</button>
     </div>
-    ${daysHtml}
+    ${anyClasses?`<div class="label" style="margin:2px 2px 10px">Your lessons this week</div>${rows}`:'<div class="empty" style="text-align:center;padding:24px 0">Add your studios &amp; their class times to see your weekly lessons here.</div>'}
+    <div style="text-align:center;margin-top:16px"><button class="linklike" onclick="openPlaces()">＋ Add studios &amp; class times</button></div>
+    <div class="disclaimer" style="margin-top:12px">Green = suits your phase now · tap a lesson to book it.</div>
     <div class="footer">
       <button class="btn ghost" onclick="exportWeekICS()">📅 Add this week to calendar</button>
       <button class="disclaimer discbtn" onclick="openScience()">A gentle guideline synced to your cycle — not medical advice. <span class="disc-why">Why?</span></button>
@@ -701,7 +695,7 @@ function renderMonth(){
       <div class="dateline">Today · ${DOW_FULL[tt.getDay()]} ${tt.getDate()} ${MON[tt.getMonth()]} ${tt.getFullYear()}</div>
     </header>
     <button class="whenbtn" onclick="openPlan()"><span class="q">When should I…?</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
-    <div class="viewtog"><button onclick="setView('week')">Week</button><button class="on" onclick="setView('month')">Month</button><button onclick="setView('timetable')">Timetable</button></div>
+    <div class="viewtog"><button onclick="setView('week')">Week</button><button class="on" onclick="setView('month')">Month</button></div>
     <div class="spendbar">
       <div class="chip" onclick="openSpend('${ymd(first)}','${ymd(last)}','${MON[m]} ${y} spend')"><div class="label">${MON[m]} ${y}</div><div class="v">${EUR(monthSpend(base))} <small>spend</small></div></div>
     </div>
@@ -738,43 +732,7 @@ function openDay(ds){
 function setView(v){viewMode=v;if(v==='month'&&!monthCursor)monthCursor=today();render();window.scrollTo(0,0)}
 function changeMonth(n){const b=monthCursor||today();monthCursor=new Date(b.getFullYear(),b.getMonth()+n,1);renderMonth();window.scrollTo(0,0)}
 function goThisMonth(){monthCursor=today();renderMonth();window.scrollTo(0,0)}
-function render(){viewMode==='plan'?renderPlan():viewMode==='timetable'?renderTimetable():viewMode==='month'?renderMonth():renderHome()}
-function changeTtWeek(d){ttWeekOffset+=d;renderTimetable();window.scrollTo(0,0)}
-function renderTimetable(){
-  document.getElementById('fab').classList.remove('hidden');
-  const mon=addDays(mondayOf(today()),ttWeekOffset*7);const tday=ymd(today());const tt=today();
-  const passCats={};passes.forEach(p=>passCats[p.category]=1);const anyClasses=classes.length>0;
-  let rows='';
-  for(let i=0;i<7;i++){
-    const d=addDays(mon,i);const ds=ymd(d);const p=phaseForDate(d);const isT=ds===tday;
-    const booked=actsOn(d);
-    const bookedChips=booked.map(a=>{const cat=catOf(a);
-      return `<button class="slot booked" onclick="openActivityMenu('${a.id}')"><span class="cat-badge sm" style="--c:${cat.color}">${cat.emoji}</span><span class="slot-b"><span class="slot-n">${esc(a.type)||cat.label}</span><span class="slot-s">${a.time?fmtTime(a.time)+' · ':''}${esc(a.place)||cat.label}</span></span><span class="slot-chk">✓</span></button>`;}).join('');
-    const avail=[];classes.forEach(c=>classSlots(c).forEach(sl=>{if(sl.day===d.getDay()&&!booked.some(a=>a.type===c.name&&a.date===ds&&(a.time||'')===(sl.time||'')))avail.push({c,time:sl.time||''});}));
-    avail.sort((a,b)=>(a.time||'').localeCompare(b.time||''));
-    const availChips=avail.map(e=>{const c=e.c;const cat=CATS[c.category]||CATS.MOVE;const good=(REC[c.category]||REC.MOVE)[p.key][0]==='g';
-      return `<button class="slot avail${good?' good':''}" onclick="bookSlot('${c.id}','${ds}','${e.time}')"><span class="cat-badge sm" style="--c:${cat.color}">${cat.emoji}</span><span class="slot-b"><span class="slot-n">${esc(c.name)}${passCats[c.category]?' <span class="pt-mem">pass</span>':''}</span><span class="slot-s">${e.time?fmtTime(e.time):''} · ${esc(placeName(c.placeId))}</span></span><span class="slot-add">＋</span></button>`;}).join('');
-    const none=(!bookedChips&&!availChips)?`<div class="tt-none">— no lessons</div>`:'';
-    rows+=`<div class="prow${isT?' t':''}">
-      <div class="prow-head"><span class="prow-day">${DOW_FULL[d.getDay()]} <span class="prow-date">${d.getDate()} ${MON[d.getMonth()]}${isT?' · today':''}</span></span><span class="pill" style="color:${p.accent};background:${p.tint}">${p.label}</span></div>
-      <div class="slots">${bookedChips}${availChips}${none}</div>
-    </div>`;
-  }
-  document.getElementById('app').innerHTML=`
-    <header class="hero"><button class="menubtn" onclick="openMenu()" aria-label="Menu">☰</button>
-      <img class="brandlogo" src="faze-logo.png" alt="fáze — cycle × wellness planner">
-      <div class="dateline">Today · ${DOW_FULL[tt.getDay()]} ${tt.getDate()} ${MON[tt.getMonth()]} ${tt.getFullYear()}</div>
-    </header>
-    <div class="viewtog"><button onclick="setView('week')">Week</button><button onclick="setView('month')">Month</button><button class="on" onclick="setView('timetable')">Timetable</button></div>
-    <div class="weeknav">
-      <button class="wbtn" onclick="changeTtWeek(-1)" aria-label="Previous week">‹</button>
-      <button class="wnow" onclick="ttWeekOffset=0;renderTimetable()">${weekLabel(ttWeekOffset,mon)}<span class="wrange">${mon.getDate()} ${MON[mon.getMonth()]} – ${addDays(mon,6).getDate()} ${MON[addDays(mon,6).getMonth()]}</span></button>
-      <button class="wbtn" onclick="changeTtWeek(1)" aria-label="Next week">›</button>
-    </div>
-    ${anyClasses?`<div class="label" style="margin:2px 2px 10px">Your lessons this week</div>${rows}`:'<div class="empty" style="text-align:center;padding:24px 0">Add your studios &amp; their class times to see your weekly lessons here.</div>'}
-    <div style="text-align:center;margin-top:16px"><button class="linklike" onclick="openPlaces()">＋ Add studios &amp; class times</button></div>
-    <div class="disclaimer" style="margin-top:12px">Green = suits your phase now · tap a lesson to book it.</div>`;
-}
+function render(){viewMode==='plan'?renderPlan():viewMode==='month'?renderMonth():renderHome()}
 
 /* ---------------- passes ---------------- */
 function passesStripHtml(){
