@@ -143,6 +143,47 @@
   .slot.add .slot-n{color:var(--muted);font-weight:500}
   .slot.add .slot-add{margin-right:0}
 
+  /* grid timetable (days across · times down) */
+  .ttwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 0 4px;padding:2px 0 10px;scroll-snap-type:x proximity;scroll-padding-left:56px}
+  .ttgrid{display:grid;gap:6px;min-width:max-content}
+  .tt-corner{position:sticky;left:0;z-index:3;background:var(--bg1)}
+  .tt-colh{scroll-snap-align:start;border-radius:12px;padding:8px 6px 7px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:1px;background:var(--pt,#eee);transition:box-shadow .12s}
+  .tt-colh .tt-dow{font-size:11px;font-weight:700;color:var(--pa,#333);letter-spacing:.02em}
+  .tt-colh .tt-date{font-family:'Fraunces',serif;font-size:16px;font-weight:600;color:var(--ink);line-height:1}
+  .tt-colh .tt-ph{font-size:8px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--pa,#333);opacity:.9}
+  .tt-colh.today{outline:2px solid var(--ink);outline-offset:-2px}
+  .tt-colh.sel-target{cursor:pointer;box-shadow:0 0 0 2px var(--energy)}
+  .tt-colh.drop-good{box-shadow:0 0 0 3px #4E9B63;background:#E4F1E8;transform:translateY(-2px)}
+  .tt-colh.drop-warn{box-shadow:0 0 0 3px #E0A100;background:#FBF1DE;transform:translateY(-2px)}
+  .tt-colh.drop-ok{box-shadow:0 0 0 3px var(--energy);transform:translateY(-2px)}
+  body.dragging-tile{-webkit-user-select:none;user-select:none;cursor:grabbing}
+  .detailtog{display:block;width:100%;text-align:center;margin:0 0 14px;padding:11px;border-radius:13px;background:#EFEAE0;color:var(--ink);font-weight:600;font-size:13px}
+  .detailtog:active{transform:scale(.99)}
+  body.dragging-tile .whenbtn,body.dragging-tile .viewtog{pointer-events:none}
+  .tt-timeh{position:sticky;left:0;z-index:2;background:var(--bg1);display:flex;align-items:center;justify-content:flex-end;padding-right:7px;font-size:10.5px;font-weight:600;color:var(--muted);white-space:nowrap}
+  .tt-cell{background:#F6F3EC;border-radius:11px;min-height:26px;display:flex;flex-direction:column;gap:4px;padding:3px}
+  .tt-cell.today{background:#EEEEE4}
+  .tt-cell.blank{background:rgba(246,243,236,.45)}
+  .tt-block{display:block;width:100%;text-align:left;border-radius:9px;padding:6px 32px 6px 8px;line-height:1.12;position:relative}
+  .tt-block:active{transform:scale(.97)}
+  .tt-block .tt-emo{font-size:12px;margin-right:2px}
+  .tt-block .tt-nm{font-size:11px;font-weight:600;color:var(--ink)}
+  .tt-block .tt-add{position:absolute;top:6px;right:6px;font-size:8.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);line-height:1}
+  .tt-block .tt-chk{position:absolute;top:5px;right:6px;font-size:12px;font-weight:800;color:#4E9B63;line-height:1}
+  .tt-block.avail{background:#fff;box-shadow:inset 0 0 0 1.5px #E7DFD1}
+  .tt-block.avail.good{box-shadow:inset 0 0 0 2px #6FB07E;background:rgba(111,176,126,.09)}
+  .tt-block.avail.good .tt-add{color:#4E9B63}
+  .tt-block.avail.dim{opacity:.5}
+  .tt-block.pick{background:rgba(78,155,99,.16);box-shadow:inset 0 0 0 2px #4E9B63;opacity:1}
+  .tt-block.booked{background:var(--c,#eee);box-shadow:inset 0 0 0 1px rgba(0,0,0,.05)}
+  .planbar{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:45;display:flex;align-items:center;gap:8px;background:var(--ink);color:#F7F3EC;border-radius:999px;padding:7px 7px 7px 18px;box-shadow:0 16px 34px -12px rgba(30,45,35,.75);max-width:calc(100vw - 32px)}
+  .planbar-n{font-weight:600;font-size:14px;white-space:nowrap}
+  .planbar-clear{color:#F7F3EC;opacity:.68;font-weight:600;font-size:13px;padding:8px 8px}
+  .planbar-clear:active{opacity:1}
+  .planbar-go{background:var(--energy);color:#fff;border-radius:999px;padding:11px 20px;font-weight:600;font-size:14px;white-space:nowrap}
+  .planbar-go:active{transform:scale(.97)}
+  .ttscroll-hint{font-size:11px;color:var(--muted);text-align:right;margin:0 2px 2px;opacity:.8}
+
   /* passes */
   .passwrap{margin:0 0 16px}
   .passhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
@@ -327,6 +368,9 @@
   .ordbtn:active{transform:scale(.92)}
   .ordbtn:disabled{opacity:.3}
   .ordbtn.del{color:var(--energy-deep);background:#FBEDE8}
+  .draghandle{width:30px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;line-height:1;color:var(--muted);cursor:grab;touch-action:none;flex:0 0 auto;user-select:none}
+  .draghandle:active{cursor:grabbing}
+  .catrow.dragging{opacity:.92;box-shadow:var(--shadow);background:#fff;position:relative;z-index:2}
   .seg{display:flex;background:#E6EAE4;border-radius:14px;padding:4px;gap:4px;margin-bottom:18px}
   .seg button{flex:1;padding:10px;border-radius:11px;font-weight:600;font-size:13.5px;color:var(--muted)}
   .seg button.on{background:#fff;color:var(--ink);box-shadow:var(--shadow-sm)}
@@ -352,6 +396,24 @@
   .typehint .tchip>button:first-child{padding:5px 3px 5px 11px}
   .typehint .tchip .tdel{padding:5px 9px 5px 4px;color:#B58A8A;font-weight:700;font-size:13px}
   .typehint .tadd{background:#F1E7D6;color:var(--energy-deep)}
+  /* upkeep / last-visit tracker */
+  .upk{display:flex;align-items:center;gap:12px;background:#fff;border:1.5px solid #E9E2D4;border-radius:16px;padding:11px 12px;margin-bottom:10px}
+  .upk .cat-badge{flex:none}
+  .upk-b{flex:1;min-width:0}
+  .upk-n{font-size:14.5px;font-weight:600}
+  .upk-s{font-size:11.5px;color:var(--muted);margin-top:2px;white-space:normal}
+  .upk-r{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:none}
+  .upk-due{font-size:11px;font-weight:700;white-space:nowrap;padding:4px 9px;border-radius:999px}
+  .upk-due.ok{color:#4E9B63;background:#E6F2EA}
+  .upk-due.soon{color:#B5722A;background:#FBEEDD}
+  .upk-due.over{color:#BE4A41;background:#FBE7E4}
+  .upk-due.none{color:var(--muted);background:#EFEAE0}
+  .upk-log{padding:7px 11px;border-radius:11px;background:var(--ink);color:#F7F3EC;font-size:11.5px;font-weight:600;white-space:nowrap}
+  .upk-log:active{transform:scale(.96)}
+  .upkpreset{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 6px}
+  .upkpreset button{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;padding:7px 12px;border-radius:999px;background:#F4F0E8;color:var(--ink);font-weight:500}
+  .upkpreset button:active{transform:scale(.95)}
+  .upkpreset button .w{color:var(--muted);font-size:11px;font-weight:600}
 </style>
 </head>
 <body>
@@ -369,20 +431,18 @@
 const K_CYCLE='whenTo.cycle', K_ACTS='whenTo.activities';
 const load=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}};
 const save=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
-const K_PASSES='whenTo.passes', K_PLACES='whenTo.places', K_CLASSES='whenTo.classes', K_PERIODS='whenTo.periods';
+const K_PASSES='whenTo.passes', K_PLACES='whenTo.places', K_CLASSES='whenTo.classes', K_PERIODS='whenTo.periods', K_UPKEEP='whenTo.upkeep';
 let cycle=load(K_CYCLE,null);
 let activities=load(K_ACTS,[]);
 let passes=load(K_PASSES,[]);
 let places=load(K_PLACES,[]);
 let classes=load(K_CLASSES,[]);
 let periods=load(K_PERIODS, cycle&&cycle.lastPeriodStart?[cycle.lastPeriodStart]:[]);
+let upkeep=load(K_UPKEEP,[]);
 let weekOffset=0;
 let viewMode='week';        // 'week' | 'month' | 'spend'
 let monthCursor=null;       // Date of displayed month
 let spendPeriod='month';    // 'week' | 'month'
-let prevCalView='week';     // where to return from the spend/plan screen
-let planSel=null;           // tapped-then-place suggestion
-let planWeekOffset=0;       // plan board week navigation
 
 /* ---------------- categories ---------------- */
 let CATS={
@@ -524,6 +584,7 @@ const K_CURRENCY='whenTo.currency';
 const CURRENCIES={EUR:{sym:'€'},USD:{sym:'$'},GBP:{sym:'£'},RON:{sym:'lei',suffix:true},CHF:{sym:'CHF',suffix:true},PLN:{sym:'zł',suffix:true},SEK:{sym:'kr',suffix:true}};
 let currency=load(K_CURRENCY,'EUR');
 const EUR=n=>{const c=CURRENCIES[currency]||CURRENCIES.EUR;const v=(Math.round(n*100)/100).toLocaleString(undefined,{minimumFractionDigits:(n%1?2:0),maximumFractionDigits:2});return c.suffix?v+' '+c.sym:c.sym+v;};
+const curSym=()=>(CURRENCIES[currency]||CURRENCIES.EUR).sym;
 
 /* activities occurring on a given date */
 function actsOn(date){
@@ -570,30 +631,103 @@ function fmtTime(t){if(!t)return '';const[h,m]=t.split(':').map(Number);const ap
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 /* ---------------- render: home ---------------- */
+/* ---------------- week grid timetable (days across · times down) ---------------- */
+/* multi-select: pick sessions across the week, then commit them all at once */
+let planPick=[];
+function showToast(msg){let t=document.getElementById('ptoast');if(!t){t=document.createElement('div');t.id='ptoast';t.className='ptoast';document.body.appendChild(t);}t.textContent=msg;t.classList.add('show');clearTimeout(showToast._t);showToast._t=setTimeout(()=>t.classList.remove('show'),2000);}
+function pickedClass(cid,ds,time){return planPick.some(p=>p.k==='c'&&p.cid===cid&&p.ds===ds&&(p.time||'')===(time||''));}
+function toggleClassPick(cid,ds,time){const i=planPick.findIndex(p=>p.k==='c'&&p.cid===cid&&p.ds===ds&&(p.time||'')===(time||''));if(i>=0)planPick.splice(i,1);else planPick.push({k:'c',cid,ds,time:time||''});renderHome();}
+function addActPick(cat,type,ds){planPick.push({k:'a',uid:'k'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),cat,type,ds});renderHome();}
+function removePick(uid){planPick=planPick.filter(p=>p.uid!==uid);renderHome();}
+function clearPicks(){planPick=[];renderHome();}
+function commitPicks(){
+  if(!planPick.length)return;let n=0;
+  planPick.forEach(p=>{const nid='a'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+    if(p.k==='c'){const c=classes.find(x=>x.id===p.cid);if(!c)return;activities.push({id:nid,category:c.category,type:c.name,place:placeName(c.placeId),time:p.time||'',passId:null,includedInPass:false,cost:0,recurring:false,daysOfWeek:null,date:p.ds});n++;}
+    else{activities.push({id:nid,category:p.cat,type:p.type,place:'',time:'',passId:null,includedInPass:false,cost:0,recurring:false,daysOfWeek:null,date:p.ds});n++;}});
+  save(K_ACTS,activities);planPick=[];renderHome();showToast('✓ Added '+n+' to your week');
+}
+function weekPhaseKeys(mon){return [...new Set([...Array(7)].map((_,i)=>(phaseForDate(addDays(mon,i))||{key:'foll'}).key))];}
+function niceSetFor(ks){const seen={},out=[];ks.forEach(pk=>((PHASE_GUIDE[pk]||{}).nice||[]).forEach(n=>{const k=n[0]+n[1];if(!seen[k]){seen[k]=1;out.push(n);}}));return out;}
+function weekTimetable(mon,tday,passCats){
+  const days=[];const timeSet=new Set();let hasAny=false,anyGood=false;
+  for(let i=0;i<7;i++){
+    const d=addDays(mon,i);const ds=ymd(d);const p=phaseForDate(d)||PHASES.foll;const dow=d.getDay();
+    const booked=actsOn(d);const entries=[];
+    booked.forEach(a=>{const C=catOf(a);entries.push({kind:'booked',time:a.time||'',emoji:C.emoji,color:C.color,name:esc(a.type)||C.label,id:a.id});});
+    classes.forEach(c=>classSlots(c).forEach(sl=>{if(sl.day===dow){const t=sl.time||'';if(booked.some(a=>a.type===c.name&&(a.time||'')===t))return;const C=CATS[c.category]||CATS.MOVE;const r=(REC[c.category]||REC.MOVE)[p.key][0];const good=r==='g';if(good)anyGood=true;entries.push({kind:'avail',time:t,emoji:C.emoji,color:C.color,name:esc(c.name)+(passCats[c.category]?' <span class="pt-mem">pass</span>':''),cid:c.id,ds,good,dim:(r==='o'||r==='r'),picked:pickedClass(c.id,ds,t)});}}));
+    planPick.filter(p=>p.k==='a'&&p.ds===ds).forEach(p=>{const C=CATS[p.cat]||CATS.MOVE;entries.push({kind:'pick',time:'',emoji:C.emoji,color:C.color,name:esc(p.type),uid:p.uid});});
+    entries.forEach(e=>{if(e.time)timeSet.add(e.time);else hasAny=true;});
+    days.push({d,ds,p,dow,isT:ds===tday,entries});
+  }
+  const rows=[...timeSet].sort();if(hasAny)rows.push('');
+  let h='<div class="ttgrid" style="grid-template-columns:48px repeat(7,minmax(94px,1fr))">';
+  h+='<div class="tt-corner"></div>';
+  days.forEach(day=>{h+=`<div class="tt-colh${day.isT?' today':''}" data-date="${day.ds}" style="--pt:${day.p.tint};--pa:${day.p.accent}"><span class="tt-dow">${DOW[day.dow]}</span><span class="tt-date">${day.d.getDate()}</span><span class="tt-ph">${day.p.label}</span></div>`;});
+  if(!rows.length)h+=`<div class="tt-corner"></div><div style="grid-column:2/-1;padding:16px 8px;text-align:center;color:var(--muted);font-size:12.5px">No class times yet — add your studios below, or tap a day to plan something.</div>`;
+  rows.forEach(t=>{
+    h+=`<div class="tt-timeh">${t?fmtTime(t):'any'}</div>`;
+    days.forEach(day=>{
+      const es=day.entries.filter(e=>(e.time||'')===t);
+      if(!es.length){h+=`<div class="tt-cell blank${day.isT?' today':''}"></div>`;return;}
+      let cell=`<div class="tt-cell${day.isT?' today':''}">`;
+      es.forEach(e=>{
+        if(e.kind==='booked')cell+=`<button class="tt-block booked" style="--c:${e.color}" onclick="openActivityMenu('${e.id}')"><span class="tt-emo">${e.emoji}</span><span class="tt-nm">${e.name}</span><span class="tt-chk">✓</span></button>`;
+        else if(e.kind==='pick')cell+=`<button class="tt-block pick" style="--c:${e.color}" onclick="removePick('${e.uid}')" aria-label="Remove from plan"><span class="tt-emo">${e.emoji}</span><span class="tt-nm">${e.name}</span><span class="tt-chk">✓</span></button>`;
+        else cell+=`<button class="tt-block avail${e.good?' good':''}${e.dim?' dim':''}${e.picked?' pick':''}" onclick="toggleClassPick('${e.cid}','${e.ds}','${t}')">${e.picked?'<span class="tt-chk">✓</span>':'<span class="tt-add">Add</span>'}<span class="tt-emo">${e.emoji}</span><span class="tt-nm">${e.name}</span></button>`;
+      });
+      h+=cell+'</div>';
+    });
+  });
+  return {html:h+'</div>',anyGood};
+}
+function weekTrayHtml(mon){
+  const passCats={};passes.forEach(p=>passCats[p.category]=1);
+  const rec=niceSetFor(weekPhaseKeys(mon));if(!rec.length)return '';
+  const tiles=rec.map(n=>{const cat=n[1],name=n[0];const C=CATS[cat]||CATS.MOVE;const mem=!!passCats[cat];
+    return `<button class="ptile${mem?' mem':''}" data-cat="${cat}" data-type="${esc(name)}"><span class="cat-badge" style="--c:${C.color}">${C.emoji}</span><span class="pt-body"><span class="pt-name">${esc(name)}${mem?' <span class="pt-mem">pass</span>':''}</span></span></button>`;}).join('');
+  return `<div id="plantray"><div class="label" style="margin:22px 2px 3px">When should I…? · suited to your week</div><div class="risknote">Drag a suggestion up onto a day — the day glows <b style="color:#4E9B63">green</b> when it suits your phase. Nothing's booked until you confirm.</div><div class="ptray">${tiles}</div></div>`;
+}
+function attachTimetable(){
+  const wrap=document.querySelector('.ttwrap');
+  if(wrap){const t=wrap.querySelector('.tt-colh.today');if(t)wrap.scrollLeft=Math.max(0,t.offsetLeft-wrap.clientWidth/2+t.clientWidth/2);}
+  let sel=null;
+  const clearSel=()=>{document.querySelectorAll('.ptile.sel').forEach(x=>x.classList.remove('sel'));document.querySelectorAll('.tt-colh').forEach(x=>x.classList.remove('sel-target','drop-good','drop-warn','drop-ok'));sel=null;};
+  const colUnder=(x,y)=>{const el=document.elementFromPoint(x,y);return el?el.closest('.tt-colh'):null;};
+  const recFor=(cat,ds)=>{const[Y,M,D]=ds.split('-').map(Number);const ph=phaseForDate(new Date(Y,M-1,D))||PHASES.foll;return (REC[cat]||REC.MOVE)[ph.key][0];};
+  const markCol=(col,cat)=>{document.querySelectorAll('.tt-colh').forEach(x=>x.classList.remove('drop-good','drop-warn','drop-ok'));if(!col)return;const r=recFor(cat,col.dataset.date);col.classList.add(r==='g'?'drop-good':(r==='o'||r==='r')?'drop-warn':'drop-ok');};
+  // Drag a suggestion straight onto a day — with tap-then-tap as a fallback.
+  document.querySelectorAll('#plantray .ptile').forEach(tile=>{
+    const cat=tile.dataset.cat,type=tile.dataset.type;
+    let clone=null,dragging=false,sx=0,sy=0,autoDir=0,autoRAF=null;
+    const autoStep=()=>{if(!autoDir||!wrap){autoRAF=null;return;}wrap.scrollLeft+=autoDir*13;autoRAF=requestAnimationFrame(autoStep);};
+    const setAuto=d=>{if(d===autoDir)return;autoDir=d;if(d&&!autoRAF)autoRAF=requestAnimationFrame(autoStep);};
+    const onMove=ev=>{const x=ev.clientX,y=ev.clientY;
+      if(!dragging){if(Math.abs(x-sx)<6&&Math.abs(y-sy)<6)return;dragging=true;document.body.classList.add('dragging-tile');clearSel();
+        clone=tile.cloneNode(true);clone.classList.add('ptile-clone');clone.classList.remove('sel');document.body.appendChild(clone);
+        document.querySelectorAll('.tt-colh').forEach(c=>c.classList.add('sel-target'));if(wrap)wrap.scrollIntoView({behavior:'smooth',block:'nearest'});}
+      if(clone){clone.style.left=x+'px';clone.style.top=y+'px';}
+      markCol(colUnder(x,y),cat);
+      if(wrap){const wr=wrap.getBoundingClientRect();setAuto(x<wr.left+46?-1:x>wr.right-46?1:0);}
+    };
+    const onUp=ev=>{tile.removeEventListener('pointermove',onMove);tile.removeEventListener('pointerup',onUp);setAuto(0);try{tile.releasePointerCapture(ev.pointerId);}catch(_){}
+      document.body.classList.remove('dragging-tile');if(clone){clone.remove();clone=null;}
+      if(dragging){const col=colUnder(ev.clientX,ev.clientY);clearSel();if(col){const dow=col.querySelector('.tt-dow');addActPick(cat,type,col.dataset.date);showToast('✓ '+type+' planned'+(dow?' · '+dow.textContent:''));}return;}
+      const on=tile.classList.contains('sel');clearSel();if(!on){sel={cat,type};tile.classList.add('sel');document.querySelectorAll('.tt-colh').forEach(x=>x.classList.add('sel-target'));if(wrap)wrap.scrollIntoView({behavior:'smooth',block:'nearest'});}
+    };
+    tile.addEventListener('pointerdown',ev=>{ev.preventDefault();sx=ev.clientX;sy=ev.clientY;dragging=false;try{tile.setPointerCapture(ev.pointerId);}catch(_){}tile.addEventListener('pointermove',onMove);tile.addEventListener('pointerup',onUp);});
+  });
+  document.querySelectorAll('.tt-colh').forEach(h=>{h.addEventListener('click',()=>{if(sel){addActPick(sel.cat,sel.type,h.dataset.date);clearSel();}else{openDay(h.dataset.date);}});});
+}
 function renderHome(){
-  document.getElementById('fab').classList.remove('hidden');
+  document.getElementById('fab').classList.toggle('hidden', planPick.length>0);
   const mon=addDays(mondayOf(today()),weekOffset*7);const tday=ymd(today());
   const wSpend=weekSpend(mon),mSpend=monthSpend(),wLabel=weekLabel(weekOffset,mon);
   const tt=today();const mFirst=ymd(new Date(tt.getFullYear(),tt.getMonth(),1)),mLast=ymd(new Date(tt.getFullYear(),tt.getMonth()+1,0)),mName=MON[tt.getMonth()];
   const wFrom=ymd(mon),wEnd=addDays(mon,6),wTo=ymd(wEnd);
   const wRange=mon.getDate()+' '+MON[mon.getMonth()]+' – '+wEnd.getDate()+' '+MON[wEnd.getMonth()];
   const passCats={};passes.forEach(p=>passCats[p.category]=1);const anyClasses=classes.length>0;
-  let rows='';
-  for(let i=0;i<7;i++){
-    const d=addDays(mon,i);const ds=ymd(d);const p=phaseForDate(d);const isT=ds===tday;
-    const booked=actsOn(d);
-    const bookedChips=booked.map(a=>{const cat=catOf(a);
-      return `<button class="slot booked" onclick="openActivityMenu('${a.id}')"><span class="cat-badge sm" style="--c:${cat.color}">${cat.emoji}</span><span class="slot-b"><span class="slot-n">${esc(a.type)||cat.label}</span><span class="slot-s">${a.time?fmtTime(a.time)+' · ':''}${esc(a.place)||cat.label}</span></span><span class="slot-chk">✓</span></button>`;}).join('');
-    const avail=[];classes.forEach(c=>classSlots(c).forEach(sl=>{if(sl.day===d.getDay()&&!booked.some(a=>a.type===c.name&&a.date===ds&&(a.time||'')===(sl.time||'')))avail.push({c,time:sl.time||''});}));
-    avail.sort((a,b)=>(a.time||'').localeCompare(b.time||''));
-    const availChips=avail.map(e=>{const c=e.c;const cat=CATS[c.category]||CATS.MOVE;const good=(REC[c.category]||REC.MOVE)[p.key][0]==='g';
-      return `<button class="slot avail${good?' good':''}" onclick="bookSlot('${c.id}','${ds}','${e.time}')"><span class="cat-badge sm" style="--c:${cat.color}">${cat.emoji}</span><span class="slot-b"><span class="slot-n">${esc(c.name)}${passCats[c.category]?' <span class="pt-mem">pass</span>':''}</span><span class="slot-s">${e.time?fmtTime(e.time):''} · ${esc(placeName(c.placeId))}</span></span><span class="slot-add">＋</span></button>`;}).join('');
-    const none=(!bookedChips&&!availChips)?`<div class="tt-none">— no lessons</div>`:'';
-    rows+=`<div class="prow${isT?' t':''}">
-      <div class="prow-head"><span class="prow-day">${DOW_FULL[d.getDay()]} <span class="prow-date">${d.getDate()} ${MON[d.getMonth()]}${isT?' · today':''}</span></span><span class="pill" style="color:${p.accent};background:${p.tint}">${p.label}</span></div>
-      <div class="slots">${bookedChips}${availChips}${none}</div>
-    </div>`;
-  }
+  const ttGrid=weekTimetable(mon,tday,passCats);const trayHtml=weekTrayHtml(mon);const anyGoodSlot=ttGrid.anyGood;
   document.getElementById('app').innerHTML=`
     <header class="hero">
       <button class="menubtn" onclick="openMenu()" aria-label="Menu">☰</button>
@@ -601,7 +735,7 @@ function renderHome(){
 
       <div class="dateline">Today · ${DOW_FULL[tt.getDay()]} ${tt.getDate()} ${MON[tt.getMonth()]} ${tt.getFullYear()}</div>
     </header>
-    <button class="whenbtn" onclick="openPlan()"><span class="q">When should I…?</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button class="whenbtn" onclick="document.getElementById('plantray')?document.getElementById('plantray').scrollIntoView({behavior:'smooth',block:'start'}):document.querySelector('.ttwrap')?.scrollIntoView({behavior:'smooth',block:'start'})"><span class="q">When should I…?</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg></button>
     <div class="viewtog"><button class="on" onclick="setView('week')">Week</button><button onclick="setView('month')">Month</button></div>
     <div class="spendbar">
       <div class="chip" onclick="openSpend('${wFrom}','${wTo}','${esc(wLabel)} spend')"><div class="label">${esc(wLabel)}</div><div class="v">${EUR(wSpend)} <small>spend</small></div></div>
@@ -612,13 +746,18 @@ function renderHome(){
       <button class="wnow ${weekOffset===0?'here':''}" onclick="goThisWeek()">${esc(wLabel)}<span class="wrange">${wRange}</span></button>
       <button class="wbtn" onclick="changeWeek(1)" aria-label="Next week">›</button>
     </div>
-    ${anyClasses?`<div class="label" style="margin:2px 2px 10px">Your lessons this week</div>${rows}`:'<div class="empty" style="text-align:center;padding:24px 0">Add your studios &amp; their class times to see your weekly lessons here.</div>'}
+    <div class="label" style="margin:2px 2px 8px">Your week · tap classes to plan, then confirm</div>
+    <div class="ttscroll-hint">scroll sideways for the full week →</div>
+    <div class="ttwrap">${ttGrid.html}</div>
+    ${trayHtml}
     <div style="text-align:center;margin-top:16px"><button class="linklike" onclick="openPlaces()">＋ Add studios &amp; class times</button></div>
-    <div class="disclaimer" style="margin-top:12px">Green = suits your phase now · tap a lesson to book it.</div>
+    <div class="disclaimer" style="margin-top:12px;display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap"><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:13px;height:13px;border-radius:5px;border:2px solid #6FB07E;display:inline-block"></span>green = a good fit for your phase</span>${anyGoodSlot?'':' · none this week — that\'s fine, tap any class to book'}</div>
     <div class="footer">
       <button class="btn ghost" onclick="exportWeekICS()">📅 Add this week to calendar</button>
       <button class="disclaimer discbtn" onclick="openScience()">A gentle guideline synced to your cycle — not medical advice. <span class="disc-why">Why?</span></button>
-    </div>`;
+    </div>
+    ${planPick.length?`<div class="planbar"><span class="planbar-n">${planPick.length} planned</span><button class="planbar-clear" onclick="clearPicks()">Clear</button><button class="planbar-go" onclick="commitPicks()">Add to my week</button></div>`:''}`;
+  attachTimetable();
 }
 
 function openMenu(){
@@ -626,6 +765,7 @@ function openMenu(){
     <div class="acts menu" style="margin:8px 0 14px">
       <button class="act" onclick="closeSheet();openPlaces()"><span class="cat-badge" style="--c:#D7E9E3">📍</span><span class="body"><div class="a-name">Places & classes</div></span></button>
       <button class="act" onclick="closeSheet();openPasses()"><span class="cat-badge" style="--c:#F3E7C9">🎟️</span><span class="body"><div class="a-name">Passes & memberships</div></span></button>
+      <button class="act" onclick="closeSheet();openUpkeep()"><span class="cat-badge" style="--c:#F7E4CE">🔁</span><span class="body"><div class="a-name">Upkeep & last visits</div><div class="a-sub">Dermatology, haircut, facials…</div></span></button>
       <button class="act" onclick="closeSheet();openCats()"><span class="cat-badge" style="--c:#F4DCEA">🗂️</span><span class="body"><div class="a-name">Categories</div><div class="a-sub">Reorder &amp; tidy your grid</div></span></button>
       <button class="act" onclick="closeSheet();openBackup()"><span class="cat-badge" style="--c:#D6E2F4">💾</span><span class="body"><div class="a-name">Data & calendar</div></span></button>
       <button class="act" onclick="closeSheet();openCycle()"><span class="cat-badge" style="--c:#E0EAF3">🩸</span><span class="body"><div class="a-name">Cycle & period log</div></span></button>
@@ -640,7 +780,7 @@ function openMenu(){
 
 function openCurrency(){
   sheet(`<h2 class="serif">Currency</h2><div class="sub">Shown on all your spend.</div>
-    <div class="acts" style="margin:8px 0 14px">${Object.keys(CURRENCIES).map(code=>{const c=CURRENCIES[code];return `<button class="act" onclick="setCurrency('${code}')"><span class="cat-badge" style="--c:#DEEBCE">${c.sym}</span><span class="body"><div class="a-name">${code}</div></span>${currency===code?'<span class="cost" style="color:var(--sage)">✓</span>':''}</button>`;}).join('')}</div>
+    <div class="acts" style="margin:8px 0 14px">${Object.keys(CURRENCIES).map(code=>{const c=CURRENCIES[code];return `<button class="act" style="align-items:center" onclick="setCurrency('${code}')"><span class="cat-badge" style="--c:#DEEBCE;font-size:${c.sym.length>1?'12px':'17px'};font-weight:600">${c.sym}</span><span class="body"><div class="a-name">${code}</div></span>${currency===code?'<span class="cost" style="color:var(--calm)">✓</span>':''}</button>`;}).join('')}</div>
     <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">Close</button></div>`);
 }
 function setCurrency(code){currency=code;save(K_CURRENCY,code);render();openCurrency();}
@@ -694,7 +834,7 @@ function renderMonth(){
 
       <div class="dateline">Today · ${DOW_FULL[tt.getDay()]} ${tt.getDate()} ${MON[tt.getMonth()]} ${tt.getFullYear()}</div>
     </header>
-    <button class="whenbtn" onclick="openPlan()"><span class="q">When should I…?</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button class="whenbtn" onclick="setView('week')"><span class="q">When should I…?</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
     <div class="viewtog"><button onclick="setView('week')">Week</button><button class="on" onclick="setView('month')">Month</button></div>
     <div class="spendbar">
       <div class="chip" onclick="openSpend('${ymd(first)}','${ymd(last)}','${MON[m]} ${y} spend')"><div class="label">${MON[m]} ${y}</div><div class="v">${EUR(monthSpend(base))} <small>spend</small></div></div>
@@ -705,10 +845,10 @@ function renderMonth(){
       <button class="wnow" onclick="goThisMonth()">${MON[m]} ${y}</button>
       <button class="wbtn" onclick="changeMonth(1)" aria-label="Next month">›</button>
     </div>
-    <div class="label" style="margin:2px 2px 12px">This month, phase by phase</div>
-    ${guide}
-    ${clashHtml}
     ${monthTallyHtml(first,last)}
+    ${clashHtml}
+    <div class="label" style="margin:26px 2px 12px">This month, phase by phase <span style="text-transform:none;letter-spacing:.01em;font-weight:500;opacity:.75">· gentle guidance</span></div>
+    ${guide}
     <div class="footer">
       <button class="disclaimer discbtn" onclick="openScience()">A gentle guideline synced to your cycle — not medical advice. <span class="disc-why">Why?</span></button>
     </div>`;
@@ -732,7 +872,7 @@ function openDay(ds){
 function setView(v){viewMode=v;if(v==='month'&&!monthCursor)monthCursor=today();render();window.scrollTo(0,0)}
 function changeMonth(n){const b=monthCursor||today();monthCursor=new Date(b.getFullYear(),b.getMonth()+n,1);renderMonth();window.scrollTo(0,0)}
 function goThisMonth(){monthCursor=today();renderMonth();window.scrollTo(0,0)}
-function render(){viewMode==='plan'?renderPlan():viewMode==='month'?renderMonth():renderHome()}
+function render(){viewMode==='month'?renderMonth():renderHome()}
 
 /* ---------------- passes ---------------- */
 function passesStripHtml(){
@@ -741,7 +881,7 @@ function passesStripHtml(){
     const rem=passRemaining(p);const remTxt=rem==null?'unlimited':`${rem} of ${p.total} left`;
     const low=rem!=null&&rem<=2;
     return `<button class="pass ${low?'low':''}" onclick="openPass('${p.id}')">
-      <span class="pn">${esc(p.name)}</span><span class="pr">${remTxt}</span>${p.price?`<span class="pp">${EUR(p.price)}</span>`:''}</button>`;
+      <span class="pn">${esc(p.name)}</span>${p.place?`<span class="pr" style="opacity:.75">${esc(p.place)}</span>`:''}<span class="pr">${remTxt}</span>${p.price?`<span class="pp">${EUR(p.price)}</span>`:''}</button>`;
   }).join('');
   return `<div class="passwrap">
     <div class="passhead"><span class="label">Passes${total?' · '+EUR(total):''}</span><button class="passadd" onclick="openPass()">＋ Add</button></div>
@@ -751,33 +891,41 @@ function passesStripHtml(){
 function setPassCat(k){formPassCat=k;document.querySelectorAll('#pcatgrid .catcell').forEach(el=>el.classList.toggle('on',el.dataset.cat===k))}
 function openPass(id){
   editingPass=id||null;const p=id?passById(id):{name:'',price:'',total:''};const unlimited=id?(p.total==null):false;
-  const used=id?passUsed(id):0;formPassCat=p.category||'MOVE';
+  const used=id?passUsed(id):0;formPassCat=p.category||'MOVE';formPassKind=unlimited?'unlimited':'pack';
   sheet(`<h2 class="serif">${id?'Edit pass':'New pass'}</h2>
-    <div class="sub">A membership or class pack — so its cost & classes are tracked.</div>
-    <label class="label" style="display:block;margin-bottom:9px">Category</label>
-    <div class="catgrid" id="pcatgrid">${CAT_KEYS.map(k=>`<button type="button" class="catcell ${k===formPassCat?'on':''}" data-cat="${k}" style="--c:${CATS[k].color}" onclick="setPassCat('${k}')"><span class="ce">${CATS[k].emoji}</span>${CATS[k].label}</button>`).join('')}</div>
+    <div class="sub">Just the essentials — name it, say how it works, done.</div>
     <div class="field"><label class="label">Name</label><input type="text" id="p-name" placeholder="e.g. F45 10-pack" value="${esc(p.name)}"></div>
-    <div class="field"><label class="label">Price (€)</label><input type="number" id="p-price" min="0" step="1" placeholder="0" value="${p.price!=null&&p.price!==''?p.price:''}"></div>
-    <div class="field"><label class="label">Valid until <span style="text-transform:none;letter-spacing:0;font-weight:500;color:var(--muted)">(optional)</span></label><input type="date" id="p-exp" value="${p.expiry||''}" min="${ymd(today())}"></div>
-    <div class="field"><label class="toggle"><input type="checkbox" id="p-unl" ${unlimited?'checked':''} onchange="togglePassUnl()"> <span>Unlimited membership (no class count)</span></label>
-      <div id="p-total-wrap" class="${unlimited?'hidden':''}" style="margin-top:12px">
-        <label class="label" style="display:block;margin-bottom:7px">Total classes${id&&!unlimited?` · ${used} booked so far`:''}</label>
-        <input type="number" id="p-total" min="1" step="1" placeholder="e.g. 10" value="${p.total!=null&&p.total!==''?p.total:''}"></div>
+    <label class="label" style="display:block;margin-bottom:9px">How it works</label>
+    <div class="seg">
+      <button type="button" id="pk-pack" class="${formPassKind==='pack'?'on':''}" onclick="setPassKind('pack')">Class pack</button>
+      <button type="button" id="pk-unl" class="${formPassKind==='unlimited'?'on':''}" onclick="setPassKind('unlimited')">Unlimited</button>
     </div>
+    <div id="p-total-wrap" class="field ${formPassKind==='unlimited'?'hidden':''}"><label class="label">How many classes${id&&!unlimited?` · ${used} used so far`:''}</label>
+      <input type="number" id="p-total" min="1" step="1" placeholder="e.g. 10" value="${p.total!=null&&p.total!==''?p.total:''}"></div>
+    <div class="field"><label class="label">Price (${curSym()})</label><input type="number" id="p-price" min="0" step="1" placeholder="0" value="${p.price!=null&&p.price!==''?p.price:''}"></div>
+    <details style="margin-bottom:16px"><summary style="cursor:pointer;color:var(--muted);font-size:13px;font-weight:600;list-style:none">More (studio, expiry, category) ▾</summary>
+      <div style="margin-top:14px">
+        <div class="field"><label class="label">Studio / place</label><input type="text" id="p-place" placeholder="e.g. Sala Studio" value="${esc(p.place||'')}"></div>
+        <div class="field"><label class="label">Valid until</label><input type="date" id="p-exp" value="${p.expiry||''}" min="${ymd(today())}"></div>
+        <label class="label" style="display:block;margin-bottom:9px">Counts toward</label>
+        <div class="catgrid" id="pcatgrid">${CAT_KEYS.map(k=>`<button type="button" class="catcell ${k===formPassCat?'on':''}" data-cat="${k}" style="--c:${CATS[k].color}" onclick="setPassCat('${k}')"><span class="ce">${CATS[k].emoji}</span>${CATS[k].label}</button>`).join('')}</div>
+      </div>
+    </details>
     <div class="sheet-actions">
       ${id?`<button class="btn danger" onclick="deletePass('${id}')">Delete</button>`:'<button class="btn ghost" onclick="closeSheet()">Cancel</button>'}
       <button class="btn primary" onclick="savePass()">Save</button>
     </div>`);
 }
-function togglePassUnl(){document.getElementById('p-total-wrap').classList.toggle('hidden',document.getElementById('p-unl').checked)}
+function setPassKind(k){formPassKind=k;document.getElementById('pk-pack').classList.toggle('on',k==='pack');document.getElementById('pk-unl').classList.toggle('on',k==='unlimited');document.getElementById('p-total-wrap').classList.toggle('hidden',k==='unlimited');}
 function savePass(){
   const name=document.getElementById('p-name').value.trim();
   const price=parseFloat(document.getElementById('p-price').value)||0;
-  const unl=document.getElementById('p-unl').checked;
-  const total=unl?null:(parseInt(document.getElementById('p-total').value)||null);
+  const total=formPassKind==='unlimited'?null:(parseInt(document.getElementById('p-total').value)||null);
   if(!name){alert('Name your pass.');return}
-  const expiry=document.getElementById('p-exp').value||null;
-  const base={category:formPassCat,name,price,total,expiry};
+  const expEl=document.getElementById('p-exp'),plEl=document.getElementById('p-place');
+  const expiry=(expEl&&expEl.value)||null;
+  const place=(plEl&&plEl.value.trim())||'';
+  const base={category:formPassCat,name,place,price,total,expiry};
   if(editingPass){const i=passes.findIndex(x=>x.id===editingPass);passes[i]={...passes[i],...base}}
   else{passes.push({id:'p'+Date.now()+Math.random().toString(36).slice(2,5),...base})}
   save(K_PASSES,passes);closeSheet();render();
@@ -791,7 +939,7 @@ function openPasses(){
     const rem=passRemaining(p);const remTxt=rem==null?'Unlimited':`${rem} of ${p.total} classes left`;const low=rem!=null&&rem<=2;const cat=CATS[p.category]||CATS.MOVE;
     return `<button class="act" onclick="openPass('${p.id}')">
       <span class="cat-badge" style="--c:${cat.color}">${cat.emoji}</span>
-      <span class="body"><div class="a-top"><span class="a-name">${esc(p.name)}</span>${p.price?`<span class="cost">${EUR(p.price)}</span>`:''}</div>
+      <span class="body"><div class="a-top"><span class="a-name">${esc(p.name)}${p.place?` <span style="font-weight:500;color:var(--muted);font-size:12px">· ${esc(p.place)}</span>`:''}</span>${p.price?`<span class="cost">${EUR(p.price)}</span>`:''}</div>
       <div class="a-sub" ${low?'style="color:#B5722A;font-weight:600"':''}>${remTxt}${passExpiryTxt(p)?' · '+passExpiryTxt(p):''}</div></span></button>`;
   }).join(''):'<div class="empty">No passes yet — add your gym membership or a class pack.</div>';
   sheet(`<h2 class="serif">Passes & memberships</h2>
@@ -799,6 +947,71 @@ function openPasses(){
     <div class="acts" style="margin:2px 0 16px">${list}</div>
     <div class="sheet-actions"><button class="btn ghost" onclick="closeSheet()">Close</button><button class="btn primary" onclick="openPass()">＋ New pass</button></div>`);
 }
+
+/* ---------------- upkeep / last-visit tracker ---------------- */
+/* typical rhythms — a common cadence, not medical advice; every value is editable */
+const UPKEEP_PRESETS=[
+  ['💧','Hydrafacial',4],['✨','Facial',4],['🧖','Deep-cleanse facial',6],
+  ['🩺','Dermatology / skin check',26],['💉','Botox',16],['🧴','Fillers',36],
+  ['⚡','Laser hair removal',6],['🪒','Waxing',4],['🧵','Threading / brows',4],
+  ['💇','Haircut / trim',8],['🎨','Colour / roots',6],['💆','Massage',4],
+  ['💅','Manicure',3],['🦶','Pedicure',4],['👁️','Lash fill',3],['🦷','Dentist',26]
+];
+function humanDur(days){const a=Math.abs(days);if(a<7)return a+(a===1?' day':' days');const w=Math.round(a/7);if(w<9)return w+(w===1?' week':' weeks');const mo=Math.round(a/30.4);return mo+(mo===1?' month':' months');}
+function upkeepNext(it){if(!it.lastDate||!it.cadenceWeeks)return null;return addDays(parseYMD(it.lastDate),Math.round(it.cadenceWeeks*7));}
+function upkeepStatus(it){const nx=upkeepNext(it);
+  if(!it.lastDate)return{cls:'none',txt:'not logged',date:null};
+  if(!it.cadenceWeeks)return{cls:'none',txt:'logged',date:null};
+  const du=daysBetween(today(),nx);
+  if(du<0)return{cls:'over',txt:'overdue '+humanDur(du),date:nx};
+  if(du===0)return{cls:'over',txt:'due today',date:nx};
+  if(du<=7)return{cls:'soon',txt:'due in '+humanDur(du),date:nx};
+  return{cls:'ok',txt:'in '+humanDur(du),date:nx};}
+function openUpkeep(){
+  const sorted=[...upkeep].sort((a,b)=>{const na=upkeepNext(a),nb=upkeepNext(b);if(!na&&!nb)return 0;if(!na)return 1;if(!nb)return -1;return na-nb;});
+  const list=sorted.length?sorted.map(it=>{const st=upkeepStatus(it);
+    const ago=it.lastDate?daysBetween(parseYMD(it.lastDate),today()):null;const ld=it.lastDate?parseYMD(it.lastDate):null;
+    const lastTxt=ld?`Last ${ld.getDate()} ${MON[ld.getMonth()]}${ago===0?' · today':(ago>0?' · '+humanDur(ago)+' ago':'')}`:'No visit logged yet';
+    const cad=it.cadenceWeeks?` · every ~${it.cadenceWeeks} wk`:'';
+    return `<div class="upk">
+      <span class="cat-badge" style="--c:#F4F0E8">${it.emoji||'🔁'}</span>
+      <span class="upk-b"><button class="upk-n" style="display:block;text-align:left" onclick="openUpkeepEdit('${it.id}')">${esc(it.name)}</button><div class="upk-s">${lastTxt}${cad}</div></span>
+      <span class="upk-r"><span class="upk-due ${st.cls}">${st.txt}</span><button class="upk-log" onclick="upkeepLogToday('${it.id}')">Went today</button></span>
+    </div>`;}).join(''):'<div class="empty">Nothing tracked yet — add a treatment or appointment you like to keep on top of.</div>';
+  sheet(`<h2 class="serif">Upkeep &amp; last visits</h2>
+    <div class="sub">Log when you last went, and Fáze reminds you when you're roughly due again.</div>
+    <div style="margin:6px 0 14px">${list}</div>
+    <div class="sheet-actions"><button class="btn ghost" onclick="closeSheet()">Close</button><button class="btn primary" onclick="openUpkeepEdit()">＋ Track something</button></div>`);
+}
+let editingUpk=null;
+function openUpkeepEdit(id){
+  editingUpk=id||null;const it=id?upkeep.find(x=>x.id===id):{name:'',emoji:'🔁',cadenceWeeks:4,lastDate:''};
+  const presets=UPKEEP_PRESETS.map(([e,n,w])=>`<button type="button" onclick="upkeepFill('${e}','${esc(n)}',${w})">${e} ${esc(n)} <span class="w">~${w}w</span></button>`).join('');
+  sheet(`<h2 class="serif">${id?'Edit':'Track something'}</h2>
+    <div class="sub">Typical rhythms are pre-filled — adjust to your own routine. A general guide, not medical advice.</div>
+    ${id?'':`<label class="label" style="display:block;margin-bottom:9px">Quick pick</label><div class="upkpreset">${presets}</div>`}
+    <div class="row2" style="display:flex;gap:10px">
+      <div class="field" style="flex:0 0 84px"><label class="label">Icon</label><input type="text" id="u-emoji" maxlength="2" value="${esc(it.emoji||'🔁')}" style="text-align:center;font-size:22px"></div>
+      <div class="field" style="flex:1"><label class="label">Name</label><input type="text" id="u-name" placeholder="e.g. Dermatology" value="${esc(it.name||'')}"></div>
+    </div>
+    <div class="field"><label class="label">Roughly every … weeks</label><input type="number" id="u-cad" min="1" max="104" step="1" placeholder="e.g. 4" value="${it.cadenceWeeks||''}"></div>
+    <div class="field"><label class="label">Last visit <span style="text-transform:none;letter-spacing:0;font-weight:500;color:var(--muted)">(optional)</span></label><input type="date" id="u-last" value="${it.lastDate||''}" max="${ymd(today())}"></div>
+    <div class="sheet-actions">${id?`<button class="btn danger" onclick="deleteUpkeep('${id}')">Delete</button>`:'<button class="btn ghost" onclick="openUpkeep()">Cancel</button>'}<button class="btn primary" onclick="saveUpkeep()">Save</button></div>`);
+}
+function upkeepFill(emoji,name,weeks){const e=document.getElementById('u-emoji'),n=document.getElementById('u-name'),c=document.getElementById('u-cad');if(e)e.value=emoji;if(n)n.value=name;if(c)c.value=weeks;}
+function saveUpkeep(){
+  const name=document.getElementById('u-name').value.trim();
+  if(!name){alert('Name what you\'re tracking.');return}
+  const emoji=document.getElementById('u-emoji').value.trim()||'🔁';
+  const cadenceWeeks=parseInt(document.getElementById('u-cad').value)||null;
+  const lastDate=document.getElementById('u-last').value||'';
+  const base={name,emoji,cadenceWeeks,lastDate};
+  if(editingUpk){const i=upkeep.findIndex(x=>x.id===editingUpk);upkeep[i]={...upkeep[i],...base};}
+  else{upkeep.push({id:'u'+Date.now()+Math.random().toString(36).slice(2,5),...base});}
+  save(K_UPKEEP,upkeep);openUpkeep();
+}
+function upkeepLogToday(id){const it=upkeep.find(x=>x.id===id);if(!it)return;it.lastDate=ymd(today());save(K_UPKEEP,upkeep);openUpkeep();}
+function deleteUpkeep(id){upkeep=upkeep.filter(x=>x.id!==id);save(K_UPKEEP,upkeep);openUpkeep();}
 
 /* ---------------- onboarding / cycle ---------------- */
 function openCycle(first){
@@ -835,19 +1048,20 @@ function saveCycle(){
 }
 
 /* ---------------- add / edit activity ---------------- */
-let editingId=null,formMode='recurring',formDows=[],formCat='MOVE',formCost='free',editingPass=null,formPassCat='MOVE',whenCat=null,whenAct=null,editingCat=null,newCatColor='#F6DAD0';
+let editingId=null,formMode='recurring',formDows=[],formCat='MOVE',formCost='free',editingPass=null,formPassCat='MOVE',formPassKind='pack',whenCat=null,whenAct=null,editingCat=null,newCatColor='#F6DAD0';
 let editingPlace=null,editingClass=null,editingClassPlace=null,classCat='MOVE',classDay=1,formPlaceCat='MOVE',formSlots=[];
 function openActivity(id,pre){
   editingId=id||null;
   let a=id?activities.find(x=>x.id===id):null;
-  formMode=a?(a.recurring?'recurring':'oneoff'):((pre&&pre.date)?'oneoff':'recurring');
+  formMode=a?(a.recurring?'recurring':'oneoff'):((pre&&pre.day!=null&&!pre.date)?'recurring':'oneoff');
   formDows=a&&a.daysOfWeek?[...a.daysOfWeek]:((pre&&pre.day!=null)?[pre.day]:[]);
   formCat=a&&a.category?a.category:((pre&&pre.category)?pre.category:defCat());
   formCost=a?(a.passId?'pass':(Number(a.cost)>0?'session':'free')):'free';
-  const compact=!!(pre||a);
+  const compact=true;
+  const detailsOpen=!!(a&&(a.place||a.time||a.recurring||Number(a.cost)>0||a.passId))||!!(pre&&(pre.date||pre.time||pre.place));
   sheet(`
-    <h2 class="serif">${id?'Edit activity':'Add activity'}</h2>
-    <div class="sub">Anything you do for yourself — a class, a treatment, an appointment.</div>
+    <h2 class="serif">${id?'Edit':'Add something'}</h2>
+    <div class="sub">Just a name is enough — the rest is optional.</div>
     <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px"><label class="label">Category</label><button type="button" class="linklike" onclick="openCats()">edit</button></div>
     ${compact?`<div class="catsum"><span class="cat-badge" style="--c:${CATS[formCat].color}">${CATS[formCat].emoji}</span><span id="catsumlbl">${CATS[formCat].label}</span><button type="button" class="linklike" onclick="toggleCatGrid()">change</button></div>`:''}
     <div class="catgrid ${compact?'hidden':''}" id="catgrid">
@@ -855,16 +1069,16 @@ function openActivity(id,pre){
         <span class="ce">${CATS[k].emoji}</span>${CATS[k].label}${CATS[k].custom?` <span class="editcat" onclick="event.stopPropagation();openNewCat('${k}')">✎</span>`:''}</button>`).join('')}
       <button type="button" class="catcell addcat" onclick="openNewCat()"><span class="ce" style="background:#EFEAE0">＋</span>New</button>
     </div>
-    <div class="seg">
-      <button id="seg-one" class="${formMode==='oneoff'?'on':''}" onclick="setMode('oneoff')">One-off</button>
-      <button id="seg-rec" class="${formMode==='recurring'?'on':''}" onclick="setMode('recurring')">Recurring</button>
-    </div>
-    <div class="field"><label class="label">Activity</label>
+    <div class="field"><label class="label">What is it?</label>
       <input type="text" id="f-type" placeholder="e.g. ${CATS[formCat].types[0]}" value="${a?esc(a.type):((pre&&pre.type)?esc(pre.type):'')}">
-      <div class="typehint ${compact?'hidden':''}" id="typehint">${typeHintsHtml(formCat)}</div>
+      <div class="typehint hidden" id="typehint">${typeHintsHtml(formCat)}</div>
     </div>
-    <div class="field"><label class="label">Place</label>
-      <input type="text" id="f-place" placeholder="e.g. Studio / clinic name" value="${a?esc(a.place):((pre&&pre.place)?esc(pre.place):'')}"></div>
+    <button type="button" class="detailtog" id="detailtog" onclick="toggleDetails()">${detailsOpen?'⌃ Fewer details':'＋ Add time, place, cost or repeat'}</button>
+    <div id="moredetails" class="${detailsOpen?'':'hidden'}">
+    <div class="seg">
+      <button type="button" id="seg-one" class="${formMode==='oneoff'?'on':''}" onclick="setMode('oneoff')">One-off</button>
+      <button type="button" id="seg-rec" class="${formMode==='recurring'?'on':''}" onclick="setMode('recurring')">Recurring</button>
+    </div>
     <div id="m-rec" class="${formMode==='recurring'?'':'hidden'}">
       <div class="field"><label class="label">Days of week</label>
         <div class="dows">${[1,2,3,4,5,6,0].map(w=>`<button type="button" class="dow ${formDows.includes(w)?'on':''}" data-w="${w}" onclick="toggleDow(${w},this)">${DOW[w][0]}</button>`).join('')}</div></div>
@@ -875,6 +1089,8 @@ function openActivity(id,pre){
     </div>
     <div class="field"><label class="label">Time</label>
       <button type="button" class="timefield ${(a?a.time:((pre&&pre.time)?pre.time:''))?'':'empty'}" id="f-time" data-value="${a?a.time||'':((pre&&pre.time)?pre.time:'')}" onclick="pickTime(this)">${(a&&a.time)?fmtTime(a.time):((pre&&pre.time)?fmtTime(pre.time):'Set time')}</button></div>
+    <div class="field"><label class="label">Place</label>
+      <input type="text" id="f-place" placeholder="e.g. Studio / clinic name" value="${a?esc(a.place):((pre&&pre.place)?esc(pre.place):'')}"></div>
     <div class="field"><label class="label">Cost</label>
       <div class="seg costseg">
         <button type="button" id="cs-free" class="${formCost==='free'?'on':''}" onclick="setCost('free')">Free</button>
@@ -882,12 +1098,13 @@ function openActivity(id,pre){
         <button type="button" id="cs-pass" class="${formCost==='pass'?'on':''}" onclick="setCost('pass')">On a pass</button>
       </div>
       <div id="cost-session" class="${formCost==='session'?'':'hidden'}" style="margin-top:10px">
-        <input type="number" id="f-cost" min="0" step="0.5" placeholder="€ per session" value="${a&&Number(a.cost)>0?a.cost:''}">
+        <input type="number" id="f-cost" min="0" step="0.5" placeholder="${curSym()} per session" value="${a&&Number(a.cost)>0?a.cost:''}">
       </div>
       <div id="cost-pass" class="${formCost==='pass'?'':'hidden'}" style="margin-top:10px">
-        ${passes.length?`<select id="f-pass">${passes.map(p=>`<option value="${p.id}" ${a&&a.passId===p.id?'selected':''}>${(CATS[p.category]||CATS.MOVE).emoji} ${esc(p.name)}${p.total!=null?' · '+passRemaining(p)+' left':''}</option>`).join('')}</select>`
+        ${passes.length?`<select id="f-pass">${passes.map(p=>`<option value="${p.id}" ${a&&a.passId===p.id?'selected':''}>${(CATS[p.category]||CATS.MOVE).emoji} ${esc(p.name)}${p.place?' ('+esc(p.place)+')':''}${p.total!=null?' · '+passRemaining(p)+' left':''}</option>`).join('')}</select>`
           :`<div class="muted" style="font-size:13px">No passes yet. <button type="button" class="linklike" onclick="closeSheet();openPass()">Create one</button> first.</div>`}
       </div>
+    </div>
     </div>
     <div class="sheet-actions">
       ${id?'<button class="btn danger" onclick="deleteActivity()">Delete</button>':'<button class="btn ghost" onclick="closeSheet()">Cancel</button>'}
@@ -902,6 +1119,7 @@ function setCat(k){
   const th=document.getElementById('typehint');if(th)th.innerHTML=typeHintsHtml(k);
 }
 function toggleCatGrid(){const g=document.getElementById('catgrid');if(g)g.classList.remove('hidden');const s=document.querySelector('.catsum');if(s)s.style.display='none';const th=document.getElementById('typehint');if(th)th.classList.remove('hidden');}
+function toggleDetails(){const m=document.getElementById('moredetails');const t=document.getElementById('detailtog');if(!m)return;const hidden=m.classList.toggle('hidden');if(t)t.innerHTML=hidden?'＋ Add time, place, cost or repeat':'⌃ Fewer details';}
 function openNewCat(id){
   editingCat=id||null;const c=id?customCats[id]:{label:'',emoji:'⭐',color:'#F6DAD0'};newCatColor=c.color||'#F6DAD0';
   sheet(`<h2 class="serif">${id?'Edit category':'New category'}</h2>
@@ -925,11 +1143,10 @@ function deleteCat(id){delete customCats[id];save(K_CUSTOMCATS,customCats);delet
 /* ---- category manager: reorder & hide ---- */
 function openCats(){
   const vis=CAT_KEYS.slice();
-  const rows=vis.map((k,i)=>{const c=CATS[k];return `<div class="catrow">
+  const rows=vis.map((k,i)=>{const c=CATS[k];return `<div class="catrow" data-key="${k}">
+    <span class="draghandle" aria-label="Drag to reorder">⠿</span>
     <span class="cat-badge" style="--c:${c.color}">${c.emoji}</span>
     <span class="catrow-n">${esc(c.label)}${c.custom?' <span class="catrow-tag">custom</span>':''}</span>
-    <button class="ordbtn" ${i===0?'disabled':''} onclick="moveCat('${k}',-1)" aria-label="Move up">↑</button>
-    <button class="ordbtn" ${i===vis.length-1?'disabled':''} onclick="moveCat('${k}',1)" aria-label="Move down">↓</button>
     ${c.custom?`<button class="ordbtn" onclick="openNewCat('${k}')" aria-label="Edit">✎</button>`:''}
     <button class="ordbtn del" onclick="removeCat('${k}')" aria-label="Remove">✕</button></div>`;}).join('');
   const hidden=allCatKeys().filter(k=>catHides.includes(k));
@@ -938,10 +1155,28 @@ function openCats(){
     <span class="catrow-n">${esc(c.label)}</span>
     <button class="linklike" onclick="restoreCat('${k}')">restore</button>
     ${c.custom?`<button class="ordbtn del" onclick="deleteCatFully('${k}')" aria-label="Delete for good">🗑</button>`:''}</div>`;}).join('')}`:'';
-  sheet(`<h2 class="serif">Categories</h2><div class="sub">Reorder with ↑ ↓, or remove the ones you don't use. Removed ones drop off your grid — you can restore them here anytime.</div>
-    <div class="catrows" style="margin:10px 0 4px">${rows}</div>
+  sheet(`<h2 class="serif">Categories</h2><div class="sub">Drag <span style="font-weight:700">⠿</span> to reorder, or remove the ones you don't use. Removed ones drop off your grid — you can restore them here anytime.</div>
+    <div class="catrows" id="catrows" style="margin:10px 0 4px">${rows}</div>
     ${hiddenHtml}
     <div class="sheet-actions"><button class="btn ghost" onclick="openNewCat()">＋ New</button><button class="btn primary" onclick="closeSheet()">Done</button></div>`);
+  attachCatDnD();
+}
+function attachCatDnD(){
+  const wrap=document.getElementById('catrows');if(!wrap)return;
+  wrap.querySelectorAll('.catrow[data-key]').forEach(row=>{
+    const handle=row.querySelector('.draghandle');if(!handle)return;
+    handle.addEventListener('pointerdown',e=>{e.preventDefault();handle.setPointerCapture(e.pointerId);row.classList.add('dragging');
+      const move=ev=>{const rows=[...wrap.querySelectorAll('.catrow[data-key]')];const y=ev.clientY;
+        for(const r of rows){if(r===row)continue;const rect=r.getBoundingClientRect();if(y<rect.top+rect.height/2){wrap.insertBefore(row,r);return;}}
+        wrap.appendChild(row);};
+      const up=()=>{try{handle.releasePointerCapture(e.pointerId);}catch(_){}document.removeEventListener('pointermove',move);document.removeEventListener('pointerup',up);
+        row.classList.remove('dragging');
+        const order=[...wrap.querySelectorAll('.catrow[data-key]')].map(r=>r.dataset.key);
+        const hidden=allCatKeys().filter(k=>catHides.includes(k));
+        catOrder=[...order,...hidden];recomputeCatKeys();persistCatMeta();};
+      document.addEventListener('pointermove',move);document.addEventListener('pointerup',up);
+    });
+  });
 }
 function moveCat(k,dir){const ord=allCatKeys();const vis=ord.filter(x=>!catHides.includes(x));const i=vis.indexOf(k),j=i+dir;
   if(j<0||j>=vis.length)return;const a=ord.indexOf(vis[i]),b=ord.indexOf(vis[j]);[ord[a],ord[b]]=[ord[b],ord[a]];
@@ -1035,17 +1270,17 @@ function wheelCol(id,items){return `<div class="tw-col" id="${id}"><div class="t
 function openTimeWheel(value,onDone){
   timeWheelDone=onDone;let h24=9,mm=0;if(value&&/^\d{1,2}:\d{2}/.test(value)){const p=value.split(':');h24=+p[0];mm=+p[1];}
   const pm=h24>=12;let h12=h24%12;if(h12===0)h12=12;
-  const hours=[12,1,2,3,4,5,6,7,8,9,10,11];const mins=[...Array(60)].map((_,i)=>String(i).padStart(2,'0'));
+  const hours=[12,1,2,3,4,5,6,7,8,9,10,11];const mins=[...Array(12)].map((_,i)=>String(i*5).padStart(2,'0'));
   const ov=document.createElement('div');ov.className='tw-overlay';ov.id='twov';
   ov.innerHTML=`<div class="tw-panel"><div class="tw-title serif">Set time</div>
     <div class="timewheel">${wheelCol('tw-h',hours)}<span class="tw-colon">:</span>${wheelCol('tw-m',mins)}${wheelCol('tw-ap',['AM','PM'])}<div class="tw-sel"></div></div>
     <div class="sheet-actions"><button class="btn ghost" onclick="closeTimeWheel()">Cancel</button><button class="btn primary" onclick="confirmTimeWheel()">Done</button></div></div>`;
   document.body.appendChild(ov);
   const hi=hours.indexOf(h12);
-  setTimeout(()=>{const H=document.getElementById('tw-h'),M=document.getElementById('tw-m'),A=document.getElementById('tw-ap');if(H)H.scrollTop=hi*44;if(M)M.scrollTop=mm*44;if(A)A.scrollTop=(pm?1:0)*44;},20);
+  setTimeout(()=>{const H=document.getElementById('tw-h'),M=document.getElementById('tw-m'),A=document.getElementById('tw-ap');if(H)H.scrollTop=hi*44;if(M)M.scrollTop=Math.round(mm/5)*44;if(A)A.scrollTop=(pm?1:0)*44;},20);
 }
 function readCol(id,len){const el=document.getElementById(id);if(!el)return 0;return Math.max(0,Math.min(len-1,Math.round(el.scrollTop/44)));}
-function confirmTimeWheel(){const hours=[12,1,2,3,4,5,6,7,8,9,10,11];const h12=hours[readCol('tw-h',12)];const mm=readCol('tw-m',60);const pm=readCol('tw-ap',2)===1;let h24=(h12%12)+(pm?12:0);const val=String(h24).padStart(2,'0')+':'+String(mm).padStart(2,'0');const cb=timeWheelDone;closeTimeWheel();if(cb)cb(val);}
+function confirmTimeWheel(){const hours=[12,1,2,3,4,5,6,7,8,9,10,11];const h12=hours[readCol('tw-h',12)];const mm=readCol('tw-m',12)*5;const pm=readCol('tw-ap',2)===1;let h24=(h12%12)+(pm?12:0);const val=String(h24).padStart(2,'0')+':'+String(mm).padStart(2,'0');const cb=timeWheelDone;closeTimeWheel();if(cb)cb(val);}
 function closeTimeWheel(){const ov=document.getElementById('twov');if(ov)ov.remove();timeWheelDone=null;}
 function pickTime(btn){openTimeWheel(btn.dataset.value,v=>{btn.dataset.value=v;btn.textContent=fmtTime(v);});}
 function openClass(placeId,id){
@@ -1129,86 +1364,20 @@ function openWhen(cat,act){
     ${body}`);
 }
 
-/* ---------------- plan board (drag suggestions onto days) ---------------- */
-function openPlan(){prevCalView=(viewMode==='plan')?prevCalView:viewMode;planWeekOffset=0;viewMode='plan';renderPlan();window.scrollTo(0,0);}
-function changePlanWeek(d){planWeekOffset+=d;planSel=null;renderPlan();window.scrollTo(0,0);}
-function exitPlan(){planSel=null;viewMode=prevCalView||'week';render();window.scrollTo(0,0);}
-function renderPlan(){
-  document.getElementById('fab').classList.add('hidden');
-  const mon=addDays(mondayOf(today()),planWeekOffset*7);const tday=ymd(today());
-  let days='';
-  for(let i=0;i<7;i++){const d=addDays(mon,i);const p=phaseForDate(d);const n=actsOn(d).length;const isT=ymd(d)===tday;
-    days+=`<div class="pday${isT?' t':''}" data-date="${ymd(d)}" style="border-color:${p.accent}">
-      <span class="pd-dow">${DOW[d.getDay()]}</span><span class="pd-num">${d.getDate()}</span>
-      <span class="pd-dot" style="background:${p.accent}"></span><span class="pd-hint"></span>
-      ${n?`<span class="pd-count">${n}</span>`:''}</div>`;
-  }
-  const weekPhases=[...new Set([...Array(7)].map((_,i)=>phaseForDate(addDays(mon,i)).key))];
-  const niceSet=ks=>{const s={},a=[];ks.forEach(pk=>PHASE_GUIDE[pk].nice.forEach(n=>{const k=n[0]+n[1];if(!s[k]){s[k]=1;a.push(n);}}));return a;};
-  const recNice=niceSet(weekPhases);const recK={};recNice.forEach(n=>recK[n[0]+n[1]]=1);
-  const riskNice=niceSet(['men','foll','ovu','lut']).filter(n=>!recK[n[0]+n[1]]);
-  const catGood=cat=>{for(let i=0;i<7;i++){if((REC[cat]||REC.MOVE)[phaseForDate(addDays(mon,i)).key][0]==='g')return true;}return false;};
-  const passCats={};passes.forEach(p=>passCats[p.category]=1);
-  const tileHTML=(cat,name,cid)=>{const C=CATS[cat]||CATS.MOVE;const mem=!!passCats[cat];const c=cid?classes.find(x=>x.id===cid):null;const sub=c?`<span class="pt-sub">${esc(placeName(c.placeId))}</span>`:'';
-    return `<button class="ptile${mem?' mem':''}" data-cat="${cat}" data-type="${esc(name)}"${cid?` data-classid="${cid}"`:''}><span class="cat-badge" style="--c:${C.color}">${C.emoji}</span><span class="pt-body"><span class="pt-name">${esc(name)}${mem?' <span class="pt-mem">pass</span>':''}</span>${sub}</span></button>`;};
-  const byMem=(a,b)=>(passCats[b.cat]?1:0)-(passCats[a.cat]?1:0);
-  const recItems=[...classes.filter(c=>catGood(c.category)).map(c=>({cat:c.category,name:c.name,cid:c.id})),...recNice.map(n=>({cat:n[1],name:n[0]}))].sort(byMem);
-  const riskItems=[...classes.filter(c=>!catGood(c.category)).map(c=>({cat:c.category,name:c.name,cid:c.id})),...riskNice.map(n=>({cat:n[1],name:n[0]}))].sort(byMem);
-  const recTiles=recItems.map(i=>tileHTML(i.cat,i.name,i.cid)).join('');
-  const riskTiles=riskItems.map(i=>tileHTML(i.cat,i.name,i.cid)).join('');
-  document.getElementById('app').innerHTML=`
-    <div class="planhead"><button class="wbtn" onclick="exitPlan()">‹</button>
-      <div><div class="plantitle serif">When should I…?</div><div class="dateline" style="margin-top:0">Drag a card onto a day — or tap it, then a day.</div></div></div>
-    <div class="weeknav" style="margin-bottom:14px">
-      <button class="wbtn" onclick="changePlanWeek(-1)" aria-label="Previous week">‹</button>
-      <button class="wnow" onclick="planWeekOffset=0;renderPlan()">${weekLabel(planWeekOffset,mon)}<span class="wrange">${mon.getDate()} ${MON[mon.getMonth()]} – ${addDays(mon,6).getDate()} ${MON[addDays(mon,6).getMonth()]}</span></button>
-      <button class="wbtn" onclick="changePlanWeek(1)" aria-label="Next week">›</button>
-    </div>
-    <div class="pweek">${days}</div>
-    <div class="label" style="margin:20px 2px 10px">Recommended this week</div>
-    <div class="ptray">${recTiles}</div>
-    ${riskTiles?`<div class="label" style="margin:24px 2px 4px">Other activities</div><div class="risknote">Better suited to another phase this cycle — but your call.</div><div class="ptray risk">${riskTiles}</div>`:''}
-    <div style="text-align:center;margin-top:20px"><button class="linklike" onclick="openPlaces()">＋ Add your studios &amp; classes</button></div>
-    <div class="disclaimer" style="margin-top:14px">Drop on a green day for the best timing.</div>`;
-  attachPlanDnD();
-}
-function bookSlot(cid,ds,time){const c=classes.find(x=>x.id===cid);if(!c)return;
-  activities.push({id:'a'+Date.now()+Math.random().toString(36).slice(2,6),category:c.category,type:c.name,place:placeName(c.placeId),time:time||'',passId:null,includedInPass:false,cost:0,recurring:false,daysOfWeek:null,date:ds});
-  save(K_ACTS,activities);planToast(c.name,ds);renderPlan();}
-function dayElAt(x,y){let el=document.elementFromPoint(x,y);while(el&&!(el.classList&&el.classList.contains('pday')))el=el.parentElement;return el;}
-function planClearHi(){document.querySelectorAll('.pday').forEach(d=>{d.classList.remove('over','over-good','over-warn');const h=d.querySelector('.pd-hint');if(h)h.textContent='';});}
-function planHighlight(x,y,cat){planClearHi();const d=dayElAt(x,y);if(!d)return;const p=phaseForDate(parseYMD(d.dataset.date));const r=(REC[cat]||REC.MOVE)[p.key][0];const good=r==='g',warn=(r==='r'||r==='o');d.classList.add('over');d.classList.toggle('over-good',good);d.classList.toggle('over-warn',warn);const h=d.querySelector('.pd-hint');if(h)h.textContent=good?'✓':'';}
-function planDrop(dateStr,cat,type,classId){let place='',time='';if(classId){const c=classes.find(x=>x.id===classId);if(c){place=placeName(c.placeId);const wd=parseYMD(dateStr).getDay();const sl=classSlots(c).find(s=>s.day===wd)||classSlots(c)[0]||{};time=sl.time||'';}}
-  activities.push({id:'a'+Date.now()+Math.random().toString(36).slice(2,6),category:cat,type,place,time,passId:null,includedInPass:false,cost:0,recurring:false,daysOfWeek:null,date:dateStr});save(K_ACTS,activities);}
-function attachPlanDnD(){
-  let drag=null,clone=null;
-  const pos=(x,y)=>{if(clone){clone.style.left=x+'px';clone.style.top=y+'px';}};
-  const cleanup=()=>{if(clone){clone.remove();clone=null;}planClearHi();drag=null;};
-  document.querySelectorAll('.ptile').forEach(tile=>{
-    tile.addEventListener('pointerdown',e=>{e.preventDefault();tile.setPointerCapture(e.pointerId);
-      drag={cat:tile.dataset.cat,type:tile.dataset.type,cid:tile.dataset.classid||null,x:e.clientX,y:e.clientY,moved:false};
-      clone=tile.cloneNode(true);clone.className='ptile ptile-clone';document.body.appendChild(clone);pos(e.clientX,e.clientY);});
-    tile.addEventListener('pointermove',e=>{if(!drag)return;if(Math.abs(e.clientX-drag.x)+Math.abs(e.clientY-drag.y)>6)drag.moved=true;pos(e.clientX,e.clientY);if(drag.moved)planHighlight(e.clientX,e.clientY,drag.cat);});
-    tile.addEventListener('pointerup',e=>{if(!drag)return;const day=dayElAt(e.clientX,e.clientY);const moved=drag.moved,cat=drag.cat,type=drag.type,cid=drag.cid;cleanup();
-      if(moved&&day){planDrop(day.dataset.date,cat,type,cid);planToast(type,day.dataset.date);renderPlan();}
-      else if(!moved){const on=planSel&&planSel.cat===cat&&planSel.type===type;document.querySelectorAll('.ptile.sel').forEach(t=>t.classList.remove('sel'));if(on){planSel=null;}else{planSel={cat,type,cid};tile.classList.add('sel');}}});
-    tile.addEventListener('pointercancel',cleanup);
-  });
-  document.querySelectorAll('.pday').forEach(day=>{day.addEventListener('click',()=>{if(planSel){planDrop(day.dataset.date,planSel.cat,planSel.type,planSel.cid);planToast(planSel.type,day.dataset.date);planSel=null;renderPlan();}else{openDay(day.dataset.date);}});});
-}
-function planToast(type,ds){const d=parseYMD(ds);let t=document.getElementById('ptoast');if(!t){t=document.createElement('div');t.id='ptoast';t.className='ptoast';document.body.appendChild(t);}
-  t.textContent='✓ '+type+' → '+DOW_FULL[d.getDay()]+' '+d.getDate()+' '+MON[d.getMonth()];t.classList.add('show');clearTimeout(planToast._t);planToast._t=setTimeout(()=>t.classList.remove('show'),2100);}
+/* Old drag-and-drop plan board removed — planning now lives inline in the week grid
+   (weekTimetable + multi-select picks + weekTrayHtml). Reused helpers: showToast, planDrop→addActPick. */
 
 /* ---------------- backup & calendar (.ics) ---------------- */
 function pad2(n){return String(n).padStart(2,'0')}
 function addHour(t){const[h,m]=(t||'09:00').split(':').map(Number);return pad2((h+1)%24)+':'+pad2(m||0)}
 function download(name,text,type){const blob=new Blob([text],{type});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}
-function exportData(){download('faze-backup-'+ymd(today())+'.json',JSON.stringify({_app:'faze',_v:1,_exported:new Date().toISOString(),cycle,periods,activities,passes,places,classes},null,2),'application/json');}
+function exportData(){download('faze-backup-'+ymd(today())+'.json',JSON.stringify({_app:'faze',_v:1,_exported:new Date().toISOString(),cycle,periods,activities,passes,places,classes,upkeep},null,2),'application/json');}
 function importData(input){const f=input.files&&input.files[0];if(!f)return;const r=new FileReader();
   r.onload=function(){try{const d=JSON.parse(r.result);
     if(d.cycle){cycle=d.cycle;save(K_CYCLE,cycle);} if(d.periods){periods=d.periods;save(K_PERIODS,periods);}
     if(d.activities){activities=d.activities;save(K_ACTS,activities);} if(d.passes){passes=d.passes;save(K_PASSES,passes);}
     if(d.places){places=d.places;save(K_PLACES,places);} if(d.classes){classes=d.classes;save(K_CLASSES,classes);}
+    if(d.upkeep){upkeep=d.upkeep;save(K_UPKEEP,upkeep);}
     closeSheet();render();alert('Backup restored ✓');
   }catch(e){alert('Sorry — that file could not be read.');}};
   r.readAsText(f);}
@@ -1244,7 +1413,7 @@ function openBackup(){
 function importInfo(){
   sheet(`<h2 class="serif">Photo import</h2>
   <div class="sub" style="margin-bottom:20px">Snap a studio or clinic timetable and let AI turn it into rows you just confirm.</div>
-  <p class="muted" style="font-size:14px;margin-top:0">This uses paid AI extraction, so it’s <strong>off during free testing</strong>. Everything else runs 100% on your device, for free.</p>
+  <p class="muted" style="font-size:14px;margin-top:0">This uses paid AI extraction, so it’s <strong>coming soon</strong>. Everything else runs 100% on your own device.</p>
   <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">Got it</button></div>`);
 }
 
@@ -1257,7 +1426,7 @@ function openHorizon(){
     ['🎟️','#F3E7C9','Deals on your passes','Keep an eye on savings for passes you already buy — never ads, never tracking.']
   ];
   sheet(`<h2 class="serif">On the horizon</h2>
-    <div class="sub">Ideas we’re exploring for later. Whatever we add, Fáze stays free and private.</div>
+    <div class="sub">Ideas we’re exploring for later. Whatever we add, Fáze stays private — on your device, no accounts.</div>
     <div class="acts menu" style="margin:10px 0 14px">
       ${items.map(([e,c,n,d])=>`<button class="act dim2" onclick="event.preventDefault()"><span class="cat-badge" style="--c:${c}">${e}</span><span class="body"><div class="a-name">${n}</div><div class="a-sub" style="white-space:normal">${d}</div></span><span class="soon">soon</span></button>`).join('')}
     </div>
@@ -1295,7 +1464,7 @@ function openMoonHair(){
   }else{const fullAfterNew=addDays(newD,Math.round(MOON_SYNODIC/2));
     holdTxt=`Now until the new moon, ${fD(newD)}`;growTxt=`${fD(newD)} until the full moon, ${fD(fullAfterNew)}`;}
   let strip='';
-  for(let i=0;i<14;i++){const d=addDays(t,i);const h=haircutMoon(d);
+  for(let i=0;i<30;i++){const d=addDays(t,i);const h=haircutMoon(d);
     const bg=h.tone==='grow'?'#E2EDD7':'#E9E2F1',ac=h.tone==='grow'?'#5E9A57':'#8073A8';
     strip+=`<div style="flex:0 0 auto;width:44px;text-align:center;padding:8px 0;border-radius:12px;background:${bg};${i===0?'outline:2px solid '+ac+';outline-offset:1px;':''}">
       <div style="font-size:18px;line-height:1">${h.emoji}</div>
@@ -1311,7 +1480,7 @@ function openMoonHair(){
       <div class="act" style="cursor:default"><span class="cat-badge" style="--c:#E2EDD7">🌱</span><span class="body"><div class="a-name">For fuller, faster growth</div><div class="a-sub">${growTxt}</div></span></div>
       <div class="act" style="cursor:default"><span class="cat-badge" style="--c:#E9E2F1">✂️</span><span class="body"><div class="a-name">To keep your shape longer</div><div class="a-sub">${holdTxt}</div></span></div>
     </div>
-    <div class="label" style="margin:16px 2px 8px">Next 14 days</div>
+    <div class="label" style="margin:16px 2px 8px">Next 30 days · scroll →</div>
     <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:6px">${strip}</div>
     <div class="disclaimer" style="margin-top:14px">Just a bit of lunar folklore — cut your hair whenever suits you.</div>
     <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">Got it</button></div>`);
