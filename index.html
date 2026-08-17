@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<meta name="theme-color" content="#FBFAF5" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https://*.vercel-insights.com; base-uri 'self'; form-action 'self'" />
+<meta name="theme-color" content="#FBFAF5" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#17191B" media="(prefers-color-scheme: dark)" />
 <title>Fáze</title>
 <link rel="manifest" href="manifest.json" />
 <link rel="apple-touch-icon" href="apple-touch-icon.png" />
@@ -19,7 +21,7 @@
   :root{
     /* active / self-development palette — cool, fresh, premium */
     --bg1:#FBFAF5; --bg2:#F5F3EC;
-    --ink:#1E241F; --muted:#79837B;
+    --ink:#1E241F; --muted:#606A62;            /* muted darkened for WCAG AA contrast */
     --energy:#EC6142; --energy-deep:#D14B2E;   /* coral — CTA / high energy */
     --calm:#2F8072;                            /* teal-green — low energy   */
     --card:#FFFFFF;
@@ -28,6 +30,19 @@
     --radius:24px;
     --shadow:0 18px 40px -24px rgba(30,45,35,.42), 0 4px 14px -9px rgba(30,45,35,.20);
     --shadow-sm:0 8px 22px -16px rgba(30,45,35,.45);
+  }
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg1:#17191B; --bg2:#121415;
+      --ink:#ECECE4; --muted:#9AA39B;
+      --card:#23272B;
+      --hi:#3A2A25; --lo:#213230;
+      --shadow:0 18px 40px -24px rgba(0,0,0,.6), 0 4px 14px -9px rgba(0,0,0,.5);
+      --shadow-sm:0 8px 22px -16px rgba(0,0,0,.55);
+    }
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0}
@@ -42,6 +57,7 @@
   .muted{color:var(--muted)}
   button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
   input,select{font-family:inherit;font-size:15px;color:var(--ink)}
+  a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,[tabindex]:focus-visible{outline:2.5px solid var(--energy);outline-offset:2px}
 
   /* header */
   header.hero{margin-bottom:20px}
@@ -428,6 +444,25 @@
   .upkpreset button{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;padding:7px 12px;border-radius:999px;background:#F4F0E8;color:var(--ink);font-weight:500}
   .upkpreset button:active{transform:scale(.95)}
   .upkpreset button .w{color:var(--muted);font-size:11px;font-weight:600}
+  /* dark-mode component overrides — placed last so they win over base component rules */
+  @media (prefers-color-scheme: dark){
+    input,select,.field select,.timefield,.timewheel,.catcell,.dow,.tw-panel,.seg,.detailtog,.upkpreset button{background:#2A2F33;border-color:#3A4045;color:var(--ink)}
+    .tt-cell{background:#1E2123} .tt-cell.today{background:#26302A} .tt-cell.blank{background:rgba(30,33,35,.5)}
+    .act{background:#1E2123}
+    .tt-block.avail{background:#2A2F33;box-shadow:inset 0 0 0 1.5px #3A4045}
+    .tt-timeh,.tt-corner{background:var(--bg1)}
+    .sheet{background:linear-gradient(165deg,var(--bg1),#22262A 60%)}
+    .ptile,.duechip,.chip,.pass,.predict{background:var(--card);border-color:#3A4045}
+    .whenbtn{background:#0E0F10}
+    /* keep dark text on the intentionally-light pastel phase chips */
+    .tt-colh .tt-date,.mcell{color:#1E241F}
+    .duechip .due-n{color:var(--ink)}
+    /* light pills → dark so their text stays readable */
+    .nicechip,.typehint button,.typehint.big button,.tchip button,.viewtog{background:#2A2F33;color:var(--ink)}
+    .nicechip .np,.tchip .tdel{color:var(--muted)}
+    .phasecard,.tallylist{background:var(--card)}
+    .brandlogo{filter:brightness(0) invert(1);opacity:.92}
+  }
 </style>
 </head>
 <body>
@@ -438,7 +473,7 @@
   Add
 </button>
 
-<div class="scrim" id="scrim"><div class="sheet"><button class="sheetclose" onclick="closeSheet()" aria-label="Close">✕</button><div id="sheet"></div></div></div>
+<div class="scrim" id="scrim"><div class="sheet" role="dialog" aria-modal="true" aria-label="Dialog" tabindex="-1"><button class="sheetclose" onclick="closeSheet()" aria-label="Close">✕</button><div id="sheet"></div></div></div>
 
 <script>
 /* ---------------- storage ---------------- */
@@ -798,6 +833,7 @@ function openMenu(){
       <button class="act" onclick="closeSheet();openScience()"><span class="cat-badge" style="--c:#E2EDD7">🔬</span><span class="body"><div class="a-name">Why these suggestions?</div><div class="a-sub">The research behind the tips</div></span></button>
       <button class="act" onclick="closeSheet();openHorizon()"><span class="cat-badge" style="--c:#E7DCF0">✨</span><span class="body"><div class="a-name">On the horizon</div><div class="a-sub">What we’re exploring next</div></span></button>
     </div>
+    <div class="disclaimer" style="margin-top:4px;text-align:center">🔒 Everything you log stays on this device — no account, no cloud, no tracking. Back it up from <b>Data &amp; calendar</b>.</div>
     <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">Close</button></div>`);
 }
 
@@ -827,7 +863,7 @@ function monthWindows(cat,y,m){
   return {best,avoid,days};
 }
 function monthTallyHtml(from,to){const tally={};let d=new Date(from);while(d<=to){actsOn(d).forEach(a=>{tally[a.category]=(tally[a.category]||0)+1;});d=addDays(d,1);}
-  const rows=CAT_KEYS.filter(k=>tally[k]).sort((a,b)=>tally[b]-tally[a]).map(k=>`<div class="tally"><span class="cat-badge" style="--c:${CATS[k].color}">${CATS[k].emoji}</span><span class="t-name">${CATS[k].label}</span><span class="t-count">×${tally[k]}</span></div>`).join('');
+  const rows=CAT_KEYS.filter(k=>tally[k]).sort((a,b)=>tally[b]-tally[a]).map(k=>`<div class="tally"><span class="cat-badge" style="--c:${CATS[k].color}">${esc(CATS[k].emoji)}</span><span class="t-name">${esc(CATS[k].label)}</span><span class="t-count">×${tally[k]}</span></div>`).join('');
   return rows?`<div class="label" style="margin:24px 2px 10px">This month you did</div><div class="tallylist">${rows}</div>`:'';}
 function monthGridHtml(first,last,y,m){
   const tday=ymd(today());
@@ -946,7 +982,7 @@ function openPass(id){
       <div style="margin-top:14px">
         <div class="field"><label class="label">Valid until</label><input type="date" id="p-exp" value="${p.expiry||''}" min="${ymd(today())}"></div>
         <label class="label" style="display:block;margin-bottom:9px">Counts toward</label>
-        <div class="catgrid" id="pcatgrid">${CAT_KEYS.map(k=>`<button type="button" class="catcell ${k===formPassCat?'on':''}" data-cat="${k}" style="--c:${CATS[k].color}" onclick="setPassCat('${k}')"><span class="ce">${CATS[k].emoji}</span>${CATS[k].label}</button>`).join('')}</div>
+        <div class="catgrid" id="pcatgrid">${CAT_KEYS.map(k=>`<button type="button" class="catcell ${k===formPassCat?'on':''}" data-cat="${k}" style="--c:${CATS[k].color}" onclick="setPassCat('${k}')"><span class="ce">${esc(CATS[k].emoji)}</span>${esc(CATS[k].label)}</button>`).join('')}</div>
       </div>
     </details>
     <div class="sheet-actions">
@@ -1115,10 +1151,10 @@ function openActivity(id,pre){
     <h2 class="serif">${id?'Edit':'Add something'}</h2>
     <div class="sub">Just a name is enough — the rest is optional.</div>
     <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px"><label class="label">Category</label><button type="button" class="linklike" onclick="openCats()">edit</button></div>
-    ${compact?`<div class="catsum"><span class="cat-badge" style="--c:${CATS[formCat].color}">${CATS[formCat].emoji}</span><span id="catsumlbl">${CATS[formCat].label}</span><button type="button" class="linklike" onclick="toggleCatGrid()">change</button></div>`:''}
+    ${compact?`<div class="catsum"><span class="cat-badge" style="--c:${CATS[formCat].color}">${esc(CATS[formCat].emoji)}</span><span id="catsumlbl">${esc(CATS[formCat].label)}</span><button type="button" class="linklike" onclick="toggleCatGrid()">change</button></div>`:''}
     <div class="catgrid ${compact?'hidden':''}" id="catgrid">
       ${CAT_KEYS.map(k=>`<button type="button" class="catcell ${k===formCat?'on':''}" data-cat="${k}" style="--c:${CATS[k].color}" onclick="setCat('${k}')">
-        <span class="ce">${CATS[k].emoji}</span>${CATS[k].label}${CATS[k].custom?` <span class="editcat" onclick="event.stopPropagation();openNewCat('${k}')">✎</span>`:''}</button>`).join('')}
+        <span class="ce">${esc(CATS[k].emoji)}</span>${esc(CATS[k].label)}${CATS[k].custom?` <span class="editcat" onclick="event.stopPropagation();openNewCat('${k}')">✎</span>`:''}</button>`).join('')}
       <button type="button" class="catcell addcat" onclick="openNewCat()"><span class="ce" style="background:#EFEAE0">＋</span>New</button>
     </div>
     <div class="field"><label class="label">What is it?</label>
@@ -1328,7 +1364,7 @@ function openPlace(id){
   editingPlace=id||null;const p=id?places.find(x=>x.id===id):{name:'',category:'MOVE'};formPlaceCat=p.category||'MOVE';
   sheet(`<h2 class="serif">${id?'Edit place':'New place'}</h2>
     <label class="label" style="display:block;margin-bottom:9px">Main service</label>
-    <div class="catgrid" id="plcatgrid">${CAT_KEYS.map(k=>`<button type="button" class="catcell ${k===formPlaceCat?'on':''}" data-cat="${k}" style="--c:${CATS[k].color}" onclick="setPlaceCat('${k}')"><span class="ce">${CATS[k].emoji}</span>${CATS[k].label}</button>`).join('')}</div>
+    <div class="catgrid" id="plcatgrid">${CAT_KEYS.map(k=>`<button type="button" class="catcell ${k===formPlaceCat?'on':''}" data-cat="${k}" style="--c:${CATS[k].color}" onclick="setPlaceCat('${k}')"><span class="ce">${esc(CATS[k].emoji)}</span>${esc(CATS[k].label)}</button>`).join('')}</div>
     <div class="field"><label class="label">Name</label><input type="text" id="pl-name" placeholder="e.g. Sala Studio" value="${esc(p.name)}"></div>
     <div class="sheet-actions">${id?`<button class="btn danger" onclick="deletePlace('${id}')">Delete</button>`:'<button class="btn ghost" onclick="openPlaces()">Cancel</button>'}<button class="btn primary" onclick="savePlace()">${id?'Save':'Next: add class times'}</button></div>`);
 }
@@ -1364,7 +1400,7 @@ function openClass(placeId,id){
   classCat=c.category||'MOVE';formSlots=id?classSlots(c).map(s=>({day:s.day,time:s.time||'',end:s.end||''})):[{day:1,time:'',end:''}];
   sheet(`<h2 class="serif">${id?'Edit class':'New class'}</h2><div class="sub">at ${esc(placeName(placeId))} — add every time it runs</div>
     <label class="label" style="display:block;margin-bottom:9px">Category</label>
-    <div class="catgrid" id="ccatgrid">${CAT_KEYS.map(k=>`<button type="button" class="catcell ${k===classCat?'on':''}" data-cat="${k}" style="--c:${CATS[k].color}" onclick="setClassCat('${k}')"><span class="ce">${CATS[k].emoji}</span>${CATS[k].label}</button>`).join('')}</div>
+    <div class="catgrid" id="ccatgrid">${CAT_KEYS.map(k=>`<button type="button" class="catcell ${k===classCat?'on':''}" data-cat="${k}" style="--c:${CATS[k].color}" onclick="setClassCat('${k}')"><span class="ce">${esc(CATS[k].emoji)}</span>${esc(CATS[k].label)}</button>`).join('')}</div>
     <div class="field"><label class="label">Class name</label><input type="text" id="cl-name" placeholder="e.g. Reformer Flow" value="${esc(c.name)}"></div>
     <div class="field"><label class="label">Times it runs</label><div id="slotrows"></div></div>
     <div class="sheet-actions">${id?`<button class="btn danger" onclick="deleteClass('${id}')">Delete</button>`:`<button class="btn ghost" onclick="openPlaces()">Cancel</button>`}<button class="btn primary" onclick="saveClass()">Save</button></div>`);
@@ -1403,7 +1439,7 @@ function openWhen(cat,act){
   whenCat=cat||null;whenAct=act||null;let body;
   if(!whenCat){
     body=`<label class="label" style="display:block;margin-bottom:9px">Pick a type of care</label>
-      <div class="catgrid">${CAT_KEYS.map(k=>`<button type="button" class="catcell" style="--c:${CATS[k].color}" onclick="openWhen('${k}')"><span class="ce">${CATS[k].emoji}</span>${CATS[k].label}</button>`).join('')}</div>`;
+      <div class="catgrid">${CAT_KEYS.map(k=>`<button type="button" class="catcell" style="--c:${CATS[k].color}" onclick="openWhen('${k}')"><span class="ce">${esc(CATS[k].emoji)}</span>${esc(CATS[k].label)}</button>`).join('')}</div>`;
   }else if(!whenAct){
     const c=CATS[whenCat];
     body=`<div class="whenback"><button onclick="openWhen()">‹ all</button><span>${c.emoji} ${c.label}</span></div>
@@ -1563,9 +1599,11 @@ function openMoonHair(){
 }
 
 /* ---------------- sheet plumbing ---------------- */
-function sheet(html){document.getElementById('sheet').innerHTML=html;document.getElementById('scrim').classList.add('open')}
-function closeSheet(){document.getElementById('scrim').classList.remove('open')}
+let _lastFocus=null;
+function sheet(html){_lastFocus=document.activeElement;document.getElementById('sheet').innerHTML=html;const sc=document.getElementById('scrim');sc.classList.add('open');const panel=sc.querySelector('.sheet');if(panel)try{panel.focus();}catch(_){}}
+function closeSheet(){document.getElementById('scrim').classList.remove('open');if(_lastFocus&&_lastFocus.focus)try{_lastFocus.focus();}catch(_){}_lastFocus=null;}
 document.getElementById('scrim').addEventListener('click',e=>{if(e.target.id==='scrim')closeSheet()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'||e.key==='Esc'){if(document.getElementById('twov'))closeTimeWheel();else if(document.getElementById('scrim').classList.contains('open'))closeSheet();}});
 
 /* ---------------- boot ---------------- */
 if(!cycle){document.getElementById('fab').classList.add('hidden');
