@@ -263,6 +263,9 @@
   .mcell.today{outline:2px solid var(--ink);outline-offset:-2px}
   .mcell .mmark{position:absolute;bottom:7px;right:8px;width:7px;height:7px;border-radius:50%;background:rgba(46,40,35,.32)}
   .mcell .mmark.cau{background:#D0514A}
+  .phlegend{display:flex;flex-wrap:wrap;gap:9px 16px;justify-content:center;margin:4px 2px 22px;font-size:11.5px;color:var(--muted);font-weight:600}
+  .phl{display:inline-flex;align-items:center;gap:6px}
+  .phl-sw{width:13px;height:13px;border-radius:5px;display:inline-block}
   /* best-windows list */
   .winlist{display:flex;flex-direction:column}
   .win{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid #EFE9DD}
@@ -640,6 +643,14 @@ function toggleClassPick(cid,ds,time){const i=planPick.findIndex(p=>p.k==='c'&&p
 function addActPick(cat,type,ds){planPick.push({k:'a',uid:'k'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),cat,type,ds});renderHome();}
 function removePick(uid){planPick=planPick.filter(p=>p.uid!==uid);renderHome();}
 function clearPicks(){planPick=[];renderHome();}
+function clearWeek(){
+  const mon=addDays(mondayOf(today()),weekOffset*7);const from=ymd(mon),to=ymd(addDays(mon,6));
+  const inWeek=activities.filter(a=>!a.recurring&&a.date>=from&&a.date<=to);
+  if(!inWeek.length&&!planPick.length){showToast('Nothing to clear this week');return;}
+  if(!confirm('Clear '+inWeek.length+' planned item'+(inWeek.length===1?'':'s')+' from this week?\n(Recurring classes stay.)'))return;
+  activities=activities.filter(a=>!(!a.recurring&&a.date>=from&&a.date<=to));planPick=[];
+  save(K_ACTS,activities);renderHome();showToast('✓ Week cleared');
+}
 function commitPicks(){
   if(!planPick.length)return;let n=0;
   planPick.forEach(p=>{const nid='a'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
@@ -663,7 +674,7 @@ function weekTimetable(mon,tday,passCats){
   const rows=[...timeSet].sort();if(hasAny)rows.push('');
   let h='<div class="ttgrid" style="grid-template-columns:48px repeat(7,minmax(94px,1fr))">';
   h+='<div class="tt-corner"></div>';
-  days.forEach(day=>{h+=`<div class="tt-colh${day.isT?' today':''}" data-date="${day.ds}" style="--pt:${day.p.tint};--pa:${day.p.accent}"><span class="tt-dow">${DOW[day.dow]}</span><span class="tt-date">${day.d.getDate()}</span><span class="tt-ph">${day.p.label}</span></div>`;});
+  days.forEach(day=>{h+=`<div class="tt-colh${day.isT?' today':''}" data-date="${day.ds}" style="--pt:${day.p.tint};--pa:${day.p.accent}"><span class="tt-dow">${day.isT?'Today':DOW[day.dow]}</span><span class="tt-date">${day.d.getDate()}</span><span class="tt-ph">${day.p.label}</span></div>`;});
   if(!rows.length)h+=`<div class="tt-corner"></div><div style="grid-column:2/-1;padding:16px 8px;text-align:center;color:var(--muted);font-size:12.5px">No class times yet — add your studios below, or tap a day to plan something.</div>`;
   rows.forEach(t=>{
     h+=`<div class="tt-timeh">${t?fmtTime(t):'any'}</div>`;
@@ -735,7 +746,6 @@ function renderHome(){
 
       <div class="dateline">Today · ${DOW_FULL[tt.getDay()]} ${tt.getDate()} ${MON[tt.getMonth()]} ${tt.getFullYear()}</div>
     </header>
-    <button class="whenbtn" onclick="document.getElementById('plantray')?document.getElementById('plantray').scrollIntoView({behavior:'smooth',block:'start'}):document.querySelector('.ttwrap')?.scrollIntoView({behavior:'smooth',block:'start'})"><span class="q">When should I…?</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg></button>
     <div class="viewtog"><button class="on" onclick="setView('week')">Week</button><button onclick="setView('month')">Month</button></div>
     <div class="spendbar">
       <div class="chip" onclick="openSpend('${wFrom}','${wTo}','${esc(wLabel)} spend')"><div class="label">${esc(wLabel)}</div><div class="v">${EUR(wSpend)} <small>spend</small></div></div>
@@ -751,9 +761,10 @@ function renderHome(){
     <div class="ttwrap">${ttGrid.html}</div>
     ${trayHtml}
     <div style="text-align:center;margin-top:16px"><button class="linklike" onclick="openPlaces()">＋ Add studios &amp; class times</button></div>
-    <div class="disclaimer" style="margin-top:12px;display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap"><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:13px;height:13px;border-radius:5px;border:2px solid #6FB07E;display:inline-block"></span>green = a good fit for your phase</span>${anyGoodSlot?'':' · none this week — that\'s fine, tap any class to book'}</div>
+    <div class="disclaimer" style="margin-top:12px;text-align:center">${anyGoodSlot?'<span style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center"><span style="width:12px;height:12px;border-radius:5px;border:2px solid #6FB07E;display:inline-block"></span>A <b style="color:#4E9B63">green</b> class suits your phase especially well this week.</span>':'No stand-out days this week — anything you plan is just fine. 🌿'}</div>
     <div class="footer">
       <button class="btn ghost" onclick="exportWeekICS()">📅 Add this week to calendar</button>
+      <button class="linklike" style="color:var(--muted);font-size:12.5px" onclick="clearWeek()">Clear this week's plans</button>
       <button class="disclaimer discbtn" onclick="openScience()">A gentle guideline synced to your cycle — not medical advice. <span class="disc-why">Why?</span></button>
     </div>
     ${planPick.length?`<div class="planbar"><span class="planbar-n">${planPick.length} planned</span><button class="planbar-clear" onclick="clearPicks()">Clear</button><button class="planbar-go" onclick="commitPicks()">Add to my week</button></div>`:''}`;
@@ -806,6 +817,19 @@ function monthWindows(cat,y,m){
 function monthTallyHtml(from,to){const tally={};let d=new Date(from);while(d<=to){actsOn(d).forEach(a=>{tally[a.category]=(tally[a.category]||0)+1;});d=addDays(d,1);}
   const rows=CAT_KEYS.filter(k=>tally[k]).sort((a,b)=>tally[b]-tally[a]).map(k=>`<div class="tally"><span class="cat-badge" style="--c:${CATS[k].color}">${CATS[k].emoji}</span><span class="t-name">${CATS[k].label}</span><span class="t-count">×${tally[k]}</span></div>`).join('');
   return rows?`<div class="label" style="margin:24px 2px 10px">This month you did</div><div class="tallylist">${rows}</div>`:'';}
+function monthGridHtml(first,last,y,m){
+  const tday=ymd(today());
+  const lead=(first.getDay()+6)%7,dim=last.getDate();
+  let h='<div class="mgrid">';
+  ['Mo','Tu','We','Th','Fr','Sa','Su'].forEach(w=>h+=`<div class="mdow">${w}</div>`);
+  for(let i=0;i<lead;i++)h+='<div class="mcell blank"></div>';
+  for(let dd=1;dd<=dim;dd++){const d=new Date(y,m,dd);const ds=ymd(d);const ph=phaseForDate(d)||PHASES.foll;
+    const acts=actsOn(d);const caution=acts.some(a=>{const rr=(REC[a.category]||REC.MOVE)[ph.key][0];return rr==='r'||rr==='o';});
+    h+=`<button class="mcell${ds===tday?' today':''}" style="background:${ph.tint}" onclick="openDay('${ds}')">${dd}${acts.length?`<span class="mmark${caution?' cau':''}"></span>`:''}</button>`;}
+  h+='</div>';
+  h+=`<div class="phlegend">${['men','foll','ovu','lut'].map(k=>`<span class="phl"><span class="phl-sw" style="background:${PHASES[k].tint};border:1.5px solid ${PHASES[k].accent}"></span>${PHASES[k].label}</span>`).join('')}</div>`;
+  return h;
+}
 function renderMonth(){
   document.getElementById('fab').classList.remove('hidden');
   const base=monthCursor||today();const y=base.getFullYear(),m=base.getMonth();const tt=today();
@@ -845,6 +869,7 @@ function renderMonth(){
       <button class="wnow" onclick="goThisMonth()">${MON[m]} ${y}</button>
       <button class="wbtn" onclick="changeMonth(1)" aria-label="Next month">›</button>
     </div>
+    ${monthGridHtml(first,last,y,m)}
     ${monthTallyHtml(first,last)}
     ${clashHtml}
     <div class="label" style="margin:26px 2px 12px">This month, phase by phase <span style="text-transform:none;letter-spacing:.01em;font-weight:500;opacity:.75">· gentle guidance</span></div>
