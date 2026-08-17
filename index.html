@@ -964,9 +964,12 @@ function savePass(){
   const expiry=(expEl&&expEl.value)||null;
   const place=(plEl&&plEl.value.trim())||'';
   const base={category:formPassCat,name,place,price,total,expiry};
+  let newId=null;
   if(editingPass){const i=passes.findIndex(x=>x.id===editingPass);passes[i]={...passes[i],...base}}
-  else{passes.push({id:'p'+Date.now()+Math.random().toString(36).slice(2,5),...base})}
-  save(K_PASSES,passes);closeSheet();render();
+  else{newId='p'+Date.now()+Math.random().toString(36).slice(2,5);passes.push({id:newId,...base})}
+  save(K_PASSES,passes);
+  if(passReturn){passReturn=false;const d=activityDraft||{};activityDraft=null;d.cost='pass';if(newId)d.passId=newId;openActivity(null,d);return;}
+  closeSheet();render();
 }
 function deletePass(id){
   activities.forEach(a=>{if(a.passId===id)a.passId=null});save(K_ACTS,activities);
@@ -1093,17 +1096,21 @@ function saveCycle(){
 }
 
 /* ---------------- add / edit activity ---------------- */
-let editingId=null,formMode='recurring',formDows=[],formCat='MOVE',formCost='free',editingPass=null,formPassCat='MOVE',formPassKind='pack',whenCat=null,whenAct=null,editingCat=null,newCatColor='#F6DAD0';
+let editingId=null,formMode='recurring',formDows=[],formCat='MOVE',formCost='free',editingPass=null,formPassCat='MOVE',formPassKind='pack',whenCat=null,whenAct=null,editingCat=null,newCatColor='#F6DAD0',formActSlots=[],activityDraft=null,passReturn=false;
 let editingPlace=null,editingClass=null,editingClassPlace=null,classCat='MOVE',classDay=1,formPlaceCat='MOVE',formSlots=[];
 function openActivity(id,pre){
   editingId=id||null;
   let a=id?activities.find(x=>x.id===id):null;
-  formMode=a?(a.recurring?'recurring':'oneoff'):((pre&&pre.day!=null&&!pre.date)?'recurring':'oneoff');
-  formDows=a&&a.daysOfWeek?[...a.daysOfWeek]:((pre&&pre.day!=null)?[pre.day]:[]);
+  formMode=a?(a.recurring?'recurring':'oneoff'):((pre&&pre.mode)?pre.mode:((pre&&pre.day!=null&&!pre.date)?'recurring':'oneoff'));
+  formDows=a&&a.daysOfWeek?[...a.daysOfWeek]:((pre&&pre.dows)?[...pre.dows]:((pre&&pre.day!=null)?[pre.day]:[]));
   formCat=a&&a.category?a.category:((pre&&pre.category)?pre.category:defCat());
-  formCost=a?(a.passId?'pass':(Number(a.cost)>0?'session':'free')):'free';
+  formCost=a?(a.passId?'pass':(Number(a.cost)>0?'session':'free')):((pre&&pre.cost)?pre.cost:'free');
+  // recurring slots (day + time) — lets one activity recur at different times on different days
+  formActSlots = a&&a.recurring ? ((a.daysOfWeek&&a.daysOfWeek.length)?a.daysOfWeek.map(d=>({day:d,time:a.time||''})):[{day:today().getDay(),time:a.time||''}])
+    : (pre&&pre.slots ? pre.slots.map(s=>({day:s.day,time:s.time||''}))
+    : (pre&&pre.day!=null ? [{day:pre.day,time:(pre&&pre.time)||''}] : [{day:today().getDay(),time:(pre&&pre.time)||''}]));
   const compact=true;
-  const detailsOpen=!!(a&&(a.place||a.time||a.recurring||Number(a.cost)>0||a.passId))||!!(pre&&(pre.date||pre.time||pre.place));
+  const detailsOpen=!!(a&&(a.place||a.time||a.recurring||Number(a.cost)>0||a.passId))||!!(pre&&(pre.date||pre.time||pre.place||pre.cost||pre.dows||pre.slots));
   sheet(`
     <h2 class="serif">${id?'Edit':'Add something'}</h2>
     <div class="sub">Just a name is enough — the rest is optional.</div>
@@ -1125,15 +1132,15 @@ function openActivity(id,pre){
       <button type="button" id="seg-rec" class="${formMode==='recurring'?'on':''}" onclick="setMode('recurring')">Recurring</button>
     </div>
     <div id="m-rec" class="${formMode==='recurring'?'':'hidden'}">
-      <div class="field"><label class="label">Days of week</label>
-        <div class="dows">${[1,2,3,4,5,6,0].map(w=>`<button type="button" class="dow ${formDows.includes(w)?'on':''}" data-w="${w}" onclick="toggleDow(${w},this)">${DOW[w][0]}</button>`).join('')}</div></div>
+      <div class="field"><label class="label">Which days &amp; times</label>
+        <div id="actslots"></div></div>
     </div>
     <div id="m-one" class="${formMode==='oneoff'?'':'hidden'}">
       <div class="field"><label class="label">Date</label>
         <input type="date" id="f-date" value="${a&&a.date?a.date:((pre&&pre.date)?pre.date:ymd(today()))}"></div>
+      <div class="field"><label class="label">Time</label>
+        <button type="button" class="timefield ${(a?a.time:((pre&&pre.time)?pre.time:''))?'':'empty'}" id="f-time" data-value="${a?a.time||'':((pre&&pre.time)?pre.time:'')}" onclick="pickTime(this)">${(a&&a.time)?fmtTime(a.time):((pre&&pre.time)?fmtTime(pre.time):'Set time')}</button></div>
     </div>
-    <div class="field"><label class="label">Time</label>
-      <button type="button" class="timefield ${(a?a.time:((pre&&pre.time)?pre.time:''))?'':'empty'}" id="f-time" data-value="${a?a.time||'':((pre&&pre.time)?pre.time:'')}" onclick="pickTime(this)">${(a&&a.time)?fmtTime(a.time):((pre&&pre.time)?fmtTime(pre.time):'Set time')}</button></div>
     <div class="field"><label class="label">Place</label>
       <input type="text" id="f-place" placeholder="e.g. Studio / clinic name" value="${a?esc(a.place):((pre&&pre.place)?esc(pre.place):'')}"></div>
     <div class="field"><label class="label">Cost</label>
@@ -1146,8 +1153,8 @@ function openActivity(id,pre){
         <input type="number" id="f-cost" min="0" step="0.5" placeholder="${curSym()} per session" value="${a&&Number(a.cost)>0?a.cost:''}">
       </div>
       <div id="cost-pass" class="${formCost==='pass'?'':'hidden'}" style="margin-top:10px">
-        ${passes.length?`<select id="f-pass">${passes.map(p=>`<option value="${p.id}" ${a&&a.passId===p.id?'selected':''}>${(CATS[p.category]||CATS.MOVE).emoji} ${esc(p.name)}${p.place?' ('+esc(p.place)+')':''}${p.total!=null?' · '+passRemaining(p)+' left':''}</option>`).join('')}</select>`
-          :`<div class="muted" style="font-size:13px">No passes yet. <button type="button" class="linklike" onclick="closeSheet();openPass()">Create one</button> first.</div>`}
+        ${passes.length?`<select id="f-pass">${passes.map(p=>`<option value="${p.id}" ${(a&&a.passId===p.id)||(pre&&pre.passId===p.id)?'selected':''}>${(CATS[p.category]||CATS.MOVE).emoji} ${esc(p.name)}${p.place?' ('+esc(p.place)+')':''}${p.total!=null?' · '+passRemaining(p)+' left':''}</option>`).join('')}</select><div style="margin-top:8px"><button type="button" class="linklike" onclick="captureAndAddPass()">＋ New pass</button></div>`
+          :`<div class="muted" style="font-size:13px">No passes yet. <button type="button" class="linklike" onclick="captureAndAddPass()">＋ Add one now</button></div>`}
       </div>
     </div>
     </div>
@@ -1155,7 +1162,20 @@ function openActivity(id,pre){
       ${id?'<button class="btn danger" onclick="deleteActivity()">Delete</button>':'<button class="btn ghost" onclick="closeSheet()">Cancel</button>'}
       <button class="btn primary" onclick="saveActivity()">Save</button>
     </div>`);
+  renderActSlotRows();
 }
+function renderActSlotRows(){const wrap=document.getElementById('actslots');if(!wrap)return;
+  wrap.innerHTML=formActSlots.map((s,i)=>`<div class="slotrow">
+    <div class="dows sm">${[1,2,3,4,5,6,0].map(w=>`<button type="button" class="dow ${s.day===w?'on':''}" onclick="setActSlotDay(${i},${w})">${DOW[w][0]}</button>`).join('')}</div>
+    <div class="slotrow2"><button type="button" class="timefield ${s.time?'':'empty'}" onclick="pickActSlotTime(${i})">${s.time?fmtTime(s.time):'Set time'}</button>${formActSlots.length>1?`<button type="button" class="slotdel" onclick="removeActSlot(${i})" aria-label="remove">×</button>`:''}</div>
+  </div>`).join('')+`<button type="button" class="addslot" onclick="addActSlot()">＋ Add another day / time</button>`;
+}
+function setActSlotDay(i,w){formActSlots[i].day=w;renderActSlotRows();}
+function pickActSlotTime(i){openTimeWheel(formActSlots[i].time,v=>{formActSlots[i].time=v;renderActSlotRows();});}
+function addActSlot(){formActSlots.push({day:today().getDay(),time:''});renderActSlotRows();}
+function removeActSlot(i){formActSlots.splice(i,1);renderActSlotRows();}
+function readActivityForm(){const g=id=>document.getElementById(id);return {category:formCat,type:g('f-type')?g('f-type').value:'',place:g('f-place')?g('f-place').value:'',date:g('f-date')?g('f-date').value:'',time:g('f-time')?g('f-time').dataset.value:'',mode:formMode,slots:formActSlots.map(s=>({day:s.day,time:s.time})),cost:'pass'};}
+function captureAndAddPass(){activityDraft=readActivityForm();passReturn=true;openPass();}
 function setCat(k){
   formCat=k;
   document.querySelectorAll('#catgrid .catcell').forEach(el=>el.classList.toggle('on',el.dataset.cat===k));
@@ -1241,21 +1261,31 @@ function setCost(m){formCost=m;['free','session','pass'].forEach(k=>document.get
   document.getElementById('cost-pass').classList.toggle('hidden',m!=='pass');}
 function toggleDow(w,el){const i=formDows.indexOf(w);if(i>=0)formDows.splice(i,1);else formDows.push(w);el.classList.toggle('on')}
 function toggleInc(){document.getElementById('f-cost-wrap').classList.toggle('hidden',document.getElementById('f-inc').checked)}
+function newActId(){return 'a'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
 function saveActivity(){
   const type=document.getElementById('f-type').value.trim();
   const place=document.getElementById('f-place').value.trim();
-  const time=document.getElementById('f-time').dataset.value||'';
   if(!type){alert('What’s the activity?');return}
-  if(type)addType(formCat,type);
+  addType(formCat,type);
   let passId=null,cost=0;
   if(formCost==='pass'){const sel=document.getElementById('f-pass');passId=sel?sel.value:null;if(!passId){alert('Pick a pass, or choose another cost option.');return}}
-  else if(formCost==='session'){cost=parseFloat(document.getElementById('f-cost').value)||0}
-  let rec={recurring:formMode==='recurring',daysOfWeek:null,date:null};
-  if(formMode==='recurring'){if(!formDows.length){alert('Pick at least one day.');return}rec.daysOfWeek=[...formDows].sort();}
-  else{const dt=document.getElementById('f-date').value;if(!dt){alert('Pick a date.');return}rec.date=dt;}
-  const base={category:formCat,type,place,time,passId,includedInPass:false,cost,...rec};
-  if(editingId){const idx=activities.findIndex(x=>x.id===editingId);activities[idx]={...activities[idx],...base}}
-  else{activities.push({id:'a'+Date.now()+Math.random().toString(36).slice(2,6),...base})}
+  else if(formCost==='session'){const ce=document.getElementById('f-cost');cost=ce?(parseFloat(ce.value)||0):0}
+  const common={category:formCat,type,place,passId,includedInPass:false,cost};
+  if(formMode==='recurring'){
+    const slots=formActSlots.filter(s=>s.day!=null);
+    if(!slots.length){alert('Pick at least one day.');return}
+    // group by time so same-time days share one record; different times → separate records
+    const byTime={};slots.forEach(s=>{const k=s.time||'';(byTime[k]=byTime[k]||[]).push(s.day);});
+    const recs=Object.keys(byTime).map(tk=>({...common,recurring:true,daysOfWeek:[...new Set(byTime[tk])].sort((a,b)=>a-b),date:null,time:tk}));
+    if(editingId)activities=activities.filter(x=>x.id!==editingId);
+    recs.forEach(r=>activities.push({id:newActId(),...r}));
+  }else{
+    const dt=document.getElementById('f-date').value;if(!dt){alert('Pick a date.');return}
+    const tEl=document.getElementById('f-time');const time=tEl?(tEl.dataset.value||''):'';
+    const base={...common,recurring:false,daysOfWeek:null,date:dt,time};
+    if(editingId){const idx=activities.findIndex(x=>x.id===editingId);if(idx>=0)activities[idx]={...activities[idx],...base};else activities.push({id:newActId(),...base});}
+    else activities.push({id:newActId(),...base});
+  }
   save(K_ACTS,activities);closeSheet();render();
 }
 function deleteActivity(id){id=id||editingId;if(!id)return;activities=activities.filter(x=>x.id!==id);save(K_ACTS,activities);closeSheet();render();}
