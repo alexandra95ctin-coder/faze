@@ -4,8 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https://*.vercel-insights.com; base-uri 'self'; form-action 'self'" />
-<meta name="theme-color" content="#FBFAF5" media="(prefers-color-scheme: light)" />
-<meta name="theme-color" content="#17191B" media="(prefers-color-scheme: dark)" />
+<meta name="theme-color" content="#FBFAF5" />
+<meta name="color-scheme" content="light" />
 <title>Fáze</title>
 <link rel="manifest" href="manifest.json" />
 <link rel="apple-touch-icon" href="apple-touch-icon.png" />
@@ -33,16 +33,6 @@
   }
   @media (prefers-reduced-motion: reduce){
     *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
-  }
-  @media (prefers-color-scheme: dark){
-    :root{
-      --bg1:#17191B; --bg2:#121415;
-      --ink:#ECECE4; --muted:#9AA39B;
-      --card:#23272B;
-      --hi:#3A2A25; --lo:#213230;
-      --shadow:0 18px 40px -24px rgba(0,0,0,.6), 0 4px 14px -9px rgba(0,0,0,.5);
-      --shadow-sm:0 8px 22px -16px rgba(0,0,0,.55);
-    }
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0}
@@ -444,25 +434,6 @@
   .upkpreset button{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;padding:7px 12px;border-radius:999px;background:#F4F0E8;color:var(--ink);font-weight:500}
   .upkpreset button:active{transform:scale(.95)}
   .upkpreset button .w{color:var(--muted);font-size:11px;font-weight:600}
-  /* dark-mode component overrides — placed last so they win over base component rules */
-  @media (prefers-color-scheme: dark){
-    input,select,.field select,.timefield,.timewheel,.catcell,.dow,.tw-panel,.seg,.detailtog,.upkpreset button{background:#2A2F33;border-color:#3A4045;color:var(--ink)}
-    .tt-cell{background:#1E2123} .tt-cell.today{background:#26302A} .tt-cell.blank{background:rgba(30,33,35,.5)}
-    .act{background:#1E2123}
-    .tt-block.avail{background:#2A2F33;box-shadow:inset 0 0 0 1.5px #3A4045}
-    .tt-timeh,.tt-corner{background:var(--bg1)}
-    .sheet{background:linear-gradient(165deg,var(--bg1),#22262A 60%)}
-    .ptile,.duechip,.chip,.pass,.predict{background:var(--card);border-color:#3A4045}
-    .whenbtn{background:#0E0F10}
-    /* keep dark text on the intentionally-light pastel phase chips */
-    .tt-colh .tt-date,.mcell{color:#1E241F}
-    .duechip .due-n{color:var(--ink)}
-    /* light pills → dark so their text stays readable */
-    .nicechip,.typehint button,.typehint.big button,.tchip button,.viewtog{background:#2A2F33;color:var(--ink)}
-    .nicechip .np,.tchip .tdel{color:var(--muted)}
-    .phasecard,.tallylist{background:var(--card)}
-    .brandlogo{filter:brightness(0) invert(1);opacity:.92}
-  }
 </style>
 </head>
 <body>
