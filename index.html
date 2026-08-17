@@ -276,6 +276,7 @@
   .duechip.due-over{border-color:#E7B9B3}
   .duechip.due-over .due-t{color:#C0524A}
   .duechip.due-soon .due-t{color:#B5722A}
+  .slot-dash{color:var(--muted);font-weight:600;flex:0 0 auto}
   /* best-windows list */
   .winlist{display:flex;flex-direction:column}
   .win{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid #EFE9DD}
@@ -904,7 +905,7 @@ function openDay(ds){
   sheet(`<h2 class="serif">${DOW_FULL[d.getDay()]} ${d.getDate()} ${MON[d.getMonth()]}</h2>
     <div class="sub" style="color:${p.accent}">${p.label} · ${p.nudge}</div>
     <div class="acts" style="margin:2px 0 18px">${list}</div>
-    <div class="sheet-actions"><button class="btn ghost" onclick="closeSheet()">Close</button><button class="btn primary" onclick="closeSheet();openActivity()">Add activity</button></div>`);
+    <div class="sheet-actions"><button class="btn ghost" onclick="closeSheet()">Close</button><button class="btn primary" onclick="closeSheet();openActivity(null,{date:'${ds}'})">＋ Add to this day</button></div>`);
 }
 function setView(v){viewMode=v;if(v==='month'&&!monthCursor)monthCursor=today();render();window.scrollTo(0,0)}
 function changeMonth(n){const b=monthCursor||today();monthCursor=new Date(b.getFullYear(),b.getMonth()+n,1);renderMonth();window.scrollTo(0,0)}
@@ -932,6 +933,7 @@ function openPass(id){
   sheet(`<h2 class="serif">${id?'Edit pass':'New pass'}</h2>
     <div class="sub">Just the essentials — name it, say how it works, done.</div>
     <div class="field"><label class="label">Name</label><input type="text" id="p-name" placeholder="e.g. F45 10-pack" value="${esc(p.name)}"></div>
+    <div class="field"><label class="label">Studio / place</label><input type="text" id="p-place" placeholder="e.g. Sala Studio" value="${esc(p.place||'')}"></div>
     <label class="label" style="display:block;margin-bottom:9px">How it works</label>
     <div class="seg">
       <button type="button" id="pk-pack" class="${formPassKind==='pack'?'on':''}" onclick="setPassKind('pack')">Class pack</button>
@@ -940,9 +942,8 @@ function openPass(id){
     <div id="p-total-wrap" class="field ${formPassKind==='unlimited'?'hidden':''}"><label class="label">How many classes${id&&!unlimited?` · ${used} used so far`:''}</label>
       <input type="number" id="p-total" min="1" step="1" placeholder="e.g. 10" value="${p.total!=null&&p.total!==''?p.total:''}"></div>
     <div class="field"><label class="label">Price (${curSym()})</label><input type="number" id="p-price" min="0" step="1" placeholder="0" value="${p.price!=null&&p.price!==''?p.price:''}"></div>
-    <details style="margin-bottom:16px"><summary style="cursor:pointer;color:var(--muted);font-size:13px;font-weight:600;list-style:none">More (studio, expiry, category) ▾</summary>
+    <details style="margin-bottom:16px"><summary style="cursor:pointer;color:var(--muted);font-size:13px;font-weight:600;list-style:none">More (expiry, category) ▾</summary>
       <div style="margin-top:14px">
-        <div class="field"><label class="label">Studio / place</label><input type="text" id="p-place" placeholder="e.g. Sala Studio" value="${esc(p.place||'')}"></div>
         <div class="field"><label class="label">Valid until</label><input type="date" id="p-exp" value="${p.expiry||''}" min="${ymd(today())}"></div>
         <label class="label" style="display:block;margin-bottom:9px">Counts toward</label>
         <div class="catgrid" id="pcatgrid">${CAT_KEYS.map(k=>`<button type="button" class="catcell ${k===formPassCat?'on':''}" data-cat="${k}" style="--c:${CATS[k].color}" onclick="setPassCat('${k}')"><span class="ce">${CATS[k].emoji}</span>${CATS[k].label}</button>`).join('')}</div>
@@ -1286,7 +1287,7 @@ function openPlaces(){
   const list=places.length?places.map(p=>{
     const cl=classesFor(p.id);
     const rows=cl.length?cl.map(c=>{const cat=CATS[c.category]||CATS.MOVE;
-      return `<button class="act" onclick="openClass('${p.id}','${c.id}')"><span class="cat-badge" style="--c:${cat.color}">${cat.emoji}</span><span class="body"><div class="a-top"><span class="a-name">${esc(c.name)}</span></div><div class="a-sub">${classSlots(c).map(s=>DOW[s.day]+(s.time?' '+fmtTime(s.time):'')).join(' · ')||'no times yet'}</div></span></button>`;
+      return `<button class="act" onclick="openClass('${p.id}','${c.id}')"><span class="cat-badge" style="--c:${cat.color}">${cat.emoji}</span><span class="body"><div class="a-top"><span class="a-name">${esc(c.name)}</span></div><div class="a-sub">${classSlots(c).map(s=>DOW[s.day]+(s.time?' '+fmtTime(s.time)+(s.end?'–'+fmtTime(s.end):''):'')).join(' · ')||'no times yet'}</div></span></button>`;
     }).join(''):'<div class="empty" style="margin:6px 0 2px">No classes yet.</div>';
     return `<div class="placeblock"><div class="placehead"><span class="placename">${(CATS[p.category]||CATS.MOVE).emoji} ${esc(p.name)}</span><button class="passadd" onclick="openPlace('${p.id}')">edit</button></div><div class="acts">${rows}</div><button class="addclass" onclick="openClass('${p.id}')">＋ Add class</button></div>`;
   }).join(''):'<div class="empty">No places yet — save a studio or clinic you love.</div>';
@@ -1330,7 +1331,7 @@ function pickTime(btn){openTimeWheel(btn.dataset.value,v=>{btn.dataset.value=v;b
 function openClass(placeId,id){
   editingClassPlace=placeId;editingClass=id||null;const pl=places.find(x=>x.id===placeId);
   const c=id?classes.find(x=>x.id===id):{name:'',category:(pl&&pl.category)||'MOVE'};
-  classCat=c.category||'MOVE';formSlots=id?classSlots(c).map(s=>({day:s.day,time:s.time||''})):[{day:1,time:''}];
+  classCat=c.category||'MOVE';formSlots=id?classSlots(c).map(s=>({day:s.day,time:s.time||'',end:s.end||''})):[{day:1,time:'',end:''}];
   sheet(`<h2 class="serif">${id?'Edit class':'New class'}</h2><div class="sub">at ${esc(placeName(placeId))} — add every time it runs</div>
     <label class="label" style="display:block;margin-bottom:9px">Category</label>
     <div class="catgrid" id="ccatgrid">${CAT_KEYS.map(k=>`<button type="button" class="catcell ${k===classCat?'on':''}" data-cat="${k}" style="--c:${CATS[k].color}" onclick="setClassCat('${k}')"><span class="ce">${CATS[k].emoji}</span>${CATS[k].label}</button>`).join('')}</div>
@@ -1342,12 +1343,12 @@ function openClass(placeId,id){
 function renderSlotRows(){const wrap=document.getElementById('slotrows');if(!wrap)return;
   wrap.innerHTML=formSlots.map((s,i)=>`<div class="slotrow">
     <div class="dows sm">${[1,2,3,4,5,6,0].map(w=>`<button type="button" class="dow ${s.day===w?'on':''}" onclick="setSlotDay(${i},${w})">${DOW[w][0]}</button>`).join('')}</div>
-    <div class="slotrow2"><button type="button" class="timefield ${s.time?'':'empty'}" data-value="${s.time||''}" onclick="pickSlotTime(${i},this)">${s.time?fmtTime(s.time):'Set time'}</button>${formSlots.length>1?`<button type="button" class="slotdel" onclick="removeSlot(${i})" aria-label="remove">×</button>`:''}</div>
+    <div class="slotrow2"><button type="button" class="timefield ${s.time?'':'empty'}" onclick="pickSlotTime(${i},'time')">${s.time?fmtTime(s.time):'Start'}</button><span class="slot-dash">–</span><button type="button" class="timefield ${s.end?'':'empty'}" onclick="pickSlotTime(${i},'end')">${s.end?fmtTime(s.end):'End · optional'}</button>${formSlots.length>1?`<button type="button" class="slotdel" onclick="removeSlot(${i})" aria-label="remove">×</button>`:''}</div>
   </div>`).join('')+`<button type="button" class="addslot" onclick="addSlot()">＋ Add another time</button>`;
 }
 function setSlotDay(i,w){formSlots[i].day=w;renderSlotRows();}
-function pickSlotTime(i){openTimeWheel(formSlots[i].time,v=>{formSlots[i].time=v;renderSlotRows();});}
-function addSlot(){formSlots.push({day:1,time:''});renderSlotRows();}
+function pickSlotTime(i,field){field=field||'time';openTimeWheel(formSlots[i][field],v=>{formSlots[i][field]=v;renderSlotRows();});}
+function addSlot(){formSlots.push({day:1,time:'',end:''});renderSlotRows();}
 function removeSlot(i){formSlots.splice(i,1);renderSlotRows();}
 function saveClass(){const name=document.getElementById('cl-name').value.trim();if(!name){alert('Name the class.');return}
   const slots=formSlots.filter(s=>s.day!=null);if(!slots.length){alert('Add at least one time.');return}
@@ -1507,9 +1508,10 @@ function openMoonHair(){
     growTxt=`Now until the full moon, ${fD(fullD)}`;holdTxt=`${fD(fullD)} until the new moon, ${fD(newAfterFull)}`;
   }else{const fullAfterNew=addDays(newD,Math.round(MOON_SYNODIC/2));
     holdTxt=`Now until the new moon, ${fD(newD)}`;growTxt=`${fD(newD)} until the full moon, ${fD(fullAfterNew)}`;}
-  let strip='';
-  for(let i=0;i<30;i++){const d=addDays(t,i);const h=haircutMoon(d);
+  let strip='';let lastMon=t.getMonth();
+  for(let i=0;i<90;i++){const d=addDays(t,i);const h=haircutMoon(d);
     const bg=h.tone==='grow'?'#E2EDD7':'#E9E2F1',ac=h.tone==='grow'?'#5E9A57':'#8073A8';
+    if(d.getMonth()!==lastMon){lastMon=d.getMonth();strip+=`<div style="flex:0 0 auto;align-self:stretch;display:flex;align-items:center;writing-mode:vertical-rl;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0 3px">${MON[d.getMonth()]}</div>`;}
     strip+=`<div style="flex:0 0 auto;width:44px;text-align:center;padding:8px 0;border-radius:12px;background:${bg};${i===0?'outline:2px solid '+ac+';outline-offset:1px;':''}">
       <div style="font-size:18px;line-height:1">${h.emoji}</div>
       <div style="font-size:11px;color:#8a8a86;margin-top:3px">${DOW[d.getDay()]}</div>
@@ -1524,7 +1526,7 @@ function openMoonHair(){
       <div class="act" style="cursor:default"><span class="cat-badge" style="--c:#E2EDD7">🌱</span><span class="body"><div class="a-name">For fuller, faster growth</div><div class="a-sub">${growTxt}</div></span></div>
       <div class="act" style="cursor:default"><span class="cat-badge" style="--c:#E9E2F1">✂️</span><span class="body"><div class="a-name">To keep your shape longer</div><div class="a-sub">${holdTxt}</div></span></div>
     </div>
-    <div class="label" style="margin:16px 2px 8px">Next 30 days · scroll →</div>
+    <div class="label" style="margin:16px 2px 8px">Next 3 months · scroll →</div>
     <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:6px">${strip}</div>
     <div class="disclaimer" style="margin-top:14px">Just a bit of lunar folklore — cut your hair whenever suits you.</div>
     <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">Got it</button></div>`);
