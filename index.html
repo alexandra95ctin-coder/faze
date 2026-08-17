@@ -266,6 +266,16 @@
   .phlegend{display:flex;flex-wrap:wrap;gap:9px 16px;justify-content:center;margin:4px 2px 22px;font-size:11.5px;color:var(--muted);font-weight:600}
   .phl{display:inline-flex;align-items:center;gap:6px}
   .phl-sw{width:13px;height:13px;border-radius:5px;display:inline-block}
+  .duestrip{margin:14px 0 2px}
+  .duerow{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+  .duechip{flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;background:var(--card);border:1.5px solid #E7DFD1;border-radius:13px;padding:8px 12px;box-shadow:var(--shadow-sm)}
+  .duechip:active{transform:scale(.98)}
+  .duechip .due-e{font-size:15px;line-height:1}
+  .duechip .due-n{font-weight:600;font-size:13px;color:var(--ink)}
+  .duechip .due-t{font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap}
+  .duechip.due-over{border-color:#E7B9B3}
+  .duechip.due-over .due-t{color:#C0524A}
+  .duechip.due-soon .due-t{color:#B5722A}
   /* best-windows list */
   .winlist{display:flex;flex-direction:column}
   .win{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid #EFE9DD}
@@ -751,6 +761,7 @@ function renderHome(){
       <div class="chip" onclick="openSpend('${wFrom}','${wTo}','${esc(wLabel)} spend')"><div class="label">${esc(wLabel)}</div><div class="v">${EUR(wSpend)} <small>spend</small></div></div>
       <div class="chip" onclick="openSpend('${mFirst}','${mLast}','${mName} spend')"><div class="label">${mName}</div><div class="v">${EUR(mSpend)} <small>so far</small></div></div>
     </div>
+    ${upkeepDueStripHtml()}
     <div class="weeknav">
       <button class="wbtn" onclick="changeWeek(-1)" aria-label="Previous week">‹</button>
       <button class="wnow ${weekOffset===0?'here':''}" onclick="goThisWeek()">${esc(wLabel)}<span class="wrange">${wRange}</span></button>
@@ -869,6 +880,7 @@ function renderMonth(){
       <button class="wnow" onclick="goThisMonth()">${MON[m]} ${y}</button>
       <button class="wbtn" onclick="changeMonth(1)" aria-label="Next month">›</button>
     </div>
+    ${upkeepDueStripHtml()}
     ${monthGridHtml(first,last,y,m)}
     ${monthTallyHtml(first,last)}
     ${clashHtml}
@@ -1036,6 +1048,13 @@ function saveUpkeep(){
   save(K_UPKEEP,upkeep);openUpkeep();
 }
 function upkeepLogToday(id){const it=upkeep.find(x=>x.id===id);if(!it)return;it.lastDate=ymd(today());save(K_UPKEEP,upkeep);openUpkeep();}
+function upkeepDueStripHtml(){
+  const due=upkeep.map(it=>({it,st:upkeepStatus(it)})).filter(x=>x.st.cls==='over'||x.st.cls==='soon')
+    .sort((a,b)=>(a.st.date&&b.st.date)?a.st.date-b.st.date:0);
+  if(!due.length)return '';
+  const chips=due.map(({it,st})=>`<button class="duechip due-${st.cls}" onclick="openUpkeep()"><span class="due-e">${it.emoji||'🔁'}</span><span class="due-n">${esc(it.name)}</span><span class="due-t">${st.txt}</span></button>`).join('');
+  return `<div class="duestrip"><div class="label" style="margin:0 2px 7px">Upkeep · due soon</div><div class="duerow">${chips}</div></div>`;
+}
 function deleteUpkeep(id){upkeep=upkeep.filter(x=>x.id!==id);save(K_UPKEEP,upkeep);openUpkeep();}
 
 /* ---------------- onboarding / cycle ---------------- */
