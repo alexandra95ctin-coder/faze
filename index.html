@@ -54,8 +54,6 @@
   .brand{font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--energy-deep);font-weight:600;margin-bottom:14px}
   .brandlogo{height:28px;width:auto;max-width:100%;display:block;margin:0 auto 14px}
   header.hero{position:relative}
-  .menubtn{position:absolute;top:-4px;right:0;width:42px;height:42px;border-radius:999px;background:var(--card);box-shadow:var(--shadow-sm);font-size:18px;color:var(--ink);display:flex;align-items:center;justify-content:center;line-height:1}
-  .menubtn:active{transform:scale(.94)}
   .tallylist{display:flex;flex-direction:column}
   .tally{display:flex;align-items:center;gap:12px;padding:10px 4px;border-bottom:1px solid #EFE9DD}
   .tally:last-child{border-bottom:none}
@@ -438,6 +436,29 @@
   .bk-other{margin:0 0 10px}
   .bk-other input,.selectfield{width:100%;padding:12px 14px;border-radius:14px;border:1.5px solid #DCE2DB;background:#fff;margin-top:6px}
   .btn[disabled]{opacity:.45;pointer-events:none}
+  /* bottom tabs */
+  .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:42;display:flex;justify-content:center;gap:4px;background:rgba(255,253,249,.96);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid #ECE5D8;padding:7px 10px calc(7px + env(safe-area-inset-bottom))}
+  .tabbar button{flex:1;max-width:150px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 4px;border-radius:12px;font-size:11.5px;font-weight:600;color:var(--muted)}
+  .tabbar button svg{width:22px;height:22px}
+  .tabbar button.on{color:var(--ink)}
+  .tabbar button.on svg{stroke-width:2.4}
+  .fab{bottom:calc(84px + env(safe-area-inset-bottom))!important}
+  .planbar{bottom:calc(84px + env(safe-area-inset-bottom))!important}
+  .wrap{padding-bottom:190px!important}
+  .phaseline{display:inline-flex;align-items:center;gap:8px;margin:2px 0 4px;padding:8px 14px;border-radius:999px;background:var(--t);color:var(--ink);font-size:13px}
+  .phaseline b{color:var(--a)}
+  .pl-dot{width:9px;height:9px;border-radius:999px;background:var(--a)}
+  .wkday{display:flex;gap:12px;align-items:flex-start;margin-bottom:10px}
+  .wk-d{flex:0 0 64px;display:flex;flex-direction:column;align-items:center;padding:8px 4px;border-radius:14px;background:var(--card);border:1.6px solid var(--a);box-shadow:var(--shadow-sm)}
+  .wk-d span{font-size:11px;font-weight:600;color:var(--muted)}
+  .wk-d b{font-family:'Fraunces',serif;font-size:20px;line-height:1.1}
+  .wk-items{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+  .wk-i{display:flex;align-items:center;gap:9px;background:var(--card);border-radius:13px;padding:10px 12px;box-shadow:var(--shadow-sm);text-align:left}
+  .wk-e{font-size:16px}
+  .wk-n{flex:1;min-width:0;font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .wk-t{font-size:12px;color:var(--muted);font-weight:600}
+  .mine-h{margin:22px 2px 10px}
+  .act .chev{margin-left:auto;font-size:20px;color:var(--muted);padding-left:8px}
   .upk{display:flex;align-items:center;gap:12px;background:#fff;border:1.5px solid #E9E2D4;border-radius:16px;padding:11px 12px;margin-bottom:10px}
   .upk .cat-badge{flex:none}
   .upk-b{flex:1;min-width:0}
@@ -465,6 +486,12 @@
   Add
 </button>
 
+<nav class="tabbar hidden" id="tabbar" aria-label="Sections">
+  <button data-tab="home" onclick="goTab('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z"/></svg>Home</button>
+  <button data-tab="cal" onclick="goTab('cal')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Calendar</button>
+  <button data-tab="mine" onclick="goTab('mine')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 7h14M5 12h14M5 17h9"/></svg>My things</button>
+</nav>
+
 <div class="scrim" id="scrim"><div class="sheet" role="dialog" aria-modal="true" aria-label="Dialog" tabindex="-1"><button class="sheetclose" onclick="closeSheet()" aria-label="Close">✕</button><div id="sheet"></div></div></div>
 
 <script>
@@ -481,7 +508,7 @@ let classes=load(K_CLASSES,[]);
 let periods=load(K_PERIODS, cycle&&cycle.lastPeriodStart?[cycle.lastPeriodStart]:[]);
 let upkeep=load(K_UPKEEP,[]);
 let weekOffset=0;
-let viewMode='week';        // 'week' | 'month' | 'spend'
+let viewMode='home';        // 'home' | 'month' | 'week' (Calendar tab) | 'mine'
 let monthCursor=null;       // Date of displayed month
 let spendPeriod='month';    // 'week' | 'month'
 
@@ -664,8 +691,8 @@ function weekLabel(off,mon){
   if(off===0)return 'This week'; if(off===1)return 'Next week'; if(off===-1)return 'Last week';
   const end=addDays(mon,6);return mon.getDate()+' '+MON[mon.getMonth()]+' – '+end.getDate()+' '+MON[end.getMonth()];
 }
-function changeWeek(d){weekOffset+=d;renderHome();window.scrollTo(0,0)}
-function goThisWeek(){weekOffset=0;renderHome();window.scrollTo(0,0)}
+function changeWeek(d){weekOffset+=d;renderWeek();window.scrollTo(0,0)}
+function goThisWeek(){weekOffset=0;renderWeek();window.scrollTo(0,0)}
 
 /* ---------------- render helpers ---------------- */
 function fmtTime(t){if(!t)return '';const[h,m]=t.split(':').map(Number);const ap=h<12?'am':'pm';const hh=((h+11)%12)+1;return hh+(m?':'+String(m).padStart(2,'0'):'')+ap}
@@ -677,24 +704,24 @@ const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;',
 let planPick=[];
 function showToast(msg){let t=document.getElementById('ptoast');if(!t){t=document.createElement('div');t.id='ptoast';t.className='ptoast';document.body.appendChild(t);}t.textContent=msg;t.classList.add('show');clearTimeout(showToast._t);showToast._t=setTimeout(()=>t.classList.remove('show'),2000);}
 function pickedClass(cid,ds,time){return planPick.some(p=>p.k==='c'&&p.cid===cid&&p.ds===ds&&(p.time||'')===(time||''));}
-function toggleClassPick(cid,ds,time){const i=planPick.findIndex(p=>p.k==='c'&&p.cid===cid&&p.ds===ds&&(p.time||'')===(time||''));if(i>=0)planPick.splice(i,1);else planPick.push({k:'c',cid,ds,time:time||''});renderHome();}
-function addActPick(cat,type,ds){planPick.push({k:'a',uid:'k'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),cat,type,ds});renderHome();}
-function removePick(uid){planPick=planPick.filter(p=>p.uid!==uid);renderHome();}
-function clearPicks(){planPick=[];renderHome();}
+function toggleClassPick(cid,ds,time){const i=planPick.findIndex(p=>p.k==='c'&&p.cid===cid&&p.ds===ds&&(p.time||'')===(time||''));if(i>=0)planPick.splice(i,1);else planPick.push({k:'c',cid,ds,time:time||''});renderWeek();}
+function addActPick(cat,type,ds){planPick.push({k:'a',uid:'k'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),cat,type,ds});renderWeek();}
+function removePick(uid){planPick=planPick.filter(p=>p.uid!==uid);renderWeek();}
+function clearPicks(){planPick=[];renderWeek();}
 function clearWeek(){
   const mon=addDays(mondayOf(today()),weekOffset*7);const from=ymd(mon),to=ymd(addDays(mon,6));
   const inWeek=activities.filter(a=>!a.recurring&&a.date>=from&&a.date<=to);
   if(!inWeek.length&&!planPick.length){showToast('Nothing to clear this week');return;}
   if(!confirm('Clear '+inWeek.length+' planned item'+(inWeek.length===1?'':'s')+' from this week?\n(Recurring classes stay.)'))return;
   activities=activities.filter(a=>!(!a.recurring&&a.date>=from&&a.date<=to));planPick=[];
-  save(K_ACTS,activities);renderHome();showToast('✓ Week cleared');
+  save(K_ACTS,activities);renderWeek();showToast('✓ Week cleared');
 }
 function commitPicks(){
   if(!planPick.length)return;let n=0;
   planPick.forEach(p=>{const nid='a'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
     if(p.k==='c'){const c=classes.find(x=>x.id===p.cid);if(!c)return;activities.push({id:nid,category:c.category,type:c.name,place:placeName(c.placeId),time:p.time||'',passId:null,includedInPass:false,cost:0,recurring:false,daysOfWeek:null,date:p.ds});n++;}
     else{activities.push({id:nid,category:p.cat,type:p.type,place:'',time:'',passId:null,includedInPass:false,cost:0,recurring:false,daysOfWeek:null,date:p.ds});n++;}});
-  save(K_ACTS,activities);planPick=[];renderHome();showToast('✓ Added '+n+' to your week');
+  save(K_ACTS,activities);planPick=[];renderWeek();showToast('✓ Added '+n+' to your week');
 }
 function weekPhaseKeys(mon){return [...new Set([...Array(7)].map((_,i)=>(phaseForDate(addDays(mon,i))||{key:'foll'}).key))];}
 function niceSetFor(ks){const seen={},out=[];ks.forEach(pk=>((PHASE_GUIDE[pk]||{}).nice||[]).forEach(n=>{const k=n[0]+n[1];if(!seen[k]){seen[k]=1;out.push(n);}}));return out;}
@@ -768,8 +795,7 @@ function attachTimetable(){
   });
   document.querySelectorAll('.tt-colh').forEach(h=>{h.addEventListener('click',()=>{if(sel){addActPick(sel.cat,sel.type,h.dataset.date);clearSel();}else{openDay(h.dataset.date);}});});
 }
-function renderHome(){
-  document.getElementById('fab').classList.toggle('hidden', planPick.length>0);
+function renderWeek(){
   const mon=addDays(mondayOf(today()),weekOffset*7);const tday=ymd(today());
   const wSpend=weekSpend(mon),mSpend=monthSpend(),wLabel=weekLabel(weekOffset,mon);
   const tt=today();const mFirst=ymd(new Date(tt.getFullYear(),tt.getMonth(),1)),mLast=ymd(new Date(tt.getFullYear(),tt.getMonth()+1,0)),mName=MON[tt.getMonth()];
@@ -778,18 +804,8 @@ function renderHome(){
   const passCats={};passes.forEach(p=>passCats[p.category]=1);const anyClasses=classes.length>0;
   const ttGrid=weekTimetable(mon,tday,passCats);const trayHtml=weekTrayHtml(mon);const anyGoodSlot=ttGrid.anyGood;
   document.getElementById('app').innerHTML=`
-    <header class="hero">
-      <button class="menubtn" onclick="openMenu()" aria-label="Menu">☰</button>
-      <img class="brandlogo" src="faze-logo.png" alt="fáze — cycle × wellness planner">
-
-      <div class="dateline">Today · ${DOW_FULL[tt.getDay()]} ${tt.getDate()} ${MON[tt.getMonth()]} ${tt.getFullYear()}</div>
-    </header>
-    ${nextUpHtml()}
-    <div class="viewtog"><button class="on" onclick="setView('week')">Week</button><button onclick="setView('month')">Month</button></div>
-    <div class="spendbar">
-      <div class="chip" onclick="openSpend('${wFrom}','${wTo}','${esc(wLabel)} spend')"><div class="label">${esc(wLabel)}</div><div class="v">${EUR(wSpend)} <small>spend</small></div></div>
-      <div class="chip" onclick="openSpend('${mFirst}','${mLast}','${mName} spend')"><div class="label">${mName}</div><div class="v">${EUR(mSpend)} <small>so far</small></div></div>
-    </div>
+    ${headerHtml()}
+    ${calTogHtml('week')}
     <div class="weeknav">
       <button class="wbtn" onclick="changeWeek(-1)" aria-label="Previous week">‹</button>
       <button class="wnow ${weekOffset===0?'here':''}" onclick="goThisWeek()">${esc(wLabel)}<span class="wrange">${wRange}</span></button>
@@ -810,24 +826,6 @@ function renderHome(){
   attachTimetable();
 }
 
-function openMenu(){
-  sheet(`<h2 class="serif">Menu</h2>
-    <div class="acts menu" style="margin:8px 0 14px">
-      <button class="act" onclick="closeSheet();openPlaces()"><span class="cat-badge" style="--c:#D7E9E3">📍</span><span class="body"><div class="a-name">Places & classes</div></span></button>
-      <button class="act" onclick="closeSheet();openPasses()"><span class="cat-badge" style="--c:#F3E7C9">🎟️</span><span class="body"><div class="a-name">Passes & memberships</div></span></button>
-      <button class="act" onclick="closeSheet();openUpkeep()"><span class="cat-badge" style="--c:#F7E4CE">🔁</span><span class="body"><div class="a-name">Upkeep & last visits</div><div class="a-sub">Dermatology, haircut, facials…</div></span></button>
-      <button class="act" onclick="closeSheet();openCats()"><span class="cat-badge" style="--c:#F4DCEA">🗂️</span><span class="body"><div class="a-name">Categories</div><div class="a-sub">Reorder &amp; tidy your grid</div></span></button>
-      <button class="act" onclick="closeSheet();openBackup()"><span class="cat-badge" style="--c:#D6E2F4">💾</span><span class="body"><div class="a-name">Data & calendar</div></span></button>
-      <button class="act" onclick="closeSheet();openCycle()"><span class="cat-badge" style="--c:#E0EAF3">🩸</span><span class="body"><div class="a-name">Cycle & period log</div></span></button>
-      <button class="act" onclick="closeSheet();openCurrency()"><span class="cat-badge" style="--c:#DEEBCE">💰</span><span class="body"><div class="a-name">Currency</div><div class="a-sub">${(CURRENCIES[currency]||{}).sym||'€'} ${currency}</div></span></button>
-      <button class="act" onclick="importInfo()"><span class="cat-badge" style="--c:#ECEAE4">📷</span><span class="body"><div class="a-name">Import from photo</div><div class="a-sub">Coming soon</div></span></button>
-      <button class="act" onclick="closeSheet();openMoonHair()"><span class="cat-badge" style="--c:#E7DCF0">🌙</span><span class="body"><div class="a-name">Haircut by the moon</div><div class="a-sub">A folk tradition, just for fun</div></span></button>
-      <button class="act" onclick="closeSheet();openScience()"><span class="cat-badge" style="--c:#E2EDD7">🔬</span><span class="body"><div class="a-name">Why these suggestions?</div><div class="a-sub">The research behind the tips</div></span></button>
-      <button class="act" onclick="closeSheet();openHorizon()"><span class="cat-badge" style="--c:#E7DCF0">✨</span><span class="body"><div class="a-name">On the horizon</div><div class="a-sub">What we’re exploring next</div></span></button>
-    </div>
-    <div class="disclaimer" style="margin-top:4px;text-align:center">🔒 Everything you log stays on this device — no account, no cloud, no tracking. Back it up from <b>Data &amp; calendar</b>.</div>
-    <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">Close</button></div>`);
-}
 
 function openCurrency(){
   sheet(`<h2 class="serif">Currency</h2><div class="sub">Shown on all your spend.</div>
@@ -871,7 +869,6 @@ function monthGridHtml(first,last,y,m){
   return h;
 }
 function renderMonth(){
-  document.getElementById('fab').classList.remove('hidden');
   const base=monthCursor||today();const y=base.getFullYear(),m=base.getMonth();const tt=today();
   const first=new Date(y,m,1),last=new Date(y,m+1,0);
   const np=nextPeriodStart();let npTxt='',npWhen='';
@@ -892,18 +889,8 @@ function renderMonth(){
   const clashHtml=clashes.length?`<div class="label" style="margin:24px 2px 10px">Heads-up this month</div><div class="acts">${clashes.map(({a,d})=>{const c=catOf(a);const w=monthWindows(a.category,y,m).best;const better=w.length?'around '+fmtR(w[0]):'another week';
     return `<button class="act" onclick="openDay('${ymd(d)}')"><span class="cat-badge" style="--c:${c.color}">${c.emoji}</span><span class="body"><div class="a-top"><span class="a-name">${esc(a.type)||c.label}</span><span class="cost" style="color:#BE4A41">${DOW[d.getDay()]} ${d.getDate()}</span></div><div class="a-sub">better ${better}</div></span></button>`;}).join('')}</div>`:'';
   document.getElementById('app').innerHTML=`
-    <header class="hero">
-      <button class="menubtn" onclick="openMenu()" aria-label="Menu">☰</button>
-      <img class="brandlogo" src="faze-logo.png" alt="fáze — cycle × wellness planner">
-
-      <div class="dateline">Today · ${DOW_FULL[tt.getDay()]} ${tt.getDate()} ${MON[tt.getMonth()]} ${tt.getFullYear()}</div>
-    </header>
-    ${nextUpHtml()}
-    <button class="whenbtn" onclick="setView('week')"><span class="q">When should I…?</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
-    <div class="viewtog"><button onclick="setView('week')">Week</button><button class="on" onclick="setView('month')">Month</button></div>
-    <div class="spendbar">
-      <div class="chip" onclick="openSpend('${ymd(first)}','${ymd(last)}','${MON[m]} ${y} spend')"><div class="label">${MON[m]} ${y}</div><div class="v">${EUR(monthSpend(base))} <small>spend</small></div></div>
-    </div>
+    ${headerHtml()}
+    ${calTogHtml('month')}
     ${np?`<div class="predict" onclick="openCycle()"><div><div class="label">Next period · approx</div><div class="pv">~ ${npTxt}</div></div><div class="pdays">${npWhen}</div></div>`:''}
     <div class="weeknav">
       <button class="wbtn" onclick="changeMonth(-1)" aria-label="Previous month">‹</button>
@@ -938,7 +925,72 @@ function openDay(ds){
 function setView(v){viewMode=v;if(v==='month'&&!monthCursor)monthCursor=today();render();window.scrollTo(0,0)}
 function changeMonth(n){const b=monthCursor||today();monthCursor=new Date(b.getFullYear(),b.getMonth()+n,1);renderMonth();window.scrollTo(0,0)}
 function goThisMonth(){monthCursor=today();renderMonth();window.scrollTo(0,0)}
-function render(){viewMode==='month'?renderMonth():renderHome()}
+function render(){
+  if(viewMode==='month')renderMonth();else if(viewMode==='week')renderWeek();else if(viewMode==='mine')renderMine();else renderToday();
+  const tab=viewMode==='month'||viewMode==='week'?'cal':viewMode;
+  document.querySelectorAll('.tabbar button').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
+  document.getElementById('tabbar').classList.remove('hidden');
+  document.getElementById('fab').classList.toggle('hidden',viewMode==='mine'||(viewMode==='week'&&planPick.length>0));
+}
+function goTab(t){setView(t==='cal'?(viewMode==='week'?'week':'month'):t);}
+function headerHtml(){const tt=today();return `<header class="hero">
+      <img class="brandlogo" src="faze-logo.png" alt="fáze — cycle × wellness planner">
+      <div class="dateline">Today · ${DOW_FULL[tt.getDay()]} ${tt.getDate()} ${MON[tt.getMonth()]} ${tt.getFullYear()}</div>
+    </header>`;}
+function calTogHtml(on){return `<div class="viewtog"><button class="${on==='month'?'on':''}" onclick="setView('month')">Month</button><button class="${on==='week'?'on':''}" onclick="setView('week')">Plan my week</button></div>`;}
+
+/* ---- Home: what to book next + what's on this week ---- */
+function renderToday(){
+  const t=today();const p=phaseForDate(t);const np=nextPeriodStart();
+  const phaseLine=p?`<button class="phaseline" onclick="openCycle()" style="--a:${p.accent};--t:${p.tint}"><span class="pl-dot"></span><b>${p.label}</b> · day ${p.day}${np?` · period in ~${Math.max(0,daysBetween(t,np))} days`:''}</button>`:'';
+  const rows=[...Array(7)].map((_,i)=>{const d=addDays(t,i);const acts=actsOn(d).slice().sort((a,b)=>(a.time||'99').localeCompare(b.time||'99'));if(!acts.length)return '';
+    const ph=phaseForDate(d);
+    return `<div class="wkday"><button class="wk-d" onclick="openDay('${ymd(d)}')" style="--a:${ph?ph.accent:'#ccc'}"><span>${i===0?'Today':i===1?'Tomorrow':DOW[d.getDay()]}</span><b>${d.getDate()}</b></button>
+      <div class="wk-items">${acts.map(a=>{const c=catOf(a);return `<button class="wk-i" onclick="openActivityMenu('${a.id}')"><span class="wk-e">${c.emoji}</span><span class="wk-n">${esc(a.type)||c.label}</span><span class="wk-t">${fmtTime(a.time)}</span></button>`;}).join('')}</div></div>`;}).join('');
+  document.getElementById('app').innerHTML=`
+    ${headerHtml()}
+    ${phaseLine}
+    ${nextUpHtml()}
+    <div class="label nu-h" style="margin-top:22px">Next 7 days <button class="linklike nu-all" onclick="setView('week')">Plan my week</button></div>
+    ${rows||'<div class="nu-quiet" style="margin-bottom:6px">Nothing planned yet. Tap <b>Add</b>, or plan your week from the Calendar.</div>'}
+    <div class="footer"><button class="disclaimer discbtn" onclick="openScience()">A gentle guideline synced to your cycle — not medical advice. <span class="disc-why">Why?</span></button></div>`;
+}
+
+/* ---- My things: setup, money, settings (replaces the ☰ menu) ---- */
+function mineRow(fn,emoji,bg,name,sub){return `<button class="act" onclick="${fn}"><span class="cat-badge" style="--c:${bg}">${emoji}</span><span class="body"><div class="a-name">${name}</div>${sub?`<div class="a-sub">${sub}</div>`:''}</span><span class="chev">›</span></button>`;}
+function renderMine(){
+  const t=today();const mon=mondayOf(t);const wEnd=addDays(mon,6);
+  const mFirst=new Date(t.getFullYear(),t.getMonth(),1),mLast=new Date(t.getFullYear(),t.getMonth()+1,0);
+  const n=(k,one,many)=>k?k+' '+(k===1?one:many):'';
+  const p=phaseForDate(t);
+  document.getElementById('app').innerHTML=`
+    ${headerHtml()}
+    <div class="label mine-h">Your routine</div>
+    <div class="acts menu">
+      ${mineRow('openUpkeep()','🔁','#F7E4CE','Treatments &amp; visits',n(upkeep.length,'tracked','tracked')||'Facials, haircut, lashes, dentist…')}
+      ${mineRow('openPlaces()','📍','#D7E9E3','Studios &amp; classes',n(places.length,'place','places')||'Add where you go and their class times')}
+      ${mineRow('openPasses()','🎟️','#F3E7C9','Passes &amp; memberships',n(passes.length,'pass','passes')||'Track class packs and memberships')}
+      ${mineRow('openCycle()','🩸','#E0EAF3','My cycle',p?`${p.label} · day ${p.day} · log a period`:'Set up or log a period')}
+    </div>
+    <div class="label mine-h">Spending</div>
+    <div class="spendbar">
+      <div class="chip" onclick="openSpend('${ymd(mon)}','${ymd(wEnd)}','This week spend')"><div class="label">This week</div><div class="v">${EUR(weekSpend(mon))}</div></div>
+      <div class="chip" onclick="openSpend('${ymd(mFirst)}','${ymd(mLast)}','${MON[t.getMonth()]} spend')"><div class="label">${MON[t.getMonth()]}</div><div class="v">${EUR(monthSpend())}</div></div>
+    </div>
+    <div class="label mine-h">Settings</div>
+    <div class="acts menu">
+      ${mineRow('openBackup()','💾','#D6E2F4','Calendar &amp; backup','Export to your calendar, save or restore your data')}
+      ${mineRow('openCats()','🗂️','#F4DCEA','Categories','Reorder &amp; tidy')}
+      ${mineRow('openCurrency()','💰','#DEEBCE','Currency',`${(CURRENCIES[currency]||{}).sym||'€'} ${currency}`)}
+    </div>
+    <div class="label mine-h">More</div>
+    <div class="acts menu">
+      ${mineRow('openScience()','🔬','#E2EDD7','Why these suggestions?','The research behind the tips')}
+      ${mineRow('openMoonHair()','🌙','#E7DCF0','Haircut by the moon','A folk tradition, just for fun')}
+      ${mineRow('openHorizon()','✨','#E7DCF0','On the horizon','What we’re exploring next')}
+    </div>
+    <div class="disclaimer" style="margin-top:20px;text-align:center">🔒 Everything you log stays on this device — no account, no cloud, no tracking.</div>`;
+}
 
 /* ---------------- passes ---------------- */
 function passesStripHtml(){
@@ -1041,13 +1093,13 @@ function openUpkeep(){
   const list=sorted.length?sorted.map(it=>{const st=upkeepStatus(it);
     const ago=it.lastDate?daysBetween(parseYMD(it.lastDate),today()):null;const ld=it.lastDate?parseYMD(it.lastDate):null;
     const lastTxt=ld?`Last ${ld.getDate()} ${MON[ld.getMonth()]}${ago===0?' · today':(ago>0?' · '+humanDur(ago)+' ago':'')}`:'No visit logged yet';
-    const cad=it.cadenceWeeks?` · every ~${it.cadenceWeeks} wk`:'';
+    const cad=(it.cadenceWeeks?` · every ~${it.cadenceWeeks} wk`:'')+(it.booked?` · booked ${fmtDay(parseYMD(it.booked.date))} ${MON[parseYMD(it.booked.date).getMonth()]}`:'');
     return `<div class="upk">
       <span class="cat-badge" style="--c:#F4F0E8">${it.emoji||'🔁'}</span>
       <span class="upk-b"><button class="upk-n" style="display:block;text-align:left" onclick="openUpkeepEdit('${it.id}')">${esc(it.name)}</button><div class="upk-s">${lastTxt}${cad}</div></span>
-      <span class="upk-r"><span class="upk-due ${st.cls}">${st.txt}</span><button class="upk-log" onclick="upkeepLogToday('${it.id}')">Went today</button></span>
+      <span class="upk-r"><span class="upk-due ${st.cls}">${st.txt}</span><button class="upk-log" onclick="openLogVisit('${it.id}',true)">Log a visit</button></span>
     </div>`;}).join(''):'<div class="empty">Nothing tracked yet — add a treatment or appointment you like to keep on top of.</div>';
-  sheet(`<h2 class="serif">Upkeep &amp; last visits</h2>
+  sheet(`<h2 class="serif">Treatments &amp; visits</h2>
     <div class="sub">Log when you last went, and Fáze reminds you when you're roughly due again.</div>
     <div style="margin:6px 0 14px">${list}</div>
     <div class="sheet-actions"><button class="btn ghost" onclick="closeSheet()">Close</button><button class="btn primary" onclick="openUpkeepEdit()">＋ Track something</button></div>`);
@@ -1129,7 +1181,7 @@ function nextUpHtml(){
   const items=upkeep.map(it=>({it,w:it.booked?null:bookWindow(it)})).filter(x=>x.it.booked||x.w)
     .map(x=>({...x,sort:x.it.booked?parseYMD(x.it.booked.date):x.w.start})).sort((a,b)=>a.sort-b.sort);
   const soon=items.filter(x=>daysBetween(today(),x.sort)<=21);
-  const all=`<button class="linklike nu-all" onclick="openUpkeep()">All upkeep</button>`;
+  const all=`<button class="linklike nu-all" onclick="openUpkeep()">See all</button>`;
   if(!soon.length){const n=items[0];
     return `<div class="nextup"><div class="label nu-h">Next up ${all}</div><div class="nu-quiet">Nothing to book for a few weeks 🌿${n?` · next: ${n.it.emoji||'🔁'} ${esc(n.it.name)} from ${n.sort.getDate()} ${MON[n.sort.getMonth()]}`:''}</div></div>`;}
   const cards=soon.slice(0,3).map(({it,w})=>{
@@ -1145,11 +1197,23 @@ function nextUpHtml(){
     return `<div class="nucard"${w.fit==='g'?` style="border-color:${w.accent}"`:''}><div class="nu-top"><span class="nu-e">${esc(it.emoji||'🔁')}</span><span class="nu-n">${esc(it.name)}</span>${pill}</div>
       <div class="nu-when"><span class="nu-pre">Book for</span> ${fmtRange(w.start,w.end)}</div>
       <div class="nu-sub">${sub}</div>${why}
-      <div class="nu-acts"><button class="nu-go" onclick="openBook('${it.id}')">Pick a day</button><button class="nu-link" onclick="upkeepWentToday('${it.id}')">Went already</button></div></div>`;
+      <div class="nu-acts"><button class="nu-go" onclick="openBook('${it.id}')">Pick a day</button><button class="nu-link" onclick="openLogVisit('${it.id}')">Went already</button></div></div>`;
   }).join('');
   return `<div class="nextup"><div class="label nu-h">Next up ${all}</div>${cards}</div>`;
 }
-function upkeepWentToday(id){const it=upkeep.find(x=>x.id===id);if(!it)return;it.lastDate=ymd(today());delete it.booked;save(K_UPKEEP,upkeep);render();showToast('Logged ✓ — next one tracked');}
+/* log a past visit on the day it actually happened (not always "today") */
+let logFor=null,logBack=false;
+function openLogVisit(id,back){const it=upkeep.find(x=>x.id===id);if(!it)return;logFor=id;logBack=!!back;
+  const t=today();const chip=(d,l)=>`<button class="nicechip" onclick="saveVisit('${ymd(d)}')">${l}</button>`;
+  sheet(`<h2 class="serif">${esc(it.emoji||'')} When did you go?</h2>
+    <div class="sub">${esc(it.name)}. Fáze counts your next one from this date.</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 14px">${chip(t,'Today')}${chip(addDays(t,-1),'Yesterday')}</div>
+    <div class="field"><label class="label" for="lv-date">Or pick the date</label><input type="date" id="lv-date" class="selectfield" max="${ymd(t)}" value="${ymd(t)}"></div>
+    <div class="sheet-actions"><button class="btn ghost" onclick="${back?'openUpkeep()':'closeSheet()'}">Cancel</button><button class="btn primary" onclick="saveVisit(document.getElementById('lv-date').value)">Save</button></div>`);}
+function saveVisit(ds){const it=upkeep.find(x=>x.id===logFor);if(!it||!ds)return;
+  if(ds>ymd(today())){alert('Pick a day that has already happened.');return;}
+  it.lastDate=ds;if(it.booked&&it.booked.date<=ds)delete it.booked;save(K_UPKEEP,upkeep);
+  const d=parseYMD(ds);render();if(logBack)openUpkeep();else closeSheet();showToast('Logged '+d.getDate()+' '+MON[d.getMonth()]+' ✓');}
 
 /* booking sheet: pick a day in (or just after) the window → saved to the week + calendar file */
 let bookFor=null,bookDay=null,bookTime='';
