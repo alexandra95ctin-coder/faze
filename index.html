@@ -513,6 +513,10 @@
   .wk-d{flex:0 0 58px;border-radius:14px;padding:7px 2px}
   .nu-go{padding:10px 18px;font-size:14px}
   .act .cat-badge{width:34px;height:34px;font-size:17px}
+  .why-i{font-size:12px;font-weight:700;text-decoration:underline;text-underline-offset:2px;color:inherit;padding:0 2px}
+  .info-i{width:26px;height:26px;border-radius:99px;border:1.5px solid #E6DAD2;color:var(--muted);font-size:14px;line-height:1;display:inline-flex;align-items:center;justify-content:center}
+  .fitlist{margin:6px 0 4px 18px;padding:0;font-size:13.5px;line-height:1.6;opacity:.85}
+  .wk-m[role=button]{cursor:pointer}
   .upk{display:flex;align-items:center;gap:12px;background:#fff;border:1.5px solid #EADDD4;border-radius:16px;padding:11px 12px;margin-bottom:10px}
   .upk .cat-badge{flex:none}
   .upk-b{flex:1;min-width:0}
@@ -993,7 +997,8 @@ function renderToday(){
   const t=today();const p=phaseForDate(t);const np=nextPeriodStart();
   const phaseLine=p?`<button class="phaseline" onclick="openCycle()" style="--a:${p.accent};--t:${p.tint}"><span class="pl-dot"></span><span><b>${p.label}</b> · day ${p.day}${np?` · period ~${fmtDay(np)} ${MON[np.getMonth()]}${daysBetween(t,np)>0?` (in ${daysBetween(t,np)} day${daysBetween(t,np)===1?'':'s'})`:''}`:''}</span></button>`:'';
   const itemHtml=(a,d,past)=>{const c=catOf(a);const r=past?null:rateOn(a.category,d,a.type);
-    const mark=past?'<span class="wk-m done">done</span>':(r&&r.r==='g'?'<span class="wk-m good">✓ good time</span>':(r&&(r.r==='o'||r.r==='r')?'<span class="wk-m warn">⚠ maybe wait</span>':''));
+    const wy=`onclick="event.stopPropagation();openWhy('${a.category}','${esc(a.type||'').replace(/'/g,'&#39;')}','${ymd(d)}')"`;
+    const mark=past?'<span class="wk-m done">done</span>':(r&&r.r==='g'?`<span class="wk-m good" role="button" ${wy}>✓ good time</span>`:(r&&(r.r==='o'||r.r==='r')?`<span class="wk-m warn" role="button" ${wy}>⚠ maybe wait ⓘ</span>`:''));
     return `<button class="wk-i${past?' past':''}" onclick="openActivityMenu('${a.id}')"><span class="wk-e">${c.emoji}</span><span class="wk-n">${esc(a.type)||c.label}${a.time?` <small>${fmtTime(a.time)}</small>`:''}</span>${mark}</button>`;};
   const npDs=np?ymd(np):'';
   const dayRow=(d,past)=>{const acts=actsOn(d);const isP=!past&&ymd(d)===npDs;if(!acts.length&&!isP)return '';const ph=phaseForDate(d);const off=daysBetween(t,d);
@@ -1004,7 +1009,7 @@ function renderToday(){
     return `<div class="wkday"><div class="wk-d past"><span>${i===0?'Yesterday':DOW[d.getDay()]}</span><b>${d.getDate()}</b></div><div class="wk-items">${acts.map(a=>itemHtml(a,d,true)).join('')}</div></div>`;}).join('');
   document.getElementById('app').innerHTML=`
     ${headerHtml()}
-    <div class="phaserow">${phaseLine}<button class="nu-link" onclick="openLogPeriod()">🩸 Log period</button></div>
+    <div class="phaserow">${phaseLine}<span style="display:flex;gap:14px;align-items:center"><button class="nu-link" onclick="openLogPeriod()">🩸 Log period</button><button class="info-i" onclick="openFit()" aria-label="When Fáze may not fit">ⓘ</button></span></div>
     ${nextUpHtml()}
     <div class="label nu-h" style="margin-top:22px">Coming up</div>
     ${rows||'<div class="nu-quiet" style="margin-bottom:6px">Nothing planned in the next 2 weeks. Tap <b>Add</b> — Fáze shows you the good days.</div>'}
@@ -1278,15 +1283,46 @@ function guessCat(name){const n=(name||'').trim().toLowerCase();if(!n)return 'UP
 /* some treatments need their own timing, not their category's (e.g. heat on period days) */
 const TYPE_REC=[[/sauna|steam|hammam|hot ?tub|jacuzzi|hot bath|hot yoga|bikram|infrared/i,{men:['o','many prefer to skip heat on period days — totally your call'],foll:['g','a comfortable time for heat & sweat'],ovu:['g','a comfortable time for heat & sweat'],lut:['y','fine — some feel more tired after heat now']}]];
 function recRow(cat,name){for(const[re,row]of TYPE_REC)if(name&&re.test(name))return row;return REC[cat]||null;}
+/* the longer "why" behind a ✓ / ⚠ — plain language, general guidance only */
+function explainFor(cat,name){
+  if(name&&TYPE_REC[0][0].test(name))return 'There’s no medical rule against heat on your period. Many people simply prefer to skip saunas, steam or hot baths then — heat can feel draining on low-energy days, and some find it uncomfortable while bleeding. After your period, heat usually feels comfortable again.';
+  return ({
+    FACIAL:'Skin changes across the cycle. In the days before and during your period it tends to be oilier and more reactive, so strong peels, extractions or lasers can sting or flare. In the week after your period skin is usually calmest — the most comfortable time for facials.',
+    HAIR:'Research on pain shows many people are more sensitive to pain just before and during their period, and least sensitive in the days after it. Waxing, laser and IPL usually feel more comfortable then.',
+    AESTH:'Many people are more pain-sensitive and bruise more easily around their period. Clinics often suggest booking injectables or laser about a week after it, when it tends to be more comfortable.',
+    NAILS:'Nails and hair aren’t affected much by your cycle. Brows and lashes can feel a little more tender before your period for some — otherwise any time is fine.',
+    SPA:'Massage and body treatments are lovely at any point. Many find them especially welcome on low-energy days around their period.',
+    MOVE:'Research hasn’t found reliable differences in performance between cycle phases, so moving is good any time — go by how you feel that day.',
+    MIND:'Rest, calm and social time are good at any point. Some phases may simply feel more social or more inward for you.',
+    TRAVEL:'Your cycle doesn’t limit travel. If a trip falls around your period, just plan a little comfort in.'
+  })[cat]||'This one doesn’t depend on your cycle — any day that suits you is fine.';}
+function openWhy(cat,name,ds){const d=parseYMD(ds);const r=rateOn(cat,d,name);
+  sheet(`<h2 class="serif">Why?</h2>
+    <div class="sub">${esc(name||'')} · ${DOW_FULL[d.getDay()]} ${d.getDate()} ${MON[d.getMonth()]}</div>
+    ${verdictHtml(cat,d,name).replace(/<button class="why-i"[^>]*>[^<]*<\/button>/,'')}
+    <div class="legal-p" style="margin:14px 2px 0">${explainFor(cat,name)}</div>
+    <div class="legal-p" style="margin:12px 2px 0;font-size:12.5px">A gentle guide, not medical advice. <button class="nu-link" onclick="openScience()">See the research</button></div>
+    <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">Got it</button></div>`);}
+/* when the cycle model may not fit */
+function openFit(){
+  sheet(`<h2 class="serif">Good to know</h2>
+    <div class="legal">
+    ${legalSec('Fáze works best with a natural cycle','Its predictions and timing tips assume a natural, fairly regular cycle. They may not fit if you are:')}
+    <ul class="fitlist"><li>pregnant or breastfeeding</li><li>using hormonal contraception (pill, patch, ring, implant, injection or hormonal IUD) — it changes or pauses the natural phases</li><li>in perimenopause or menopause</li><li>living with PCOS, endometriosis or very irregular cycles</li><li>recently pregnant, or have just stopped contraception</li></ul>
+    ${legalSec('Treatments have their own rules','Some treatments — for example certain injectables, peels, lasers or medications — aren’t recommended during pregnancy or breastfeeding, whatever your cycle. Always check with your clinic or doctor.')}
+    ${legalSec('Not medical advice','Fáze is a planning guide. It isn’t a contraceptive or fertility tool and doesn’t diagnose anything.')}
+    </div>
+    <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">Got it</button></div>`);}
 function rateOn(cat,d,name){const row=recRow(cat,name);if(!cycle||!row)return null;const p=phaseForDate(d);if(!p)return null;const r=row[p.key];return {r:r[0],why:r[1],p};}
 function nextGoodFrom(cat,d,name){for(let i=1;i<45;i++){const x=addDays(d,i);const r=rateOn(cat,x,name);if(r&&r.r==='g')return x;}return null;}
 function verdictHtml(cat,d,name){const t=today();if(d<t)return '<div class="verdict done">Recorded as done ✓</div>';
   const r=rateOn(cat,d,name);if(!r)return cat==='UPK'?'<div class="verdict">This doesn’t depend on your cycle — any day is fine.</div>':'';
   const w0=r.r==='y'?r.why.replace(/^fine\b[\s—–-]*/i,''):r.why;const why=w0.charAt(0).toUpperCase()+w0.slice(1);const ph=`<span class="v-ph" style="color:${r.p.accent}">${r.p.label} · day ${r.p.day}</span>`;
-  if(r.r==='g')return `<div class="verdict good">${ph}✓ Good time · ${esc(why)}</div>`;
-  if(r.r==='y')return `<div class="verdict">${ph}Fine · ${esc(why)}</div>`;
+  const wb=`<button class="why-i" onclick="event.stopPropagation();openWhy('${cat}','${esc(name||'').replace(/'/g,'&#39;')}','${ymd(d)}')">Why?</button>`;
+  if(r.r==='g')return `<div class="verdict good">${ph}✓ Good time · ${esc(why)} ${wb}</div>`;
+  if(r.r==='y')return `<div class="verdict">${ph}Fine · ${esc(why)} ${wb}</div>`;
   const ng=nextGoodFrom(cat,d,name);
-  return `<div class="verdict warn">${ph}⚠ Maybe wait · ${esc(why)}${ng?`. Good days from <b>${fmtDay(ng)} ${MON[ng.getMonth()]}</b>`:''}</div>`;}
+  return `<div class="verdict warn">${ph}⚠ Maybe wait · ${esc(why)}${ng?`. Good days from <b>${fmtDay(ng)} ${MON[ng.getMonth()]}</b>`:''} ${wb}</div>`;}
 let addS={},addChoices=[];
 function openAdd(pre){pre=pre||{};
   addS={name:'',emoji:'',cat:'UPK',upkeepId:null,date:pre.date||null,time:'',repeat:'none',n:4,past:false,replaceAct:pre.replaceAct||null};
