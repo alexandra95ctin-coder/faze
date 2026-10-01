@@ -942,7 +942,7 @@ function calTogHtml(on){return `<div class="viewtog"><button class="${on==='mont
 /* ---- Home: what to book next + what's on this week ---- */
 function renderToday(){
   const t=today();const p=phaseForDate(t);const np=nextPeriodStart();
-  const phaseLine=p?`<button class="phaseline" onclick="openCycle()" style="--a:${p.accent};--t:${p.tint}"><span class="pl-dot"></span><b>${p.label}</b> · day ${p.day}${np?` · period in ~${Math.max(0,daysBetween(t,np))} days`:''}</button>`:'';
+  const phaseLine=p?`<button class="phaseline" onclick="openCycle()" style="--a:${p.accent};--t:${p.tint}"><span class="pl-dot"></span><b>${p.label}</b> · day ${p.day}${np?` · period ~${fmtDay(np)} ${MON[np.getMonth()]}${daysBetween(t,np)>0?` (in ${daysBetween(t,np)} day${daysBetween(t,np)===1?'':'s'})`:''}`:''}</button>`:'';
   const rows=[...Array(7)].map((_,i)=>{const d=addDays(t,i);const acts=actsOn(d).slice().sort((a,b)=>(a.time||'99').localeCompare(b.time||'99'));if(!acts.length)return '';
     const ph=phaseForDate(d);
     return `<div class="wkday"><button class="wk-d" onclick="openDay('${ymd(d)}')" style="--a:${ph?ph.accent:'#ccc'}"><span>${i===0?'Today':i===1?'Tomorrow':DOW[d.getDay()]}</span><b>${d.getDate()}</b></button>
