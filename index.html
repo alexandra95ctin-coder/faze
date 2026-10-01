@@ -272,16 +272,6 @@
   .phlegend{display:flex;flex-wrap:wrap;gap:9px 16px;justify-content:center;margin:4px 2px 22px;font-size:11.5px;color:var(--muted);font-weight:600}
   .phl{display:inline-flex;align-items:center;gap:6px}
   .phl-sw{width:13px;height:13px;border-radius:5px;display:inline-block}
-  .duestrip{margin:14px 0 2px}
-  .duerow{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
-  .duechip{flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;background:var(--card);border:1.5px solid #E7DFD1;border-radius:13px;padding:8px 12px;box-shadow:var(--shadow-sm)}
-  .duechip:active{transform:scale(.98)}
-  .duechip .due-e{font-size:15px;line-height:1}
-  .duechip .due-n{font-weight:600;font-size:13px;color:var(--ink)}
-  .duechip .due-t{font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap}
-  .duechip.due-over{border-color:#E7B9B3}
-  .duechip.due-over .due-t{color:#C0524A}
-  .duechip.due-soon .due-t{color:#B5722A}
   .slot-dash{color:var(--muted);font-weight:600;flex:0 0 auto}
   /* best-windows list */
   .winlist{display:flex;flex-direction:column}
@@ -417,6 +407,37 @@
   .typehint .tchip .tdel{padding:5px 9px 5px 4px;color:#B58A8A;font-weight:700;font-size:13px}
   .typehint .tadd{background:#F1E7D6;color:var(--energy-deep)}
   /* upkeep / last-visit tracker */
+  .nextup{margin:14px 0 18px}
+  .nu-h{display:flex;justify-content:space-between;align-items:baseline;margin:0 2px 9px}
+  .nu-all{font-size:12px;text-transform:none;letter-spacing:0;color:var(--muted)}
+  .nucard{background:var(--card);border:1.6px solid #E9E2D4;border-radius:18px;padding:14px 16px;margin-bottom:10px;box-shadow:var(--shadow-sm)}
+  .nu-top{display:flex;align-items:center;gap:9px}
+  .nu-e{font-size:20px;line-height:1}
+  .nu-n{font-weight:600;font-size:15px;flex:1;min-width:0}
+  .nu-pill{font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px;white-space:nowrap}
+  .nu-pill.over{color:#BE4A41;background:#FBE7E4}
+  .nu-pill.ok{color:#4E9B63;background:#E6F2EA}
+  .nu-when{font-family:'Fraunces',serif;font-size:21px;font-weight:600;margin:9px 0 3px;line-height:1.2}
+  .nu-pre{font-family:'Inter',sans-serif;font-size:12.5px;font-weight:500;color:var(--muted);margin-right:2px}
+  .nu-sub{font-size:12.5px;color:var(--muted)}
+  .nu-why{font-size:12.5px;color:#4E7F55;margin-top:3px}
+  .nu-acts{display:flex;align-items:center;gap:14px;margin-top:12px}
+  .nu-go{padding:10px 18px;border-radius:999px;background:var(--ink);color:#F7F3EC;font-weight:600;font-size:13.5px}
+  .nu-go:active{transform:scale(.97)}
+  .nu-link{font-size:12.5px;font-weight:600;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
+  .nu-quiet{font-size:13px;color:var(--muted);padding:2px 2px}
+  .bkgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(68px,1fr));gap:8px;margin:6px 0 14px}
+  .bkday{display:flex;flex-direction:column;align-items:center;gap:1px;padding:10px 4px;border-radius:14px;background:var(--card);border:1.6px solid #E9E2D4;color:var(--ink)}
+  .bkday.good{border-color:#6FB07E;background:#F3F9F4}
+  .bkday.on{background:var(--ink);border-color:var(--ink);color:#F7F3EC}
+  .bk-w{font-size:11px;font-weight:600;opacity:.75}
+  .bk-d{font-family:'Fraunces',serif;font-size:20px;font-weight:600;line-height:1.1}
+  .bk-m{font-size:11px;opacity:.75}
+  .bk-busy{font-size:9.5px;font-weight:600;color:#B5722A;margin-top:2px}
+  .bkday.on .bk-busy{color:#F4C98E}
+  .bk-other{margin:0 0 10px}
+  .bk-other input,.selectfield{width:100%;padding:12px 14px;border-radius:14px;border:1.5px solid #DCE2DB;background:#fff;margin-top:6px}
+  .btn[disabled]{opacity:.45;pointer-events:none}
   .upk{display:flex;align-items:center;gap:12px;background:#fff;border:1.5px solid #E9E2D4;border-radius:16px;padding:11px 12px;margin-bottom:10px}
   .upk .cat-badge{flex:none}
   .upk-b{flex:1;min-width:0}
@@ -613,7 +634,7 @@ function actsOn(date){
     .sort((a,b)=>(a.time||'99').localeCompare(b.time||'99'));
 }
 function costOf(a){return (a.passId||a.includedInPass)?0:(Number(a.cost)||0)}
-function catOf(a){return CATS[a.category]||CATS.MOVE}
+function catOf(a){return CATS[a.category]||(a.category==='UPK'?UPK_CAT:CATS.MOVE)}
 /* passes: total=null → unlimited membership; else a class pack. used = one-off bookings linked to it */
 function passById(id){return passes.find(p=>p.id===id)}
 function passUsed(id){return activities.filter(a=>a.passId===id&&!a.recurring).length}
@@ -763,12 +784,12 @@ function renderHome(){
 
       <div class="dateline">Today · ${DOW_FULL[tt.getDay()]} ${tt.getDate()} ${MON[tt.getMonth()]} ${tt.getFullYear()}</div>
     </header>
+    ${nextUpHtml()}
     <div class="viewtog"><button class="on" onclick="setView('week')">Week</button><button onclick="setView('month')">Month</button></div>
     <div class="spendbar">
       <div class="chip" onclick="openSpend('${wFrom}','${wTo}','${esc(wLabel)} spend')"><div class="label">${esc(wLabel)}</div><div class="v">${EUR(wSpend)} <small>spend</small></div></div>
       <div class="chip" onclick="openSpend('${mFirst}','${mLast}','${mName} spend')"><div class="label">${mName}</div><div class="v">${EUR(mSpend)} <small>so far</small></div></div>
     </div>
-    ${upkeepDueStripHtml()}
     <div class="weeknav">
       <button class="wbtn" onclick="changeWeek(-1)" aria-label="Previous week">‹</button>
       <button class="wnow ${weekOffset===0?'here':''}" onclick="goThisWeek()">${esc(wLabel)}<span class="wrange">${wRange}</span></button>
@@ -877,6 +898,7 @@ function renderMonth(){
 
       <div class="dateline">Today · ${DOW_FULL[tt.getDay()]} ${tt.getDate()} ${MON[tt.getMonth()]} ${tt.getFullYear()}</div>
     </header>
+    ${nextUpHtml()}
     <button class="whenbtn" onclick="setView('week')"><span class="q">When should I…?</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
     <div class="viewtog"><button onclick="setView('week')">Week</button><button class="on" onclick="setView('month')">Month</button></div>
     <div class="spendbar">
@@ -888,7 +910,6 @@ function renderMonth(){
       <button class="wnow" onclick="goThisMonth()">${MON[m]} ${y}</button>
       <button class="wbtn" onclick="changeMonth(1)" aria-label="Next month">›</button>
     </div>
-    ${upkeepDueStripHtml()}
     ${monthGridHtml(first,last,y,m)}
     ${monthTallyHtml(first,last)}
     ${clashHtml}
@@ -1042,6 +1063,9 @@ function openUpkeepEdit(id){
       <div class="field" style="flex:0 0 84px"><label class="label">Icon</label><input type="text" id="u-emoji" maxlength="2" value="${esc(it.emoji||'🔁')}" style="text-align:center;font-size:22px"></div>
       <div class="field" style="flex:1"><label class="label">Name</label><input type="text" id="u-name" placeholder="e.g. Dermatology" value="${esc(it.name||'')}"></div>
     </div>
+    <div class="field"><label class="label">Best timing follows</label><select id="u-kind" class="selectfield">
+      <option value="">Guess from the name</option>${['FACIAL','HAIR','AESTH','NAILS','SPA'].filter(k=>CATS[k]).map(k=>`<option value="${k}" ${it.category===k?'selected':''}>${esc(CATS[k].label)}</option>`).join('')}
+      <option value="NONE" ${it.category==='NONE'?'selected':''}>Doesn't depend on my cycle</option></select></div>
     <div class="field"><label class="label">Roughly every … weeks</label><input type="number" id="u-cad" min="1" max="104" step="1" placeholder="e.g. 4" value="${it.cadenceWeeks||''}"></div>
     <div class="field"><label class="label">Last visit <span style="text-transform:none;letter-spacing:0;font-weight:500;color:var(--muted)">(optional)</span></label><input type="date" id="u-last" value="${it.lastDate||''}" max="${ymd(today())}"></div>
     <div class="sheet-actions">${id?`<button class="btn danger" onclick="deleteUpkeep('${id}')">Delete</button>`:'<button class="btn ghost" onclick="openUpkeep()">Cancel</button>'}<button class="btn primary" onclick="saveUpkeep()">Save</button></div>`);
@@ -1053,19 +1077,128 @@ function saveUpkeep(){
   const emoji=document.getElementById('u-emoji').value.trim()||'🔁';
   const cadenceWeeks=parseInt(document.getElementById('u-cad').value)||null;
   const lastDate=document.getElementById('u-last').value||'';
-  const base={name,emoji,cadenceWeeks,lastDate};
+  const kind=document.getElementById('u-kind');const category=kind?kind.value:'';
+  const base={name,emoji,cadenceWeeks,lastDate,category};
   if(editingUpk){const i=upkeep.findIndex(x=>x.id===editingUpk);upkeep[i]={...upkeep[i],...base};}
   else{upkeep.push({id:'u'+Date.now()+Math.random().toString(36).slice(2,5),...base});}
   save(K_UPKEEP,upkeep);openUpkeep();
 }
-function upkeepLogToday(id){const it=upkeep.find(x=>x.id===id);if(!it)return;it.lastDate=ymd(today());save(K_UPKEEP,upkeep);openUpkeep();}
-function upkeepDueStripHtml(){
-  const due=upkeep.map(it=>({it,st:upkeepStatus(it)})).filter(x=>x.st.cls==='over'||x.st.cls==='soon')
-    .sort((a,b)=>(a.st.date&&b.st.date)?a.st.date-b.st.date:0);
-  if(!due.length)return '';
-  const chips=due.map(({it,st})=>`<button class="duechip due-${st.cls}" onclick="openUpkeep()"><span class="due-e">${it.emoji||'🔁'}</span><span class="due-n">${esc(it.name)}</span><span class="due-t">${st.txt}</span></button>`).join('');
-  return `<div class="duestrip"><div class="label" style="margin:0 2px 7px">Upkeep · due soon</div><div class="duerow">${chips}</div></div>`;
+function upkeepLogToday(id){const it=upkeep.find(x=>x.id===id);if(!it)return;it.lastDate=ymd(today());delete it.booked;save(K_UPKEEP,upkeep);openUpkeep();}
+/* ---- "Next up": when to book each upkeep item = due date × a phase that suits it ---- */
+const UPK_CAT={label:'Upkeep',desc:'appointments',emoji:'🔁',color:'#F4F0E8',dot:'#B5722A'};
+const UPK_GUESS=[[/dermatolog|skin check|dentist|hormon|doctor|check-?up|gyn|optic|eye test/i,'NONE'],
+  [/botox|filler|inject|prp|meso|booster|contour/i,'AESTH'],
+  [/facial|hydra|peel|microneedl|dermaplan|\bled\b|acne/i,'FACIAL'],
+  [/wax|sugar|thread|ipl|electroly|hair removal|laser/i,'HAIR'],
+  [/massage|spa|sauna|lymph|scrub|wrap/i,'SPA'],
+  [/mani|pedi|nail|lash|brow|hair|cut|trim|colou?r|roots|tan/i,'NAILS']];
+function upkeepCat(it){if(it.category)return it.category==='NONE'?null:(REC[it.category]?it.category:null);
+  for(const[re,k]of UPK_GUESS)if(re.test(it.name||''))return k==='NONE'?null:k;return null;}
+function fmtDay(d){return DOW[d.getDay()]+' '+d.getDate();}
+function fmtRange(s,e){const sameDay=+s===+e;const st=+s===+today()?'Today':fmtDay(s);
+  if(sameDay)return st+' '+MON[s.getMonth()];
+  return st+(s.getMonth()===e.getMonth()?'':' '+MON[s.getMonth()])+' – '+fmtDay(e)+' '+MON[e.getMonth()];}
+function bookWindow(it){
+  if(it.lastDate&&!it.cadenceWeeks)return null;
+  const t=today();const due=upkeepNext(it)||t;
+  const lead=Math.min(7,Math.max(2,Math.round((it.cadenceWeeks||4)*7*0.15)));   // ok to go a few days early
+  const from=new Date(Math.max(+t,+addDays(due,-lead)));
+  const cat=upkeepCat(it);
+  if(!cat||!cycle||!lastStart())return {start:from,end:addDays(from,6),due,cat,fit:null};
+  const rate=d=>{const p=phaseForDate(d);return p?REC[cat][p.key][0]:'y';};
+  for(const want of ['g','y']){let s=null,e=null;
+    for(let i=0;i<45;i++){const d=addDays(from,i);
+      if(rate(d)===want){if(!s)s=d;e=d;if(daysBetween(s,e)>=6)break;}else if(s)break;}
+    if(s){const p=phaseForDate(s);return {start:s,end:e,due,cat,fit:want,reason:(REC[cat][p.key][1]||'').split(' — ')[0],accent:p.accent};}
+  }
+  return {start:from,end:addDays(from,6),due,cat,fit:null};
 }
+/* a booked visit becomes "last visit" once its day has passed; a deleted booking is forgotten */
+function rollUpkeepBookings(){let ch=false;const t=today();
+  upkeep.forEach(it=>{if(!it.booked)return;
+    if(parseYMD(it.booked.date)<t){it.lastDate=it.booked.date;delete it.booked;ch=true;}
+    else if(it.booked.actId&&!activities.some(a=>a.id===it.booked.actId)){delete it.booked;ch=true;}});
+  if(ch)save(K_UPKEEP,upkeep);}
+function sinceTxt(it){if(!it.lastDate)return 'No visit logged yet';const ago=daysBetween(parseYMD(it.lastDate),today());
+  return ago<=0?'Last one today':humanDur(ago)+' since your last one';}
+function nextUpHtml(){
+  rollUpkeepBookings();
+  if(!upkeep.length)return `<div class="nextup"><div class="label nu-h">Next up</div>
+    <div class="nucard nu-empty"><div class="nu-sub" style="margin:0 0 10px">Keep up with facials, haircuts, lashes… Fáze tells you <b>when to book</b>, around your cycle.</div>
+    <button class="nu-go" onclick="openUpkeepEdit()">＋ Track something</button></div></div>`;
+  const items=upkeep.map(it=>({it,w:it.booked?null:bookWindow(it)})).filter(x=>x.it.booked||x.w)
+    .map(x=>({...x,sort:x.it.booked?parseYMD(x.it.booked.date):x.w.start})).sort((a,b)=>a.sort-b.sort);
+  const soon=items.filter(x=>daysBetween(today(),x.sort)<=21);
+  const all=`<button class="linklike nu-all" onclick="openUpkeep()">All upkeep</button>`;
+  if(!soon.length){const n=items[0];
+    return `<div class="nextup"><div class="label nu-h">Next up ${all}</div><div class="nu-quiet">Nothing to book for a few weeks 🌿${n?` · next: ${n.it.emoji||'🔁'} ${esc(n.it.name)} from ${n.sort.getDate()} ${MON[n.sort.getMonth()]}`:''}</div></div>`;}
+  const cards=soon.slice(0,3).map(({it,w})=>{
+    if(it.booked){const d=parseYMD(it.booked.date);
+      return `<div class="nucard booked"><div class="nu-top"><span class="nu-e">${esc(it.emoji||'🔁')}</span><span class="nu-n">${esc(it.name)}</span><span class="nu-pill ok">Booked ✓</span></div>
+        <div class="nu-when">${+d===+today()?'Today':DOW_FULL[d.getDay()]+' '+d.getDate()+' '+MON[d.getMonth()]}${it.booked.time?' · '+fmtTime(it.booked.time):''}</div>
+        <div class="nu-acts"><button class="nu-link" onclick="openBook('${it.id}')">Change</button><button class="nu-link" onclick="upkeepCalendar('${it.id}')">Add to calendar again</button></div></div>`;}
+    const late=daysBetween(w.due,w.start);const over=daysBetween(w.due,today());
+    const pill=over>0?`<span class="nu-pill over">Due now</span>`:'';
+    let sub=sinceTxt(it);
+    if(late>=3&&w.fit==='g')sub+=` · due ${w.due<=today()?'now':w.due.getDate()+' '+MON[w.due.getMonth()]}, easier a little later`;
+    const why=w.fit==='g'&&w.reason?`<div class="nu-why">✓ ${esc(w.reason.charAt(0).toUpperCase()+w.reason.slice(1))}</div>`:'';
+    return `<div class="nucard"${w.fit==='g'?` style="border-color:${w.accent}"`:''}><div class="nu-top"><span class="nu-e">${esc(it.emoji||'🔁')}</span><span class="nu-n">${esc(it.name)}</span>${pill}</div>
+      <div class="nu-when"><span class="nu-pre">Book for</span> ${fmtRange(w.start,w.end)}</div>
+      <div class="nu-sub">${sub}</div>${why}
+      <div class="nu-acts"><button class="nu-go" onclick="openBook('${it.id}')">Pick a day</button><button class="nu-link" onclick="upkeepWentToday('${it.id}')">Went already</button></div></div>`;
+  }).join('');
+  return `<div class="nextup"><div class="label nu-h">Next up ${all}</div>${cards}</div>`;
+}
+function upkeepWentToday(id){const it=upkeep.find(x=>x.id===id);if(!it)return;it.lastDate=ymd(today());delete it.booked;save(K_UPKEEP,upkeep);render();showToast('Logged ✓ — next one tracked');}
+
+/* booking sheet: pick a day in (or just after) the window → saved to the week + calendar file */
+let bookFor=null,bookDay=null,bookTime='';
+function openBook(id){
+  const it=upkeep.find(x=>x.id===id);if(!it)return;bookFor=id;bookDay=it.booked?it.booked.date:null;bookTime=it.booked?it.booked.time||'':'';
+  const w=bookWindow({...it,booked:null})||{start:today(),end:addDays(today(),6),fit:null};
+  const n=Math.min(10,daysBetween(w.start,w.end)+1+4);const good=d=>w.fit&&d<=w.end;
+  const days=[...Array(n)].map((_,i)=>{const d=addDays(w.start,i);const ds=ymd(d);const busy=actsOn(d);
+    return `<button class="bkday${good(d)?' good':''}${ds===bookDay?' on':''}" data-ds="${ds}" onclick="pickBookDay('${ds}')">
+      <span class="bk-w">${+d===+today()?'Today':DOW[d.getDay()]}</span><span class="bk-d">${d.getDate()}</span><span class="bk-m">${MON[d.getMonth()]}</span>
+      ${busy.length?`<span class="bk-busy" title="${esc(busy.map(a=>a.type||catOf(a).label).join(', '))}">${busy.length} planned</span>`:''}</button>`;}).join('');
+  sheet(`<h2 class="serif">${esc(it.emoji||'')} ${esc(it.name)}</h2>
+    <div class="sub">${w.fit==='g'?'Outlined days suit your cycle best. Any day is fine though.':'Pick the day you\'ve booked or plan to book.'}</div>
+    <div class="bkgrid">${days}</div>
+    <div class="bk-other"><label class="label" for="bk-date">Another date</label><input type="date" id="bk-date" min="${ymd(today())}" value="" onchange="pickBookDay(this.value,true)"></div>
+    <button class="timefield" id="bk-time" onclick="openTimeWheel(bookTime||'10:00',v=>{bookTime=v;document.getElementById('bk-time').textContent='🕒 '+fmtTime(v);})">${bookTime?'🕒 '+fmtTime(bookTime):'＋ Add a time (optional)'}</button>
+    <div class="sheet-actions"><button class="btn ghost" onclick="closeSheet()">Cancel</button><button class="btn primary" id="bk-go" ${bookDay?'':'disabled'} onclick="confirmBook()">Book &amp; add to calendar</button></div>`);
+}
+function pickBookDay(ds,fromInput){if(!ds)return;bookDay=ds;
+  document.querySelectorAll('.bkday').forEach(b=>b.classList.toggle('on',b.dataset.ds===ds));
+  if(!fromInput){const di=document.getElementById('bk-date');if(di)di.value='';}
+  const g=document.getElementById('bk-go');if(g)g.disabled=false;}
+function confirmBook(){
+  const it=upkeep.find(x=>x.id===bookFor);if(!it||!bookDay)return;
+  if(it.booked&&it.booked.actId)activities=activities.filter(a=>a.id!==it.booked.actId);
+  const act={id:newActId(),category:upkeepCat(it)||'UPK',type:it.name,recurring:false,date:bookDay,time:bookTime||'',cost:0,upkeepId:it.id};
+  activities.push(act);save(K_ACTS,activities);
+  it.booked={date:bookDay,time:bookTime||'',actId:act.id};save(K_UPKEEP,upkeep);
+  upkeepCalendar(it.id,true);
+  const d=parseYMD(bookDay);
+  sheet(`<h2 class="serif">Booked ✓</h2>
+    <div class="sub">${esc(it.name)} · ${DOW_FULL[d.getDay()]} ${d.getDate()} ${MON[d.getMonth()]}${bookTime?' · '+fmtTime(bookTime):''}. It's in your week, and a calendar file has been opened so you can add it to your phone's calendar.</div>
+    <a class="btn ghost" style="display:block;text-align:center;text-decoration:none;margin:4px 0 0" href="${gcalUrl(it)}" target="_blank" rel="noopener">Use Google Calendar? Add it there</a>
+    <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">Done</button></div>`);
+  render();
+}
+function upkeepEventDates(it){const d=parseYMD(it.booked.date);const t=it.booked.time;
+  const D=x=>x.getFullYear()+pad2(x.getMonth()+1)+pad2(x.getDate());
+  if(!t)return {allDay:true,s:D(d),e:D(addDays(d,1))};
+  const[h,m]=t.split(':');return {allDay:false,s:D(d)+'T'+pad2(h)+pad2(m)+'00',e:D(d)+'T'+addHour(t).replace(':','')+'00'};}
+function upkeepCalendar(id,quiet){const it=upkeep.find(x=>x.id===id);if(!it||!it.booked)return;
+  const ev=upkeepEventDates(it);const title=(it.name+' — Fáze').replace(/[,;\\]/g,' ');
+  const now=new Date();const stamp=now.getUTCFullYear()+pad2(now.getUTCMonth()+1)+pad2(now.getUTCDate())+'T'+pad2(now.getUTCHours())+pad2(now.getUTCMinutes())+'00Z';
+  const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Faze//EN','CALSCALE:GREGORIAN','BEGIN:VEVENT','UID:'+it.booked.actId+'@faze','DTSTAMP:'+stamp,
+    ev.allDay?'DTSTART;VALUE=DATE:'+ev.s:'DTSTART:'+ev.s, ev.allDay?'DTEND;VALUE=DATE:'+ev.e:'DTEND:'+ev.e,'SUMMARY:'+title,
+    'BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+title,'TRIGGER:-P1D','END:VALARM','END:VEVENT','END:VCALENDAR'];
+  download('faze-'+(it.name||'booking').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'.ics',L.join('\r\n'),'text/calendar');}
+function gcalUrl(it){const ev=upkeepEventDates(it);
+  return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(it.name)+'&dates='+ev.s+'/'+ev.e;}
 function deleteUpkeep(id){upkeep=upkeep.filter(x=>x.id!==id);save(K_UPKEEP,upkeep);openUpkeep();}
 
 /* ---------------- onboarding / cycle ---------------- */
