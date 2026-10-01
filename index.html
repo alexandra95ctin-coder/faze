@@ -445,6 +445,7 @@
   .fab{bottom:calc(84px + env(safe-area-inset-bottom))!important}
   .planbar{bottom:calc(84px + env(safe-area-inset-bottom))!important}
   .wrap{padding-bottom:190px!important}
+  .phaserow{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:2px 0 4px}
   .phaseline{display:inline-flex;align-items:center;text-align:left;line-height:1.4;gap:8px;margin:2px 0 4px;padding:8px 14px;border-radius:999px;background:var(--t);color:var(--ink);font-size:13px}
   .phaseline b{color:var(--a)}
   .pl-dot{width:9px;height:9px;border-radius:999px;background:var(--a)}
@@ -647,7 +648,7 @@ const PHASE_GUIDE={
   ovu: {intro:'Many feel more social and upbeat around now — enjoy it, whatever that looks like for you.', nice:[['Socialising','MIND'],['Manicure','NAILS'],['Travel','TRAVEL'],['A class you enjoy','MOVE']]},
   lut: {intro:'Often a wind-down — a little more self-care, and go gentle on strong skin treatments if yours get reactive.', nice:[['Yoga','MOVE'],['Walking','MOVE'],['Massage','SPA'],['Lymphatic drainage','SPA'],['Sleep','MIND']]}
 };
-function recentGaps(){const p=[...periods].filter(Boolean).sort();const g=[];for(let i=1;i<p.length;i++)g.push(daysBetween(parseYMD(p[i-1]),parseYMD(p[i])));return g;}
+function recentGaps(){const p=[...periods].filter(Boolean).sort();const g=[];for(let i=1;i<p.length;i++){const x=daysBetween(parseYMD(p[i-1]),parseYMD(p[i]));if(x>=15&&x<=60)g.push(x);}return g;}
 function cycleLen(){const g=recentGaps().slice(-6);if(g.length){const a=Math.round(g.reduce((x,y)=>x+y,0)/g.length);return Math.max(18,Math.min(45,a));}return (cycle&&cycle.cycleLength)||28;}
 function cycleRange(){const g=recentGaps().slice(-6);return g.length>=2?[Math.min(...g),Math.max(...g)]:null;}
 function lastStart(){const p=[...periods].filter(Boolean).sort();return p.length?parseYMD(p[p.length-1]):(cycle&&cycle.lastPeriodStart?parseYMD(cycle.lastPeriodStart):null);}
@@ -934,10 +935,6 @@ function renderMonth(){
       <button class="wbtn" onclick="changeMonth(1)" aria-label="Next month">›</button>
     </div>
     ${monthGridHtml(first,last,y,m)}
-    ${monthTallyHtml(first,last)}
-    ${clashHtml}
-    <div class="label" style="margin:26px 2px 12px">This month, phase by phase <span style="text-transform:none;letter-spacing:.01em;font-weight:500;opacity:.75">· gentle guidance</span></div>
-    ${guide}
     <div class="footer">
       <button class="disclaimer discbtn" onclick="openScience()">A gentle guideline synced to your cycle — not medical advice. <span class="disc-why">Why?</span></button>
     </div>`;
@@ -946,7 +943,7 @@ function openDay(ds){
   const d=parseYMD(ds);const p=phaseForDate(d);const acts=actsOn(d);
   const list=acts.length?acts.map(a=>{
     const cat=catOf(a);const c=costOf(a);const rec=(recRow(a.category,a.type)||REC.MOVE)[p.key];const caution=rec[0]==='o'||rec[0]==='r';
-    const cost=(a.passId||a.includedInPass)?'<span class="cost free">on pass</span>':(c?`<span class="cost">${EUR(c)}</span>`:'<span class="cost free">free</span>');
+    const cost='';
     return `<button class="act" onclick="openActivityMenu('${a.id}')">
       <span class="cat-badge" style="--c:${cat.color}">${cat.emoji}</span>
       <span class="body"><div class="a-top"><span class="a-name">${esc(a.type)||cat.label}${a.recurring?'<span class="rep">↻</span>':''}</span>${cost}</div>
@@ -981,15 +978,16 @@ function renderToday(){
   const itemHtml=(a,d,past)=>{const c=catOf(a);const r=past?null:rateOn(a.category,d,a.type);
     const mark=past?'<span class="wk-m done">done</span>':(r&&r.r==='g'?'<span class="wk-m good">✓ good time</span>':(r&&(r.r==='o'||r.r==='r')?'<span class="wk-m warn">⚠ maybe wait</span>':''));
     return `<button class="wk-i${past?' past':''}" onclick="openActivityMenu('${a.id}')"><span class="wk-e">${c.emoji}</span><span class="wk-n">${esc(a.type)||c.label}${a.time?` <small>${fmtTime(a.time)}</small>`:''}</span>${mark}</button>`;};
-  const dayRow=(d,past)=>{const acts=actsOn(d);if(!acts.length)return '';const ph=phaseForDate(d);const off=daysBetween(t,d);
+  const npDs=np?ymd(np):'';
+  const dayRow=(d,past)=>{const acts=actsOn(d);const isP=!past&&ymd(d)===npDs;if(!acts.length&&!isP)return '';const ph=phaseForDate(d);const off=daysBetween(t,d);
     return `<div class="wkday"><button class="wk-d" onclick="openDay('${ymd(d)}')" style="--a:${ph?ph.accent:'#ccc'}"><span>${off===0?'Today':off===1?'Tomorrow':off===-1?'Yesterday':DOW[d.getDay()]}</span><b>${d.getDate()}</b>${ph?`<i class="wk-ph">${ph.label}</i>`:''}</button>
-      <div class="wk-items">${acts.map(a=>itemHtml(a,d,past)).join('')}</div></div>`;};
+      <div class="wk-items">${isP?`<button class="wk-i" onclick="openCycle()"><span class="wk-e">🩸</span><span class="wk-n">Period expected</span><span class="wk-m" style="color:#5B86A6;background:#E0EAF3">predicted</span></button>`:''}${acts.map(a=>itemHtml(a,d,past)).join('')}</div></div>`;};
   const rows=[...Array(14)].map((_,i)=>dayRow(addDays(t,i),false)).join('');
   const done=[...Array(14)].map((_,i)=>{const d=addDays(t,-1-i);const acts=actsOn(d).filter(a=>!a.recurring);if(!acts.length)return '';
     return `<div class="wkday"><div class="wk-d past"><span>${i===0?'Yesterday':DOW[d.getDay()]}</span><b>${d.getDate()}</b></div><div class="wk-items">${acts.map(a=>itemHtml(a,d,true)).join('')}</div></div>`;}).join('');
   document.getElementById('app').innerHTML=`
     ${headerHtml()}
-    ${phaseLine}
+    <div class="phaserow">${phaseLine}<button class="nu-link" onclick="openLogPeriod()">🩸 Log period</button></div>
     ${nextUpHtml()}
     <div class="label nu-h" style="margin-top:22px">Coming up</div>
     ${rows||'<div class="nu-quiet" style="margin-bottom:6px">Nothing planned in the next 2 weeks. Tap <b>Add</b> — Fáze shows you the good days.</div>'}
@@ -1013,10 +1011,7 @@ function openSettings(){
   sheet(`<h2 class="serif">Settings</h2>
     <div class="acts menu" style="margin:6px 0 14px">
       ${mineRow('closeSheet();openBackup()','💾','#D6E2F4','Calendar &amp; backup','Export, save or restore your data')}
-      ${mineRow('closeSheet();openCurrency()','💱','#DEEBCE','Currency',`${(CURRENCIES[currency]||{}).sym||'€'} ${currency}`)}
-      ${mineRow('closeSheet();openCats()','🗂️','#F4DCEA','Categories','Reorder &amp; tidy')}
       ${mineRow('closeSheet();openScience()','🔬','#E2EDD7','Why these suggestions?','The research behind ✓ and ⚠')}
-      ${mineRow('closeSheet();openMoonHair()','🌙','#E7DCF0','Haircut by the moon','Just for fun')}
     </div>
     <div class="disclaimer" style="text-align:center">🔒 Everything stays on this device — no account, no tracking.</div>
     <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">Close</button></div>`);}
@@ -1032,9 +1027,7 @@ function renderMine(){
     <div class="acts menu">
       ${mineRow('openUpkeep()','🔁','#F7E4CE','Treatments &amp; visits',upkeep.length?n(upkeep.length,'thing','things')+' you keep up with':'Facials, lashes, haircut, dentist… and how often')}
       ${mineRow('openCycle()','🩸','#E0EAF3','My cycle',p?`${p.label} · day ${p.day} · log a period`:'Set up or log a period')}
-      ${mineRow('openClassesHub()','📍','#D7E9E3','Classes &amp; studios','Timetables, week planner, passes')}
-      ${mineRow(`openSpend('${ymd(mFirst)}','${ymd(mLast)}','${MON[t.getMonth()]} spend')`,'💰','#DEEBCE','Spending',`${EUR(monthSpend())} in ${MON[t.getMonth()]}`)}
-      ${mineRow('openSettings()','⚙️','#E7E2F1','Settings','Calendar &amp; backup, currency, categories')}
+      ${mineRow('openSettings()','⚙️','#E7E2F1','Settings','Backup, and why Fáze suggests what it does')}
     </div>
     <div class="disclaimer" style="margin-top:20px;text-align:center">🔒 Everything you log stays on this device — no account, no cloud, no tracking.</div>`;
 }
@@ -1368,30 +1361,39 @@ function gcalUrl(a){const ev=actEventDates(a,actFirstDate(a));
 function deleteUpkeep(id){upkeep=upkeep.filter(x=>x.id!==id);save(K_UPKEEP,upkeep);openUpkeep();}
 
 /* ---------------- onboarding / cycle ---------------- */
+function upcomingPeriods(n){const np=nextPeriodStart();if(!np)return [];const len=cycleLen();return [...Array(n)].map((_,i)=>addDays(np,i*len));}
 function openCycle(first){
-  const c=cycle||{lastPeriodStart:ymd(today()),cycleLength:28};
+  if(first||!lastStart()){
+    sheet(`<h2 class="serif">Let’s sync up</h2>
+      <div class="sub">Two quick questions — Fáze predicts the rest, and gets sharper each time you log a period.</div>
+      <div class="field"><label class="label" for="c-start">When did your last period start?</label><input type="date" id="c-start" class="selectfield" max="${ymd(today())}"></div>
+      <div class="field"><label class="label" for="c-len">How long is your cycle, roughly?</label><input type="number" id="c-len" class="selectfield" value="28" min="18" max="45"><div class="muted" style="font-size:12px;margin-top:6px">Not sure? Leave 28 — most people are between 24 and 35 days.</div></div>
+      <div class="sheet-actions"><button class="btn primary" onclick="saveCycle()">Start</button></div>`);return;}
+  const t=today();const ups=upcomingPeriods(3);const np=ups[0];const rg=cycleRange();const n=periods.length;
   const sorted=[...periods].filter(Boolean).sort().reverse();
-  const last=sorted[0]?parseYMD(sorted[0]):null;const ago=last?daysBetween(last,today()):null;
-  const histRows=sorted.map((ds,i)=>{const d=parseYMD(ds);const older=sorted[i+1]?parseYMD(sorted[i+1]):null;const gap=older?daysBetween(older,d):null;
-    return `<div class="hist"><span class="hist-d">${d.getDate()} ${MON[d.getMonth()]} ${d.getFullYear()}</span><span class="hist-g">${gap?gap+'-day cycle':'first log'}</span><button type="button" class="hist-x" onclick="delPeriod('${ds}')" aria-label="remove">×</button></div>`;}).join('');
-  sheet(`
-    <h2 class="serif">${first?'Let’s sync up':'Your cycle'}</h2>
-    <div class="sub">A simple guideline — not medical advice.</div>
-    ${last?`<div class="cyclesum"><div><div class="label">Last period</div><div class="pv">${last.getDate()} ${MON[last.getMonth()]}</div></div><div class="pdays">${ago===0?'today':(ago===1?'1 day ago':ago+' days ago')}</div></div>`:''}
-    <button type="button" class="btn primary" style="margin-bottom:14px" onclick="logPeriodToday()">＋ I started my period today</button>
-    <div class="muted" style="font-size:13px;margin-bottom:16px">${cycleRange()?`Your cycles average <b>${cycleLen()} days</b> (${cycleRange()[0]}–${cycleRange()[1]}) across ${periods.length} logs — predictions use this.`:'Log each period start and Fáze sharpens its prediction over time.'}</div>
-    ${histRows?`<div class="label" style="margin:2px 2px 6px">Period history</div><div style="margin-bottom:18px">${histRows}</div>`:''}
-    <div class="field"><label class="label">Or adjust manually — last period</label>
-      <input type="date" id="c-start" value="${c.lastPeriodStart}" max="${ymd(today())}"></div>
-    <div class="field"><label class="label">Typical cycle length (days)</label>
-      <input type="number" id="c-len" value="${c.cycleLength}" min="18" max="45" step="1"></div>
-    <div class="sheet-actions">
-      ${first?'':'<button class="btn ghost" onclick="closeSheet()">Close</button>'}
-      <button class="btn primary" onclick="saveCycle()">Save</button>
-    </div>`);
+  const hist=sorted.slice(0,6).map((ds,i)=>{const d=parseYMD(ds);const older=sorted[i+1]?parseYMD(sorted[i+1]):null;const gap=older?daysBetween(older,d):null;
+    return `<div class="hist"><span class="hist-d">${d.getDate()} ${MON[d.getMonth()]} ${d.getFullYear()}</span><span class="hist-g">${gap?gap+' days':''}</span><button type="button" class="hist-x" onclick="delPeriod('${ds}')" aria-label="Remove">×</button></div>`;}).join('');
+  const p=phaseForDate(t);
+  sheet(`<h2 class="serif">My cycle</h2>
+    ${p?`<div class="sub" style="color:${p.accent};font-weight:600">Today: ${p.label} · day ${p.day}</div>`:''}
+    <div class="cyclesum" style="margin-top:8px"><div><div class="label">Next period · predicted</div><div class="pv">~ ${fmtDay(np)} ${MON[np.getMonth()]}</div></div><div class="pdays">${daysBetween(t,np)<=0?'around now':'in '+daysBetween(t,np)+' days'}</div></div>
+    <div class="muted" style="font-size:12.5px;margin:-4px 2px 14px">Then ~${ups.slice(1).map(d=>d.getDate()+' '+MON[d.getMonth()]).join(', ~')} · ${n>=2?`based on your last ${n>2?Math.min(n-1,6)+' cycles':'cycle'} (avg ${cycleLen()} days${rg&&rg[0]!==rg[1]?`, ${rg[0]}–${rg[1]}`:''})`:`based on a ${cycleLen()}-day cycle — log your periods to make this more accurate`}</div>
+    <button type="button" class="btn primary" style="width:100%;margin-bottom:8px" onclick="openLogPeriod()">🩸 My period started</button>
+    ${hist?`<div class="label" style="margin:16px 2px 6px">Logged periods</div><div>${hist}</div>`:''}
+    ${n<2?`<details style="margin-top:14px"><summary class="nu-link" style="cursor:pointer">Change cycle length (${cycleLen()} days)</summary><div class="field" style="margin-top:10px"><input type="number" id="c-len" class="selectfield" value="${cycleLen()}" min="18" max="45"></div><button class="btn ghost" onclick="saveCycleLen()">Save length</button></details>`:''}
+    <div class="sheet-actions"><button class="btn ghost" onclick="closeSheet()">Close</button></div>`);
 }
+function openLogPeriod(){const t=today();const chip=(d,l)=>`<button class="addchip" onclick="logPeriodOn('${ymd(d)}')">${l}</button>`;
+  sheet(`<h2 class="serif">When did it start?</h2>
+    <div class="addchips" style="margin:4px 0 16px">${chip(t,'Today')}${chip(addDays(t,-1),'Yesterday')}${chip(addDays(t,-2),DOW_FULL[addDays(t,-2).getDay()])}</div>
+    <div class="field"><label class="label" for="lp-date">Or pick the date</label><input type="date" id="lp-date" class="selectfield" max="${ymd(t)}" onchange="logPeriodOn(this.value)"></div>
+    <div class="sheet-actions"><button class="btn ghost" onclick="openCycle()">Back</button></div>`);}
+function logPeriodOn(ds){if(!ds||ds>ymd(today()))return;
+  // a start within 10 days of one already logged is the same period, corrected
+  const d0=parseYMD(ds);periods=periods.filter(x=>Math.abs(daysBetween(parseYMD(x),d0))>10);save(K_PERIODS,periods);
+  logPeriod(ds);render();openCycle();const d=parseYMD(ds);showToast('Period logged · '+d.getDate()+' '+MON[d.getMonth()]+' ✓');}
+function saveCycleLen(){const len=Math.max(18,Math.min(45,parseInt(document.getElementById('c-len').value)||28));cycle=cycle||{};cycle.cycleLength=len;save(K_CYCLE,cycle);render();openCycle();}
 function delPeriod(ds){periods=periods.filter(x=>x!==ds);save(K_PERIODS,periods);if(cycle&&periods.length){cycle.lastPeriodStart=[...periods].sort().pop();cycle.cycleLength=cycleLen();save(K_CYCLE,cycle);}render();openCycle();}
-function logPeriodToday(){logPeriod(ymd(today()));render();openCycle();}
 function saveCycle(){
   const start=document.getElementById('c-start').value;
   const len=Math.max(18,Math.min(45,parseInt(document.getElementById('c-len').value)||28));
@@ -1603,7 +1605,6 @@ function openActivityMenu(id){
     <div class="acts menu" style="margin:14px 0 6px">
       <button class="act" onclick="changeActDay('${id}')"><span class="cat-badge" style="--c:#E2EDD7">📆</span><span class="body"><div class="a-name">Change the day</div></span></button>
       ${future?`<button class="act" onclick="actCalendar('${id}')"><span class="cat-badge" style="--c:#D6E2F4">📅</span><span class="body"><div class="a-name">Add to my phone calendar</div></span></button>`:''}
-      <button class="act" onclick="openActivity('${id}')"><span class="cat-badge" style="--c:#F3E7C9">✏️</span><span class="body"><div class="a-name">Edit details</div><div class="a-sub">Place, cost, pass, time</div></span></button>
     </div>
     <div class="sheet-actions"><button class="btn danger" onclick="deleteActivity('${id}')">Delete</button><button class="btn primary" onclick="closeSheet()">Done</button></div>`);
 }
