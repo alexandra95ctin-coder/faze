@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https://*.vercel-insights.com; base-uri 'self'; form-action 'self'" />
-<meta name="theme-color" content="#F8EFEA" />
+<meta name="theme-color" content="#FFFFFF" />
 <meta name="color-scheme" content="light" />
 <title>Fáze</title>
 <link rel="manifest" href="manifest.json" />
@@ -49,7 +49,7 @@
   a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,[tabindex]:focus-visible{outline:2.5px solid var(--energy);outline-offset:2px}
 
   /* header */
-  header.hero{margin:-26px -20px 20px;padding:22px 20px 16px;background:linear-gradient(180deg,#F8EFEA 0%,#FBF5F1 100%);border-radius:0 0 28px 28px}
+  header.hero{margin-bottom:18px}
   .brand{font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--energy-deep);font-weight:600;margin-bottom:14px}
   .brandlogo{height:28px;width:auto;max-width:100%;display:block;margin:0 auto 14px}
   header.hero{position:relative}
@@ -329,7 +329,7 @@
   /* sheet */
   .scrim{position:fixed;inset:0;background:rgba(24,32,26,.44);backdrop-filter:blur(3px);z-index:50;display:none;align-items:flex-end;justify-content:center}
   .scrim.open{display:flex}
-  .sheet{position:relative;background:linear-gradient(165deg,var(--bg1),#fff 60%);width:100%;max-width:560px;border-radius:28px 28px 0 0;
+  .sheet{position:relative;background:#fff;width:100%;max-width:560px;border-radius:28px 28px 0 0;
     padding:22px 22px 30px;box-shadow:0 -20px 50px -20px rgba(24,32,26,.5);max-height:92vh;overflow-y:auto;
     animation:rise .28s cubic-bezier(.2,.8,.25,1)}
   @keyframes rise{from{transform:translateY(30px);opacity:.4}to{transform:translateY(0);opacity:1}}
@@ -337,7 +337,7 @@
   .sheetclose:active{transform:scale(.92)}
   @media(min-width:640px){.scrim{align-items:center}.sheet{border-radius:28px;max-height:88vh}}
   .tw-overlay{position:fixed;inset:0;background:rgba(24,32,26,.5);z-index:60;display:flex;align-items:center;justify-content:center;padding:20px}
-  .tw-panel{background:linear-gradient(165deg,var(--bg1),#fff 60%);border-radius:24px;padding:20px;width:300px;max-width:92vw;box-shadow:var(--shadow)}
+  .tw-panel{background:#fff;border-radius:24px;padding:20px;width:300px;max-width:92vw;box-shadow:var(--shadow)}
   .tw-title{font-size:18px;font-weight:600;text-align:center;margin-bottom:14px}
   .timewheel{position:relative;display:flex;align-items:center;justify-content:center;gap:2px;height:132px;background:#fff;border-radius:14px;border:1.5px solid #DCE2DB;overflow:hidden;margin-bottom:16px}
   .tw-col{height:132px;overflow-y:scroll;scroll-snap-type:y mandatory;text-align:center;scrollbar-width:none;flex:1;-webkit-overflow-scrolling:touch}
@@ -445,7 +445,7 @@
   .planbar{bottom:calc(84px + env(safe-area-inset-bottom))!important}
   .wrap{padding-bottom:190px!important}
   .phaserow{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:2px 0 4px}
-  .phaseline{display:inline-flex;align-items:center;text-align:left;line-height:1.4;gap:8px;margin:2px 0 4px;padding:8px 14px;border-radius:999px;background:var(--t);color:var(--ink);font-size:13px}
+  .phaseline{display:inline-flex;align-items:center;text-align:left;line-height:1.4;gap:8px;margin:2px 0 4px;padding:8px 14px;border-radius:999px;background:#fff;border:1.5px solid #EFE5DE;color:var(--ink);font-size:13px}
   .phaseline b{color:var(--a)}
   .pl-dot{width:9px;height:9px;border-radius:999px;background:var(--a)}
   .wkday{display:flex;gap:12px;align-items:flex-start;margin-bottom:10px}
@@ -495,6 +495,24 @@
   .add-legend{flex-wrap:wrap}
   .v-ph{display:block;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:3px}
   .wk-ph{font-style:normal;font-size:9px;font-weight:700;color:var(--a);margin-top:1px}
+  .legal{margin:6px 0 10px}
+  .legal-h{font-weight:700;font-size:13.5px;margin:14px 0 4px}
+  .legal-p{font-size:13.5px;line-height:1.55;color:var(--ink);opacity:.85}
+  .legal-p a{color:var(--energy-deep)}
+  /* consistent sizing */
+  .sheet h2{font-size:22px}
+  .nu-when,.cyclesum .pv,.predict .pv{font-size:19px}
+  .bk-d,.wk-d b{font-size:17px}
+  .nu-n,.wk-n,.act .a-name,.addchip{font-size:15px}
+  .nu-sub,.nu-why,.verdict,.act .a-sub,.phaseline,.nu-quiet{font-size:13px}
+  .nu-e,.wk-e{font-size:17px}
+  .nucard,.wk-i,.act{padding:12px 14px;border-radius:14px}
+  .act{background:#fff;border:1.5px solid #F0E6E0}
+  .nucard{border-color:#F0E6E0}
+  .nucard{border-width:1.5px}
+  .wk-d{flex:0 0 58px;border-radius:14px;padding:7px 2px}
+  .nu-go{padding:10px 18px;font-size:14px}
+  .act .cat-badge{width:34px;height:34px;font-size:17px}
   .upk{display:flex;align-items:center;gap:12px;background:#fff;border:1.5px solid #EADDD4;border-radius:16px;padding:11px 12px;margin-bottom:10px}
   .upk .cat-badge{flex:none}
   .upk-b{flex:1;min-width:0}
@@ -1027,6 +1045,13 @@ function renderMine(){
       ${mineRow('openUpkeep()','🔁','#F7E4CE','Treatments &amp; visits',upkeep.length?n(upkeep.length,'thing','things')+' you keep up with':'Facials, lashes, haircut, dentist… and how often')}
       ${mineRow('openCycle()','🩸','#E0EAF3','My cycle',p?`${p.label} · day ${p.day} · log a period`:'Set up or log a period')}
       ${mineRow('openSettings()','⚙️','#F3E2D9','Settings','Backup, and why Fáze suggests what it does')}
+    </div>
+    <div class="label mine-h">More</div>
+    <div class="acts menu">
+      ${mineRow('openMoonHair()','🌙','#E7DCF0','Haircut by the moon','A folk tradition, just for fun')}
+      ${mineRow('openHorizon()','✨','#F3E2D9','Coming next','What we’d like to add')}
+      ${mineRow('openPrivacy()','🔒','#E2EDD7','Privacy policy','Your data stays on your phone')}
+      ${mineRow('openLegal()','📄','#ECE1D9','Legal notice','Who runs Fáze · disclaimer')}
     </div>
     <div class="disclaimer" style="margin-top:20px;text-align:center">🔒 Everything you log stays on this device — no account, no cloud, no tracking.</div>`;
 }
@@ -1806,15 +1831,45 @@ function importInfo(){
 }
 
 /* ---------------- on the horizon (future teasers) ---------------- */
+/* Operator details shown in the Legal notice — fill these in before promoting Fáze. */
+const OPERATOR={name:'',address:'',email:''};
+const POLICY_DATE='1 October 2026';
+function legalSec(h,body){return `<div class="legal-h">${h}</div><div class="legal-p">${body}</div>`;}
+function openPrivacy(){
+  sheet(`<h2 class="serif">Privacy policy</h2>
+    <div class="sub">Last updated ${POLICY_DATE}</div>
+    <div class="legal">
+    ${legalSec('The short version','Everything you enter in Fáze — your period dates, treatments and plans — is stored <b>only on this device</b>, in your browser. There are no accounts and no database. We can’t see your data, so we can’t sell or share it.')}
+    ${legalSec('What stays on your device','Cycle dates and predictions, treatments and visits, plans, and settings. They are kept in your browser’s local storage. Cycle information is sensitive health data, which is exactly why it never leaves your phone.')}
+    ${legalSec('Hosting','Fáze is served by Vercel Inc. Like any website, their servers process basic technical data (such as your IP address and browser type) to deliver the page and keep it secure. This never includes what you enter in the app.')}
+    ${legalSec('Visitor counting','We use Vercel Web Analytics to count visits. It doesn’t use cookies, doesn’t follow you across sites, and never receives your cycle or plans.')}
+    ${legalSec('Fonts','The app’s fonts are loaded from Google Fonts, so your browser connects to Google’s servers, which receive your IP address.')}
+    ${legalSec('Calendar','“Add to my phone calendar” creates a file on your device. If you choose the Google Calendar link, the name and date of that one event are sent to Google, because you asked for it.')}
+    ${legalSec('Your control','Delete anything inside the app, or clear this site’s data in your browser to remove everything. Backups you save are files on your device that only you hold.')}
+    ${legalSec('Contact','See the Legal notice for who runs Fáze and how to get in touch.')}
+    </div>
+    <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">Close</button></div>`);}
+function openLegal(){const o=OPERATOR;
+  const who=o.name?`${esc(o.name)}${o.address?'<br>'+esc(o.address):''}${o.email?`<br><a href="mailto:${esc(o.email)}">${esc(o.email)}</a>`:''}`:'Details coming soon.';
+  sheet(`<h2 class="serif">Legal notice</h2>
+    <div class="legal">
+    ${legalSec('Who runs Fáze',who)}
+    ${legalSec('What Fáze is','A free planning tool that shows general, gentle guidance about timing self-care around your cycle. Predictions are estimates based on the dates you enter.')}
+    ${legalSec('Not medical advice','Fáze does not diagnose, treat or prevent any condition and is not a contraceptive or fertility tool. For anything about your health, talk to a doctor or other qualified professional.')}
+    ${legalSec('Responsibility','We take care to keep the content accurate but can’t guarantee it is complete or always current. Links to outside research lead to sites we don’t control.')}
+    ${legalSec('Hosting','Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, USA.')}
+    </div>
+    <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">Close</button></div>`);}
 function openHorizon(){
   const items=[
-    ['🔗','#D7E9E3','Auto-import timetables','Paste a studio’s link and Fáze pulls its class times for you — no more typing.'],
-    ['📍','#F4DCEA','Discover classes nearby','Find studios & classes around you on a map.'],
-    ['✨','#E7DCF0','Smarter suggestions','Hints that learn from what you actually book and enjoy.'],
-    ['🎟️','#F3E7C9','Deals on your passes','Keep an eye on savings for passes you already buy — never ads, never tracking.']
+    ['🔔','#F3E2D9','Reminders on your phone','A nudge when your facial or lashes are due — as a real app, so it stays private.'],
+    ['📍','#D7E9E3','Classes & studios','Your studios’ timetables, so booking a class is one tap.'],
+    ['🎟️','#F3E7C9','Passes & spending','Keep track of class packs, memberships and what you spend.'],
+    ['🇷🇴','#E0EAF3','Română','Fáze in Romanian as well as English.'],
+    ['✨','#E7DCF0','Smarter suggestions','Hints that learn from what you actually book.']
   ];
-  sheet(`<h2 class="serif">On the horizon</h2>
-    <div class="sub">Ideas we’re exploring for later. Whatever we add, Fáze stays private — on your device, no accounts.</div>
+  sheet(`<h2 class="serif">Coming next</h2>
+    <div class="sub">What we’d like to add, one step at a time. Whatever comes, Fáze stays private — on your device, no accounts.</div>
     <div class="acts menu" style="margin:10px 0 14px">
       ${items.map(([e,c,n,d])=>`<button class="act dim2" onclick="event.preventDefault()"><span class="cat-badge" style="--c:${c}">${e}</span><span class="body"><div class="a-name">${n}</div><div class="a-sub" style="white-space:normal">${d}</div></span><span class="soon">soon</span></button>`).join('')}
     </div>
