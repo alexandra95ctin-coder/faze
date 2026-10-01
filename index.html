@@ -38,8 +38,7 @@
   html,body{margin:0;padding:0}
   body{
     font-family:'Inter',-apple-system,system-ui,sans-serif;color:var(--ink);
-    background:linear-gradient(165deg,var(--bg1) 0%,var(--bg2) 100%);
-    background-attachment:fixed;min-height:100vh;line-height:1.5;-webkit-font-smoothing:antialiased;
+    background:#FFFFFF;min-height:100vh;line-height:1.5;-webkit-font-smoothing:antialiased;
   }
   .wrap{max-width:560px;margin:0 auto;padding:26px 20px 120px}
   .serif{font-family:'Fraunces',Georgia,serif;font-weight:500}
@@ -50,7 +49,7 @@
   a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,[tabindex]:focus-visible{outline:2.5px solid var(--energy);outline-offset:2px}
 
   /* header */
-  header.hero{margin-bottom:20px}
+  header.hero{margin:-26px -20px 20px;padding:22px 20px 16px;background:linear-gradient(180deg,#F8EFEA 0%,#FBF5F1 100%);border-radius:0 0 28px 28px}
   .brand{font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--energy-deep);font-weight:600;margin-bottom:14px}
   .brandlogo{height:28px;width:auto;max-width:100%;display:block;margin:0 auto 14px}
   header.hero{position:relative}
@@ -437,7 +436,7 @@
   .bk-other input,.selectfield{width:100%;padding:12px 14px;border-radius:14px;border:1.5px solid #DCE2DB;background:#fff;margin-top:6px}
   .btn[disabled]{opacity:.45;pointer-events:none}
   /* bottom tabs */
-  .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:42;display:flex;justify-content:center;gap:4px;background:rgba(252,247,244,.96);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid #ECE1D9;padding:7px 10px calc(7px + env(safe-area-inset-bottom))}
+  .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:42;display:flex;justify-content:center;gap:4px;background:rgba(255,255,255,.97);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid #ECE1D9;padding:7px 10px calc(7px + env(safe-area-inset-bottom))}
   .tabbar button{flex:1;max-width:150px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 4px;border-radius:12px;font-size:11.5px;font-weight:600;color:var(--muted)}
   .tabbar button svg{width:22px;height:22px}
   .tabbar button.on{color:var(--ink)}
@@ -454,7 +453,7 @@
   .wk-d span{font-size:11px;font-weight:600;color:var(--muted)}
   .wk-d b{font-family:'Fraunces',serif;font-size:20px;line-height:1.1}
   .wk-items{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
-  .wk-i{display:flex;align-items:center;gap:9px;background:var(--card);border-radius:13px;padding:10px 12px;box-shadow:var(--shadow-sm);text-align:left}
+  .wk-i{display:flex;align-items:center;gap:9px;background:var(--card);border:1.5px solid #F0E6E0;border-radius:13px;padding:10px 12px;box-shadow:var(--shadow-sm);text-align:left}
   .wk-e{font-size:16px}
   .wk-n{flex:1;min-width:0;font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .wk-t{font-size:12px;color:var(--muted);font-weight:600}
@@ -1258,7 +1257,7 @@ function rateOn(cat,d,name){const row=recRow(cat,name);if(!cycle||!row)return nu
 function nextGoodFrom(cat,d,name){for(let i=1;i<45;i++){const x=addDays(d,i);const r=rateOn(cat,x,name);if(r&&r.r==='g')return x;}return null;}
 function verdictHtml(cat,d,name){const t=today();if(d<t)return '<div class="verdict done">Recorded as done ✓</div>';
   const r=rateOn(cat,d,name);if(!r)return cat==='UPK'?'<div class="verdict">This doesn’t depend on your cycle — any day is fine.</div>':'';
-  const why=r.why.charAt(0).toUpperCase()+r.why.slice(1);const ph=`<span class="v-ph" style="color:${r.p.accent}">${r.p.label} · day ${r.p.day}</span>`;
+  const w0=r.r==='y'?r.why.replace(/^fine\b[\s—–-]*/i,''):r.why;const why=w0.charAt(0).toUpperCase()+w0.slice(1);const ph=`<span class="v-ph" style="color:${r.p.accent}">${r.p.label} · day ${r.p.day}</span>`;
   if(r.r==='g')return `<div class="verdict good">${ph}✓ Good time · ${esc(why)}</div>`;
   if(r.r==='y')return `<div class="verdict">${ph}Fine · ${esc(why)}</div>`;
   const ng=nextGoodFrom(cat,d,name);
@@ -1313,8 +1312,7 @@ function renderAdd(){
     <div class="label" style="margin:16px 2px 6px">When?</div>
     ${cycle?`<div class="add-legend">${['men','foll','ovu','lut'].map(k=>`<span class="lg-ph" style="--ph:${PHASES[k].accent}">${PHASES[k].label}</span>`).join('')}</div>${addS.cat!=='UPK'||recRow(addS.cat,addS.name)?'<div class="add-legend"><span class="lg good">✓ good time</span><span class="lg warn">⚠ maybe wait</span></div>':''}`:'<div class="verdict warn" style="margin-bottom:8px">Set up your cycle (My things → My cycle) to see good days.</div>'}
     <div class="bkgrid wk7">${days.map(cell).join('')}</div>
-    ${addS.past?`<div class="field"><label class="label" for="add-past">Date you went</label><input type="date" id="add-past" class="selectfield" max="${ymd(t)}" value="${addS.date&&parseYMD(addS.date)<t?addS.date:''}" onchange="addDay(this.value)"></div>`
-      :`<button class="nu-link" style="margin:0 2px 12px" onclick="addS.past=true;renderAdd()">Already been? Pick an earlier date</button>`}
+    <div class="field" style="margin-bottom:12px"><label class="label" for="add-other">Other date — earlier or later</label><input type="date" id="add-other" class="selectfield" value="${addS.date&&!days.some(x=>ymd(x)===addS.date)?addS.date:''}" onchange="addDay(this.value)"></div>
     ${sel?verdictHtml(addS.cat,sel,addS.name):''}
     <button class="timefield" style="margin-top:12px" onclick="openTimeWheel(addS.time||'10:00',v=>{addS.time=v;renderAdd();})">${addS.time?'🕒 '+fmtTime(addS.time):'＋ Time (optional)'}</button>
     <div class="label" style="margin:16px 2px 8px">Repeats?</div>
