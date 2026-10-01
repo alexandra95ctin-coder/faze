@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https://*.vercel-insights.com; base-uri 'self'; form-action 'self'" />
-<meta name="theme-color" content="#FBFAF5" />
+<meta name="theme-color" content="#F8F6FC" />
 <meta name="color-scheme" content="light" />
 <title>Fáze</title>
 <link rel="manifest" href="manifest.json" />
@@ -20,7 +20,7 @@
 <style>
   :root{
     /* active / self-development palette — cool, fresh, premium */
-    --bg1:#FBFAF5; --bg2:#F5F3EC;
+    --bg1:#F8F6FC; --bg2:#F3F0F9;
     --ink:#1E241F; --muted:#606A62;            /* muted darkened for WCAG AA contrast */
     --energy:#EC6142; --energy-deep:#D14B2E;   /* coral — CTA / high energy */
     --calm:#2F8072;                            /* teal-green — low energy   */
@@ -55,7 +55,7 @@
   .brandlogo{height:28px;width:auto;max-width:100%;display:block;margin:0 auto 14px}
   header.hero{position:relative}
   .tallylist{display:flex;flex-direction:column}
-  .tally{display:flex;align-items:center;gap:12px;padding:10px 4px;border-bottom:1px solid #EFE9DD}
+  .tally{display:flex;align-items:center;gap:12px;padding:10px 4px;border-bottom:1px solid #ECE8F2}
   .tally:last-child{border-bottom:none}
   .tally .t-name{flex:1;font-size:14px;font-weight:600}
   .tally .t-count{font-family:'Fraunces',serif;font-size:17px;font-weight:600}
@@ -70,7 +70,7 @@
   .spendbar{display:flex;gap:10px;margin:18px 0 14px;flex-wrap:wrap}
   .chip{background:var(--card);border-radius:18px;padding:11px 16px;box-shadow:var(--shadow-sm);flex:1;min-width:120px;cursor:pointer}
   .chip:active{transform:scale(.99)}
-  .spendtotal{display:flex;justify-content:space-between;align-items:baseline;padding:11px 2px 2px;border-top:1.5px solid #EBE4D6;font-family:'Fraunces',serif;font-weight:600;font-size:18px}
+  .spendtotal{display:flex;justify-content:space-between;align-items:baseline;padding:11px 2px 2px;border-top:1.5px solid #E8E3F0;font-family:'Fraunces',serif;font-weight:600;font-size:18px}
   .spendtotal.sub2{border-top:none;font-family:'Inter',sans-serif;font-size:12.5px;color:var(--muted);font-weight:500;padding-top:6px}
   .chip .v{font-family:'Fraunces',serif;font-size:22px;font-weight:600;margin-top:2px}
   .chip .v small{font-size:13px;font-weight:500;color:var(--muted);font-family:'Inter',sans-serif}
@@ -90,7 +90,7 @@
   .whenback{font-size:12.5px;color:var(--muted);font-weight:600;display:flex;gap:10px;align-items:center}
   .whenback button{color:var(--energy-deep);font-weight:600}
   .typehint.big{gap:8px}
-  .typehint.big button{font-size:13.5px;padding:9px 14px;background:#EFEAE0;color:var(--ink)}
+  .typehint.big button{font-size:13.5px;padding:9px 14px;background:#ECE8F4;color:var(--ink)}
   .whenres{text-align:center;padding:16px 0 4px}
   .whenact{font-size:14px;color:var(--muted);font-weight:600;margin-bottom:6px}
   .whenwin{font-family:'Fraunces',serif;font-size:34px;font-weight:600;line-height:1.05}
@@ -111,7 +111,7 @@
   .pday.over-good{background:#E6F2EA;border-color:#4E9B63}
   .pday.over-warn{background:#FBEEE9;border-color:#D0514A}
   .ptray{display:flex;flex-wrap:wrap;gap:9px}
-  .ptile{display:inline-flex;align-items:center;gap:8px;background:var(--card);border:1.5px solid #E7DFD1;border-radius:14px;padding:8px 14px 8px 8px;box-shadow:var(--shadow-sm);font-weight:600;font-size:13.5px;color:var(--ink);touch-action:none;cursor:grab}
+  .ptile{display:inline-flex;align-items:center;gap:8px;background:var(--card);border:1.5px solid #E5E0EE;border-radius:14px;padding:8px 14px 8px 8px;box-shadow:var(--shadow-sm);font-weight:600;font-size:13.5px;color:var(--ink);touch-action:none;cursor:grab}
   .ptile .cat-badge{width:28px;height:28px;font-size:14px}
   .ptile.sel{border-color:var(--energy);box-shadow:0 0 0 2px rgba(236,97,66,.25)}
   .ptile-clone{position:fixed;pointer-events:none;z-index:200;opacity:.95;box-shadow:0 14px 30px -10px rgba(30,45,35,.5);transform:translate(-50%,-50%)}
@@ -130,7 +130,7 @@
   .prow-day{font-family:'Fraunces',serif;font-size:16px;font-weight:600}
   .prow-date{font-size:11.5px;color:var(--muted);font-weight:500}
   .slots{display:flex;flex-direction:column;gap:7px}
-  .slot{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border-radius:13px;padding:9px 11px;background:#F6F3EC}
+  .slot{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border-radius:13px;padding:9px 11px;background:#F2EFF8}
   .slot:active{transform:scale(.99)}
   .slot .cat-badge.sm{width:28px;height:28px;font-size:14px;flex:none}
   .slot-b{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.18}
@@ -143,7 +143,7 @@
   .slot .slot-add{font-size:16px;font-weight:700;color:var(--muted)}
   .slot.booked{background:#EDF0EB}
   .slot .slot-chk{color:#4E9B63;font-weight:800;font-size:14px}
-  .slot.add{background:transparent;border:1.5px dashed #E7DFD1}
+  .slot.add{background:transparent;border:1.5px dashed #E5E0EE}
   .slot.add .slot-n{color:var(--muted);font-weight:500}
   .slot.add .slot-add{margin-right:0}
 
@@ -161,11 +161,11 @@
   .tt-colh.drop-warn{box-shadow:0 0 0 3px #E0A100;background:#FBF1DE;transform:translateY(-2px)}
   .tt-colh.drop-ok{box-shadow:0 0 0 3px var(--energy);transform:translateY(-2px)}
   body.dragging-tile{-webkit-user-select:none;user-select:none;cursor:grabbing}
-  .detailtog{display:block;width:100%;text-align:center;margin:0 0 14px;padding:11px;border-radius:13px;background:#EFEAE0;color:var(--ink);font-weight:600;font-size:13px}
+  .detailtog{display:block;width:100%;text-align:center;margin:0 0 14px;padding:11px;border-radius:13px;background:#ECE8F4;color:var(--ink);font-weight:600;font-size:13px}
   .detailtog:active{transform:scale(.99)}
   body.dragging-tile .whenbtn,body.dragging-tile .viewtog{pointer-events:none}
   .tt-timeh{position:sticky;left:0;z-index:2;background:var(--bg1);display:flex;align-items:center;justify-content:flex-end;padding-right:7px;font-size:10.5px;font-weight:600;color:var(--muted);white-space:nowrap}
-  .tt-cell{background:#F6F3EC;border-radius:11px;min-height:26px;display:flex;flex-direction:column;gap:4px;padding:3px}
+  .tt-cell{background:#F2EFF8;border-radius:11px;min-height:26px;display:flex;flex-direction:column;gap:4px;padding:3px}
   .tt-cell.today{background:#EEEEE4}
   .tt-cell.blank{background:rgba(246,243,236,.45)}
   .tt-block{display:block;width:100%;text-align:left;border-radius:9px;padding:6px 32px 6px 8px;line-height:1.12;position:relative}
@@ -174,7 +174,7 @@
   .tt-block .tt-nm{font-size:11px;font-weight:600;color:var(--ink)}
   .tt-block .tt-add{position:absolute;top:6px;right:6px;font-size:8.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);line-height:1}
   .tt-block .tt-chk{position:absolute;top:5px;right:6px;font-size:12px;font-weight:800;color:#4E9B63;line-height:1}
-  .tt-block.avail{background:#fff;box-shadow:inset 0 0 0 1.5px #E7DFD1}
+  .tt-block.avail{background:#fff;box-shadow:inset 0 0 0 1.5px #E5E0EE}
   .tt-block.avail.good{box-shadow:inset 0 0 0 2px #6FB07E;background:rgba(111,176,126,.09)}
   .tt-block.avail.good .tt-add{color:#4E9B63}
   .tt-block.avail.dim{opacity:.5}
@@ -202,7 +202,7 @@
   .pass.low .pr{color:#B5722A;font-weight:600}
   .pass.empty{color:var(--muted);font-size:12.5px;font-weight:500;min-width:auto;flex-direction:row;align-items:center}
   .linklike{color:var(--energy-deep);font-weight:600;text-decoration:underline}
-  .placeblock{margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #EFE9DD}
+  .placeblock{margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #ECE8F2}
   .placeblock:last-of-type{border-bottom:none;padding-bottom:0}
   .placehead{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
   .placename{font-family:'Fraunces',serif;font-size:16px;font-weight:600}
@@ -228,10 +228,10 @@
   .acts{margin-top:12px;display:flex;flex-direction:column;gap:8px}
 
   /* activity row */
-  .act{display:flex;align-items:flex-start;gap:11px;background:#F6F3EC;border-radius:16px;padding:11px 13px;text-align:left;width:100%}
+  .act{display:flex;align-items:flex-start;gap:11px;background:#F2EFF8;border-radius:16px;padding:11px 13px;text-align:left;width:100%}
   .acts.menu .act{align-items:center;justify-content:flex-start;padding:14px 13px}
   .acts.menu .act .body{flex:1;text-align:left}
-  .hist{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid #EFE9DD}
+  .hist{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid #ECE8F2}
   .hist:last-child{border-bottom:none}
   .hist .hist-d{flex:1;font-size:13.5px;font-weight:600}
   .hist .hist-g{font-size:12px;color:var(--muted)}
@@ -273,7 +273,7 @@
   .slot-dash{color:var(--muted);font-weight:600;flex:0 0 auto}
   /* best-windows list */
   .winlist{display:flex;flex-direction:column}
-  .win{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid #EFE9DD}
+  .win{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid #ECE8F2}
   .win:last-child{border-bottom:none}
   .win-main{flex:1;min-width:0}
   .win-name{font-size:14px;font-weight:600}
@@ -287,7 +287,7 @@
   .phasedates{font-size:12px;color:var(--muted);font-weight:600}
   .phaseintro{font-size:13px;color:var(--ink);opacity:.82;font-style:italic;font-family:'Fraunces',serif;margin-bottom:13px}
   .nicelist{display:flex;flex-wrap:wrap;gap:7px}
-  .nicechip{background:#F4F0E8;border-radius:999px;padding:7px 13px;font-size:12.5px;font-weight:500;cursor:pointer;transition:transform .08s;color:var(--ink)}
+  .nicechip{background:#F1EEF7;border-radius:999px;padding:7px 13px;font-size:12.5px;font-weight:500;cursor:pointer;transition:transform .08s;color:var(--ink)}
   .nicechip:active{transform:scale(.95)}
   .nicechip .np{opacity:.5;font-weight:700;margin-right:5px}
   .dateline{margin-top:12px;font-size:12.5px;color:var(--muted);font-weight:600;letter-spacing:.02em}
@@ -334,7 +334,7 @@
     padding:22px 22px 30px;box-shadow:0 -20px 50px -20px rgba(24,32,26,.5);max-height:92vh;overflow-y:auto;
     animation:rise .28s cubic-bezier(.2,.8,.25,1)}
   @keyframes rise{from{transform:translateY(30px);opacity:.4}to{transform:translateY(0);opacity:1}}
-  .sheetclose{position:absolute;top:15px;right:15px;width:34px;height:34px;border-radius:999px;background:#EFEAE0;color:var(--ink);font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;z-index:3}
+  .sheetclose{position:absolute;top:15px;right:15px;width:34px;height:34px;border-radius:999px;background:#ECE8F4;color:var(--ink);font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;z-index:3}
   .sheetclose:active{transform:scale(.92)}
   @media(min-width:640px){.scrim{align-items:center}.sheet{border-radius:28px;max-height:88vh}}
   .tw-overlay{position:fixed;inset:0;background:rgba(24,32,26,.5);z-index:60;display:flex;align-items:center;justify-content:center;padding:20px}
@@ -346,7 +346,7 @@
   .tw-i{height:44px;line-height:44px;font-size:19px;font-weight:600;scroll-snap-align:center;color:var(--ink)}
   .tw-sp{height:44px}
   .tw-colon{font-size:19px;font-weight:600;flex:0 0 auto}
-  .tw-sel{position:absolute;left:10px;right:10px;top:44px;height:44px;border-top:1.5px solid #E7DFD1;border-bottom:1.5px solid #E7DFD1;pointer-events:none;border-radius:8px;background:rgba(46,40,35,.03)}
+  .tw-sel{position:absolute;left:10px;right:10px;top:44px;height:44px;border-top:1.5px solid #E5E0EE;border-bottom:1.5px solid #E5E0EE;pointer-events:none;border-radius:8px;background:rgba(46,40,35,.03)}
   .timefield{width:100%;padding:13px 14px;border-radius:14px;border:1.5px solid #DCE2DB;background:#fff;text-align:left;font-size:15px;color:var(--ink);font-weight:500}
   .timefield.empty{color:var(--muted)}
   .sheet h2{font-family:'Fraunces',serif;font-size:24px;font-weight:600;margin:0 0 4px}
@@ -385,7 +385,7 @@
   .dows{display:flex;gap:6px;flex-wrap:wrap}
   .dow{width:40px;height:40px;border-radius:12px;background:#fff;border:1.5px solid #DCE2DB;font-size:13px;font-weight:600;color:var(--muted)}
   .dows.sm .dow{width:34px;height:34px;font-size:12px;border-radius:10px}
-  .slotrow{padding:12px;border:1.5px solid #E7DFD1;border-radius:14px;margin-bottom:10px;background:rgba(255,255,255,.5)}
+  .slotrow{padding:12px;border:1.5px solid #E5E0EE;border-radius:14px;margin-bottom:10px;background:rgba(255,255,255,.5)}
   .slotrow2{display:flex;gap:8px;align-items:center;margin-top:9px}
   .slotrow2 .timefield{flex:1}
   .slotdel{width:38px;height:38px;flex:none;border-radius:10px;background:#FBE7E4;color:#BE4A41;font-size:16px;font-weight:700}
@@ -408,7 +408,7 @@
   .nextup{margin:14px 0 18px}
   .nu-h{display:flex;justify-content:space-between;align-items:baseline;margin:0 2px 9px}
   .nu-all{font-size:12px;text-transform:none;letter-spacing:0;color:var(--muted)}
-  .nucard{background:var(--card);border:1.6px solid #E9E2D4;border-radius:18px;padding:14px 16px;margin-bottom:10px;box-shadow:var(--shadow-sm)}
+  .nucard{background:var(--card);border:1.6px solid #E5E0EE;border-radius:18px;padding:14px 16px;margin-bottom:10px;box-shadow:var(--shadow-sm)}
   .nu-top{display:flex;align-items:center;gap:9px}
   .nu-e{font-size:20px;line-height:1}
   .nu-n{font-weight:600;font-size:15px;flex:1;min-width:0}
@@ -425,7 +425,7 @@
   .nu-link{font-size:12.5px;font-weight:600;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
   .nu-quiet{font-size:13px;color:var(--muted);padding:2px 2px}
   .bkgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(68px,1fr));gap:8px;margin:6px 0 14px}
-  .bkday{display:flex;flex-direction:column;align-items:center;gap:1px;padding:10px 4px;border-radius:14px;background:var(--card);border:1.6px solid #E9E2D4;color:var(--ink)}
+  .bkday{display:flex;flex-direction:column;align-items:center;gap:1px;padding:10px 4px;border-radius:14px;background:var(--card);border:1.6px solid #E5E0EE;color:var(--ink)}
   .bkday.good{border-color:#6FB07E;background:#F3F9F4}
   .bkday.on{background:var(--ink);border-color:var(--ink);color:#F7F3EC}
   .bk-w{font-size:11px;font-weight:600;opacity:.75}
@@ -437,7 +437,7 @@
   .bk-other input,.selectfield{width:100%;padding:12px 14px;border-radius:14px;border:1.5px solid #DCE2DB;background:#fff;margin-top:6px}
   .btn[disabled]{opacity:.45;pointer-events:none}
   /* bottom tabs */
-  .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:42;display:flex;justify-content:center;gap:4px;background:rgba(255,253,249,.96);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid #ECE5D8;padding:7px 10px calc(7px + env(safe-area-inset-bottom))}
+  .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:42;display:flex;justify-content:center;gap:4px;background:rgba(250,248,253,.96);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid #E8E3F0;padding:7px 10px calc(7px + env(safe-area-inset-bottom))}
   .tabbar button{flex:1;max-width:150px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 4px;border-radius:12px;font-size:11.5px;font-weight:600;color:var(--muted)}
   .tabbar button svg{width:22px;height:22px}
   .tabbar button.on{color:var(--ink)}
@@ -459,10 +459,10 @@
   .wk-t{font-size:12px;color:var(--muted);font-weight:600}
   .mine-h{margin:22px 2px 10px}
   .act .chev{margin-left:auto;font-size:20px;color:var(--muted);padding-left:8px}
-  .verdict{font-size:13px;line-height:1.45;padding:10px 13px;border-radius:13px;background:#F4F0E8;color:var(--ink)}
+  .verdict{font-size:13px;line-height:1.45;padding:10px 13px;border-radius:13px;background:#F1EEF7;color:var(--ink)}
   .verdict.good{background:#E6F2EA;color:#2F6B40}
   .verdict.warn{background:#FBEEDD;color:#8A5418}
-  .verdict.done{background:#EFEAE0;color:var(--muted)}
+  .verdict.done{background:#ECE8F4;color:var(--muted)}
   .bkday.warn{border-color:#E5B97C;background:#FDF6EC}
   .bkday.good .bk-m{color:#3F8A55;font-weight:700}
   .bkday.warn .bk-m{color:#B5722A;font-weight:700}
@@ -473,7 +473,7 @@
   .bkgrid.wk7 .bk-w{font-size:10px}
   .bk-dot{width:5px;height:5px;border-radius:9px;background:#B5722A;margin-top:2px}
   .addchips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
-  .addchip{display:inline-flex;align-items:center;gap:7px;padding:11px 15px;border-radius:999px;background:var(--card);border:1.5px solid #E7DFD1;font-weight:600;font-size:14px;color:var(--ink)}
+  .addchip{display:inline-flex;align-items:center;gap:7px;padding:11px 15px;border-radius:999px;background:var(--card);border:1.5px solid #E5E0EE;font-weight:600;font-size:14px;color:var(--ink)}
   .addchip:active{transform:scale(.96)}
   .add-kind{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
   .add-kind select,.add-kind input{padding:7px 10px;border-radius:10px;border:1.5px solid #DCE2DB;background:#fff;font-size:13.5px}
@@ -483,11 +483,11 @@
   .wk-m{font-size:11px;font-weight:700;white-space:nowrap;padding:3px 8px;border-radius:999px}
   .wk-m.good{color:#3F8A55;background:#E6F2EA}
   .wk-m.warn{color:#B5722A;background:#FBEEDD}
-  .wk-m.done{color:var(--muted);background:#EFEAE0}
+  .wk-m.done{color:var(--muted);background:#ECE8F4}
   .wk-i.past{opacity:.7}
   .wk-d.past{border-color:#E1DACB;box-shadow:none;background:transparent}
   .backlink{font-size:13px;color:var(--muted);margin:4px 2px 0}
-  .upk{display:flex;align-items:center;gap:12px;background:#fff;border:1.5px solid #E9E2D4;border-radius:16px;padding:11px 12px;margin-bottom:10px}
+  .upk{display:flex;align-items:center;gap:12px;background:#fff;border:1.5px solid #E5E0EE;border-radius:16px;padding:11px 12px;margin-bottom:10px}
   .upk .cat-badge{flex:none}
   .upk-b{flex:1;min-width:0}
   .upk-n{font-size:14.5px;font-weight:600}
@@ -497,11 +497,11 @@
   .upk-due.ok{color:#4E9B63;background:#E6F2EA}
   .upk-due.soon{color:#B5722A;background:#FBEEDD}
   .upk-due.over{color:#BE4A41;background:#FBE7E4}
-  .upk-due.none{color:var(--muted);background:#EFEAE0}
+  .upk-due.none{color:var(--muted);background:#ECE8F4}
   .upk-log{padding:7px 11px;border-radius:11px;background:var(--ink);color:#F7F3EC;font-size:11.5px;font-weight:600;white-space:nowrap}
   .upk-log:active{transform:scale(.96)}
   .upkpreset{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 6px}
-  .upkpreset button{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;padding:7px 12px;border-radius:999px;background:#F4F0E8;color:var(--ink);font-weight:500}
+  .upkpreset button{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;padding:7px 12px;border-radius:999px;background:#F1EEF7;color:var(--ink);font-weight:500}
   .upkpreset button:active{transform:scale(.95)}
   .upkpreset button .w{color:var(--muted);font-size:11px;font-weight:600}
 </style>
@@ -991,6 +991,27 @@ function renderToday(){
 
 /* ---- My things: setup, money, settings (replaces the ☰ menu) ---- */
 function mineRow(fn,emoji,bg,name,sub){return `<button class="act" onclick="${fn}"><span class="cat-badge" style="--c:${bg}">${emoji}</span><span class="body"><div class="a-name">${name}</div>${sub?`<div class="a-sub">${sub}</div>`:''}</span><span class="chev">›</span></button>`;}
+function openClassesHub(){
+  sheet(`<h2 class="serif">Classes &amp; studios</h2>
+    <div class="sub">Only if you go to regular classes — skip this otherwise.</div>
+    <div class="acts menu" style="margin:6px 0 14px">
+      ${mineRow('closeSheet();openPlaces()','📍','#D7E9E3','Studios &amp; class times',n0(places.length,'place'))}
+      ${mineRow("closeSheet();setView('week')",'🗓️','#E2EDD7','Plan a week of classes','See your studios’ timetable, tap to book')}
+      ${mineRow('closeSheet();openPasses()','🎟️','#F3E7C9','Passes &amp; memberships',n0(passes.length,'pass'))}
+    </div>
+    <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">Close</button></div>`);}
+function n0(k,w){return k?k+' '+w+(k===1?'':(w.endsWith('s')?'es':'s')):'None yet';}
+function openSettings(){
+  sheet(`<h2 class="serif">Settings</h2>
+    <div class="acts menu" style="margin:6px 0 14px">
+      ${mineRow('closeSheet();openBackup()','💾','#D6E2F4','Calendar &amp; backup','Export, save or restore your data')}
+      ${mineRow('closeSheet();openCurrency()','💱','#DEEBCE','Currency',`${(CURRENCIES[currency]||{}).sym||'€'} ${currency}`)}
+      ${mineRow('closeSheet();openCats()','🗂️','#F4DCEA','Categories','Reorder &amp; tidy')}
+      ${mineRow('closeSheet();openScience()','🔬','#E2EDD7','Why these suggestions?','The research behind ✓ and ⚠')}
+      ${mineRow('closeSheet();openMoonHair()','🌙','#E7DCF0','Haircut by the moon','Just for fun')}
+    </div>
+    <div class="disclaimer" style="text-align:center">🔒 Everything stays on this device — no account, no tracking.</div>
+    <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">Close</button></div>`);}
 function renderMine(){
   const t=today();const mon=mondayOf(t);const wEnd=addDays(mon,6);
   const mFirst=new Date(t.getFullYear(),t.getMonth(),1),mLast=new Date(t.getFullYear(),t.getMonth()+1,0);
@@ -998,30 +1019,14 @@ function renderMine(){
   const p=phaseForDate(t);
   document.getElementById('app').innerHTML=`
     ${headerHtml()}
-    <div class="label mine-h">Your routine</div>
+    <h2 class="serif" style="margin:6px 2px 4px">My things</h2>
+    <div class="sub" style="margin:0 2px 14px">Set these up once — Fáze does the rest.</div>
     <div class="acts menu">
-      ${mineRow('openUpkeep()','🔁','#F7E4CE','Treatments &amp; visits',n(upkeep.length,'tracked','tracked')||'Facials, haircut, lashes, dentist…')}
-      ${mineRow('openPlaces()','📍','#D7E9E3','Studios &amp; classes',n(places.length,'place','places')||'Add where you go and their class times')}
-      ${mineRow("setView('week')",'🗓️','#E2EDD7','Plan a week of classes','Your studios’ timetable + suggestions')}
-      ${mineRow('openPasses()','🎟️','#F3E7C9','Passes &amp; memberships',n(passes.length,'pass','passes')||'Track class packs and memberships')}
+      ${mineRow('openUpkeep()','🔁','#F7E4CE','Treatments &amp; visits',upkeep.length?n(upkeep.length,'thing','things')+' you keep up with':'Facials, lashes, haircut, dentist… and how often')}
       ${mineRow('openCycle()','🩸','#E0EAF3','My cycle',p?`${p.label} · day ${p.day} · log a period`:'Set up or log a period')}
-    </div>
-    <div class="label mine-h">Spending</div>
-    <div class="spendbar">
-      <div class="chip" onclick="openSpend('${ymd(mon)}','${ymd(wEnd)}','This week spend')"><div class="label">This week</div><div class="v">${EUR(weekSpend(mon))}</div></div>
-      <div class="chip" onclick="openSpend('${ymd(mFirst)}','${ymd(mLast)}','${MON[t.getMonth()]} spend')"><div class="label">${MON[t.getMonth()]}</div><div class="v">${EUR(monthSpend())}</div></div>
-    </div>
-    <div class="label mine-h">Settings</div>
-    <div class="acts menu">
-      ${mineRow('openBackup()','💾','#D6E2F4','Calendar &amp; backup','Export to your calendar, save or restore your data')}
-      ${mineRow('openCats()','🗂️','#F4DCEA','Categories','Reorder &amp; tidy')}
-      ${mineRow('openCurrency()','💰','#DEEBCE','Currency',`${(CURRENCIES[currency]||{}).sym||'€'} ${currency}`)}
-    </div>
-    <div class="label mine-h">More</div>
-    <div class="acts menu">
-      ${mineRow('openScience()','🔬','#E2EDD7','Why these suggestions?','The research behind the tips')}
-      ${mineRow('openMoonHair()','🌙','#E7DCF0','Haircut by the moon','A folk tradition, just for fun')}
-      ${mineRow('openHorizon()','✨','#E7DCF0','On the horizon','What we’re exploring next')}
+      ${mineRow('openClassesHub()','📍','#D7E9E3','Classes &amp; studios','Timetables, week planner, passes')}
+      ${mineRow(`openSpend('${ymd(mFirst)}','${ymd(mLast)}','${MON[t.getMonth()]} spend')`,'💰','#DEEBCE','Spending',`${EUR(monthSpend())} in ${MON[t.getMonth()]}`)}
+      ${mineRow('openSettings()','⚙️','#E7E2F1','Settings','Calendar &amp; backup, currency, categories')}
     </div>
     <div class="disclaimer" style="margin-top:20px;text-align:center">🔒 Everything you log stays on this device — no account, no cloud, no tracking.</div>`;
 }
@@ -1129,7 +1134,7 @@ function openUpkeep(){
     const lastTxt=ld?`Last ${ld.getDate()} ${MON[ld.getMonth()]}${ago===0?' · today':(ago>0?' · '+humanDur(ago)+' ago':'')}`:'No visit logged yet';
     const cad=(it.cadenceWeeks?` · every ~${it.cadenceWeeks} wk`:'')+(it.booked?` · booked ${fmtDay(parseYMD(it.booked.date))} ${MON[parseYMD(it.booked.date).getMonth()]}`:'');
     return `<div class="upk">
-      <span class="cat-badge" style="--c:#F4F0E8">${it.emoji||'🔁'}</span>
+      <span class="cat-badge" style="--c:#F1EEF7">${it.emoji||'🔁'}</span>
       <span class="upk-b"><button class="upk-n" style="display:block;text-align:left" onclick="openUpkeepEdit('${it.id}')">${esc(it.name)}</button><div class="upk-s">${lastTxt}${cad}</div></span>
       <span class="upk-r"><span class="upk-due ${st.cls}">${st.txt}</span><button class="upk-log" onclick="openAdd({upkeepId:'${it.id}'})">Add a visit</button></span>
     </div>`;}).join(''):'<div class="empty">Nothing tracked yet — add a treatment or appointment you like to keep on top of.</div>';
@@ -1171,7 +1176,7 @@ function saveUpkeep(){
 }
 function upkeepLogToday(id){const it=upkeep.find(x=>x.id===id);if(!it)return;it.lastDate=ymd(today());delete it.booked;save(K_UPKEEP,upkeep);openUpkeep();}
 /* ---- "Next up": when to book each upkeep item = due date × a phase that suits it ---- */
-const UPK_CAT={label:'Upkeep',desc:'appointments',emoji:'🔁',color:'#F4F0E8',dot:'#B5722A'};
+const UPK_CAT={label:'Upkeep',desc:'appointments',emoji:'🔁',color:'#F1EEF7',dot:'#B5722A'};
 const UPK_GUESS=[[/dermatolog|skin check|dentist|hormon|doctor|check-?up|gyn|optic|eye test/i,'NONE'],
   [/botox|filler|inject|prp|meso|booster|contour/i,'AESTH'],
   [/facial|hydra|peel|microneedl|dermaplan|\bled\b|acne/i,'FACIAL'],
@@ -1392,7 +1397,7 @@ function openActivity(id,pre){
     <div class="catgrid ${compact?'hidden':''}" id="catgrid">
       ${CAT_KEYS.map(k=>`<button type="button" class="catcell ${k===formCat?'on':''}" data-cat="${k}" style="--c:${CATS[k].color}" onclick="setCat('${k}')">
         <span class="ce">${esc(CATS[k].emoji)}</span>${esc(CATS[k].label)}${CATS[k].custom?` <span class="editcat" onclick="event.stopPropagation();openNewCat('${k}')">✎</span>`:''}</button>`).join('')}
-      <button type="button" class="catcell addcat" onclick="openNewCat()"><span class="ce" style="background:#EFEAE0">＋</span>New</button>
+      <button type="button" class="catcell addcat" onclick="openNewCat()"><span class="ce" style="background:#ECE8F4">＋</span>New</button>
     </div>
     <div class="field"><label class="label">What is it?</label>
       <input type="text" id="f-type" placeholder="e.g. ${CATS[formCat].types[0]}" value="${a?esc(a.type):((pre&&pre.type)?esc(pre.type):'')}">
