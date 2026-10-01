@@ -487,6 +487,14 @@
   .wk-i.past{opacity:.7}
   .wk-d.past{border-color:#E1DACB;box-shadow:none;background:transparent}
   .backlink{font-size:13px;color:var(--muted);margin:4px 2px 0}
+  .addchip.new{background:var(--ink);color:#F7F3EC;border-color:var(--ink)}
+  .bkday{position:relative;overflow:hidden}
+  .bkday::after{content:'';position:absolute;left:0;right:0;bottom:0;height:4px;background:var(--ph,transparent)}
+  .lg-ph{display:inline-flex;align-items:center;gap:5px;color:var(--muted);font-weight:600}
+  .lg-ph::before{content:'';width:10px;height:4px;border-radius:2px;background:var(--ph)}
+  .add-legend{flex-wrap:wrap}
+  .v-ph{display:block;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:3px}
+  .wk-ph{font-style:normal;font-size:9px;font-weight:700;color:var(--a);margin-top:1px}
   .upk{display:flex;align-items:center;gap:12px;background:#fff;border:1.5px solid #E5E0EE;border-radius:16px;padding:11px 12px;margin-bottom:10px}
   .upk .cat-badge{flex:none}
   .upk-b{flex:1;min-width:0}
@@ -891,7 +899,7 @@ function monthGridHtml(first,last,y,m){
   ['Mo','Tu','We','Th','Fr','Sa','Su'].forEach(w=>h+=`<div class="mdow">${w}</div>`);
   for(let i=0;i<lead;i++)h+='<div class="mcell blank"></div>';
   for(let dd=1;dd<=dim;dd++){const d=new Date(y,m,dd);const ds=ymd(d);const ph=phaseForDate(d)||PHASES.foll;
-    const acts=actsOn(d);const caution=acts.some(a=>{const rr=(REC[a.category]||REC.MOVE)[ph.key][0];return rr==='r'||rr==='o';});
+    const acts=actsOn(d);const caution=acts.some(a=>{const rr=(recRow(a.category,a.type)||REC.MOVE)[ph.key][0];return rr==='r'||rr==='o';});
     h+=`<button class="mcell${ds===tday?' today':''}" style="background:${ph.tint}" onclick="openDay('${ds}')">${dd}${acts.length?`<span class="mmark${caution?' cau':''}"></span>`:''}</button>`;}
   h+='</div>';
   h+=`<div class="phlegend">${['men','foll','ovu','lut'].map(k=>`<span class="phl"><span class="phl-sw" style="background:${PHASES[k].tint};border:1.5px solid ${PHASES[k].accent}"></span>${PHASES[k].label}</span>`).join('')}</div>`;
@@ -914,7 +922,7 @@ function renderMonth(){
     </div>`;
   }).join('');
   let clashes=[];let d=new Date(first);
-  while(d<=last){const p=phaseForDate(d);actsOn(d).forEach(a=>{const rr=(REC[a.category]||REC.MOVE)[p.key][0];if(rr==='r'||rr==='o')clashes.push({a,d:new Date(d)})});d=addDays(d,1);}
+  while(d<=last){const p=phaseForDate(d);actsOn(d).forEach(a=>{const rr=(recRow(a.category,a.type)||REC.MOVE)[p.key][0];if(rr==='r'||rr==='o')clashes.push({a,d:new Date(d)})});d=addDays(d,1);}
   const clashHtml=clashes.length?`<div class="label" style="margin:24px 2px 10px">Heads-up this month</div><div class="acts">${clashes.map(({a,d})=>{const c=catOf(a);const w=monthWindows(a.category,y,m).best;const better=w.length?'around '+fmtR(w[0]):'another week';
     return `<button class="act" onclick="openDay('${ymd(d)}')"><span class="cat-badge" style="--c:${c.color}">${c.emoji}</span><span class="body"><div class="a-top"><span class="a-name">${esc(a.type)||c.label}</span><span class="cost" style="color:#BE4A41">${DOW[d.getDay()]} ${d.getDate()}</span></div><div class="a-sub">better ${better}</div></span></button>`;}).join('')}</div>`:'';
   document.getElementById('app').innerHTML=`
@@ -937,7 +945,7 @@ function renderMonth(){
 function openDay(ds){
   const d=parseYMD(ds);const p=phaseForDate(d);const acts=actsOn(d);
   const list=acts.length?acts.map(a=>{
-    const cat=catOf(a);const c=costOf(a);const rec=(REC[a.category]||REC.MOVE)[p.key];const caution=rec[0]==='o'||rec[0]==='r';
+    const cat=catOf(a);const c=costOf(a);const rec=(recRow(a.category,a.type)||REC.MOVE)[p.key];const caution=rec[0]==='o'||rec[0]==='r';
     const cost=(a.passId||a.includedInPass)?'<span class="cost free">on pass</span>':(c?`<span class="cost">${EUR(c)}</span>`:'<span class="cost free">free</span>');
     return `<button class="act" onclick="openActivityMenu('${a.id}')">
       <span class="cat-badge" style="--c:${cat.color}">${cat.emoji}</span>
@@ -970,11 +978,11 @@ function headerHtml(){const tt=today();return `<header class="hero">
 function renderToday(){
   const t=today();const p=phaseForDate(t);const np=nextPeriodStart();
   const phaseLine=p?`<button class="phaseline" onclick="openCycle()" style="--a:${p.accent};--t:${p.tint}"><span class="pl-dot"></span><span><b>${p.label}</b> · day ${p.day}${np?` · period ~${fmtDay(np)} ${MON[np.getMonth()]}${daysBetween(t,np)>0?` (in ${daysBetween(t,np)} day${daysBetween(t,np)===1?'':'s'})`:''}`:''}</span></button>`:'';
-  const itemHtml=(a,d,past)=>{const c=catOf(a);const r=past?null:rateOn(a.category,d);
+  const itemHtml=(a,d,past)=>{const c=catOf(a);const r=past?null:rateOn(a.category,d,a.type);
     const mark=past?'<span class="wk-m done">done</span>':(r&&r.r==='g'?'<span class="wk-m good">✓ good time</span>':(r&&(r.r==='o'||r.r==='r')?'<span class="wk-m warn">⚠ maybe wait</span>':''));
     return `<button class="wk-i${past?' past':''}" onclick="openActivityMenu('${a.id}')"><span class="wk-e">${c.emoji}</span><span class="wk-n">${esc(a.type)||c.label}${a.time?` <small>${fmtTime(a.time)}</small>`:''}</span>${mark}</button>`;};
   const dayRow=(d,past)=>{const acts=actsOn(d);if(!acts.length)return '';const ph=phaseForDate(d);const off=daysBetween(t,d);
-    return `<div class="wkday"><button class="wk-d" onclick="openDay('${ymd(d)}')" style="--a:${ph?ph.accent:'#ccc'}"><span>${off===0?'Today':off===1?'Tomorrow':off===-1?'Yesterday':DOW[d.getDay()]}</span><b>${d.getDate()}</b></button>
+    return `<div class="wkday"><button class="wk-d" onclick="openDay('${ymd(d)}')" style="--a:${ph?ph.accent:'#ccc'}"><span>${off===0?'Today':off===1?'Tomorrow':off===-1?'Yesterday':DOW[d.getDay()]}</span><b>${d.getDate()}</b>${ph?`<i class="wk-ph">${ph.label}</i>`:''}</button>
       <div class="wk-items">${acts.map(a=>itemHtml(a,d,past)).join('')}</div></div>`;};
   const rows=[...Array(14)].map((_,i)=>dayRow(addDays(t,i),false)).join('');
   const done=[...Array(14)].map((_,i)=>{const d=addDays(t,-1-i);const acts=actsOn(d).filter(a=>!a.recurring);if(!acts.length)return '';
@@ -1183,7 +1191,7 @@ const UPK_GUESS=[[/dermatolog|skin check|dentist|hormon|doctor|check-?up|gyn|opt
   [/wax|sugar|thread|ipl|electroly|hair removal|laser/i,'HAIR'],
   [/massage|spa|sauna|lymph|scrub|wrap/i,'SPA'],
   [/mani|pedi|nail|lash|brow|hair|cut|trim|colou?r|roots|tan/i,'NAILS']];
-function upkeepCat(it){if(it.category)return it.category==='NONE'?null:(REC[it.category]?it.category:null);
+function upkeepCat(it){if(it.category)return it.category==='NONE'?null:(REC[it.category]?it.category:null);if(TYPE_REC.some(([re])=>re.test(it.name||'')))return 'SPA';
   for(const[re,k]of UPK_GUESS)if(re.test(it.name||''))return k==='NONE'?null:k;return null;}
 function fmtDay(d){return DOW[d.getDay()]+' '+d.getDate();}
 function fmtRange(s,e){const sameDay=+s===+e;const st=+s===+today()?'Today':fmtDay(s);
@@ -1194,13 +1202,13 @@ function bookWindow(it){
   const t=today();const due=upkeepNext(it)||t;
   const lead=Math.min(7,Math.max(2,Math.round((it.cadenceWeeks||4)*7*0.15)));   // ok to go a few days early
   const from=new Date(Math.max(+t,+addDays(due,-lead)));
-  const cat=upkeepCat(it);
-  if(!cat||!cycle||!lastStart())return {start:from,end:addDays(from,6),due,cat,fit:null};
-  const rate=d=>{const p=phaseForDate(d);return p?REC[cat][p.key][0]:'y';};
+  const cat=upkeepCat(it);const row=recRow(cat,it.name);
+  if(!row||!cycle||!lastStart())return {start:from,end:addDays(from,6),due,cat,fit:null};
+  const rate=d=>{const p=phaseForDate(d);return p?row[p.key][0]:'y';};
   for(const want of ['g','y']){let s=null,e=null;
     for(let i=0;i<45;i++){const d=addDays(from,i);
       if(rate(d)===want){if(!s)s=d;e=d;if(daysBetween(s,e)>=6)break;}else if(s)break;}
-    if(s){const p=phaseForDate(s);return {start:s,end:e,due,cat,fit:want,reason:(REC[cat][p.key][1]||'').split(' — ')[0],accent:p.accent};}
+    if(s){const p=phaseForDate(s);return {start:s,end:e,due,cat,fit:want,reason:(row[p.key][1]||'').split(' — ')[0],accent:p.accent};}
   }
   return {start:from,end:addDays(from,6),due,cat,fit:null};
 }
@@ -1212,6 +1220,9 @@ function rollUpkeepBookings(){let ch=false;const t=today();
   if(ch)save(K_UPKEEP,upkeep);}
 function sinceTxt(it){if(!it.lastDate)return 'No visit logged yet';const ago=daysBetween(parseYMD(it.lastDate),today());
   return ago<=0?'Last one today':humanDur(ago)+' since your last one';}
+function stopTracking(id){const it=upkeep.find(x=>x.id===id);if(!it)return;
+  if(!confirm('Stop tracking '+it.name+'? Anything you already recorded stays.'))return;
+  upkeep=upkeep.filter(x=>x.id!==id);save(K_UPKEEP,upkeep);render();showToast('Removed '+it.name);}
 function nextUpHtml(){
   rollUpkeepBookings();
   if(!upkeep.length)return `<div class="nextup"><div class="label nu-h">Next up</div>
@@ -1236,7 +1247,7 @@ function nextUpHtml(){
     return `<div class="nucard"${w.fit==='g'?` style="border-color:${w.accent}"`:''}><div class="nu-top"><span class="nu-e">${esc(it.emoji||'🔁')}</span><span class="nu-n">${esc(it.name)}</span>${pill}</div>
       <div class="nu-when"><span class="nu-pre">Book for</span> ${fmtRange(w.start,w.end)}</div>
       <div class="nu-sub">${sub}</div>${why}
-      <div class="nu-acts"><button class="nu-go" onclick="openAdd({upkeepId:'${it.id}'})">Choose a day</button></div></div>`;
+      <div class="nu-acts"><button class="nu-go" onclick="openAdd({upkeepId:'${it.id}'})">Choose a day</button><button class="nu-link" onclick="stopTracking('${it.id}')">Remove</button></div></div>`;
   }).join('');
   return `<div class="nextup"><div class="label nu-h">Next up ${all}</div>${cards}</div>`;
 }
@@ -1247,15 +1258,18 @@ function guessCat(name){const n=(name||'').trim().toLowerCase();if(!n)return 'UP
   for(const[re,k]of UPK_GUESS)if(re.test(n))return k==='NONE'?'UPK':k;
   if(FIT_RE.test(n))return 'MOVE';if(/medit|breath|journal|sleep|therap/i.test(n))return 'MIND';if(/trip|flight|travel|holiday|getaway/i.test(n))return 'TRAVEL';
   return 'UPK';}
-function rateOn(cat,d){if(!cycle||!REC[cat])return null;const p=phaseForDate(d);if(!p)return null;const r=REC[cat][p.key];return {r:r[0],why:r[1]};}
-function nextGoodFrom(cat,d){for(let i=1;i<45;i++){const x=addDays(d,i);const r=rateOn(cat,x);if(r&&r.r==='g')return x;}return null;}
-function verdictHtml(cat,d){const t=today();if(d<t)return '<div class="verdict done">Recorded as done ✓</div>';
-  const r=rateOn(cat,d);if(!r)return cat==='UPK'?'<div class="verdict">This doesn’t depend on your cycle — any day is fine.</div>':'';
-  const why=r.why.charAt(0).toUpperCase()+r.why.slice(1);
-  if(r.r==='g')return `<div class="verdict good">✓ Good time · ${esc(why)}</div>`;
-  if(r.r==='y')return `<div class="verdict">Fine · ${esc(why)}</div>`;
-  const ng=nextGoodFrom(cat,d);
-  return `<div class="verdict warn">⚠ Maybe wait · ${esc(why)}${ng?`. Good days from <b>${fmtDay(ng)} ${MON[ng.getMonth()]}</b>`:''}</div>`;}
+/* some treatments need their own timing, not their category's (e.g. heat on period days) */
+const TYPE_REC=[[/sauna|steam|hammam|hot ?tub|jacuzzi|hot bath|hot yoga|bikram|infrared/i,{men:['o','many prefer to skip heat on period days — totally your call'],foll:['g','a comfortable time for heat & sweat'],ovu:['g','a comfortable time for heat & sweat'],lut:['y','fine — some feel more tired after heat now']}]];
+function recRow(cat,name){for(const[re,row]of TYPE_REC)if(name&&re.test(name))return row;return REC[cat]||null;}
+function rateOn(cat,d,name){const row=recRow(cat,name);if(!cycle||!row)return null;const p=phaseForDate(d);if(!p)return null;const r=row[p.key];return {r:r[0],why:r[1],p};}
+function nextGoodFrom(cat,d,name){for(let i=1;i<45;i++){const x=addDays(d,i);const r=rateOn(cat,x,name);if(r&&r.r==='g')return x;}return null;}
+function verdictHtml(cat,d,name){const t=today();if(d<t)return '<div class="verdict done">Recorded as done ✓</div>';
+  const r=rateOn(cat,d,name);if(!r)return cat==='UPK'?'<div class="verdict">This doesn’t depend on your cycle — any day is fine.</div>':'';
+  const why=r.why.charAt(0).toUpperCase()+r.why.slice(1);const ph=`<span class="v-ph" style="color:${r.p.accent}">${r.p.label} · day ${r.p.day}</span>`;
+  if(r.r==='g')return `<div class="verdict good">${ph}✓ Good time · ${esc(why)}</div>`;
+  if(r.r==='y')return `<div class="verdict">${ph}Fine · ${esc(why)}</div>`;
+  const ng=nextGoodFrom(cat,d,name);
+  return `<div class="verdict warn">${ph}⚠ Maybe wait · ${esc(why)}${ng?`. Good days from <b>${fmtDay(ng)} ${MON[ng.getMonth()]}</b>`:''}</div>`;}
 let addS={},addChoices=[];
 function openAdd(pre){pre=pre||{};
   addS={name:'',emoji:'',cat:'UPK',upkeepId:null,date:pre.date||null,time:'',repeat:'none',n:4,past:false,replaceAct:pre.replaceAct||null};
@@ -1263,10 +1277,25 @@ function openAdd(pre){pre=pre||{};
   renderAdd();}
 function addUseUpkeep(it){Object.assign(addS,{name:it.name,emoji:it.emoji||'🔁',cat:upkeepCat(it)||'UPK',upkeepId:it.id,repeat:it.cadenceWeeks?'n':'none',n:it.cadenceWeeks||4});}
 function addChoiceList(){const out=[],seen={};const push=(o)=>{const k=o.name.toLowerCase();if(seen[k])return;seen[k]=1;out.push(o);};
-  upkeep.forEach(it=>push({name:it.name,emoji:it.emoji||'🔁',upkeepId:it.id}));
-  [...activities].reverse().forEach(a=>{if(out.length<10&&a.type)push({name:a.type,emoji:catOf(a).emoji,cat:a.category,weekly:a.recurring});});
-  if(out.length<6)[['Hydrafacial','💧'],['Pilates','🧘'],['Massage','💆'],['Manicure','💅'],['Haircut','💇'],['Waxing','🪒']].forEach(([n,e])=>out.length<8&&push({name:n,emoji:e}));
+  upkeep.forEach(it=>push({name:it.name,emoji:it.emoji||'🔁',upkeepId:it.id,mine:true}));
+  [...activities].reverse().forEach(a=>{if(a.type)push({name:a.type,emoji:catOf(a).emoji,cat:a.category,weekly:a.recurring,mine:true});});
+  UPKEEP_PRESETS.forEach(([e,n])=>push({name:n,emoji:e}));
+  CAT_KEYS.forEach(k=>catTypes(k).forEach(t=>push({name:t,emoji:CATS[k].emoji,cat:k,group:CATS[k].label})));
   return out;}
+let addShowIdeas=false;
+function addFilter(raw){raw=(raw||'').trim();const q=raw.toLowerCase();const box=document.getElementById('add-results');if(!box)return;
+  if(!q){box.innerHTML=addChipsHtml();return;}
+  const hits=addChoices.map((c,i)=>({c,i})).filter(x=>x.c.name.toLowerCase().includes(q)).slice(0,14);
+  const exact=hits.some(x=>x.c.name.toLowerCase()===q);
+  box.innerHTML=`<div class="addchips">${hits.map(x=>`<button class="addchip" onclick="addPick(${x.i})"><span>${esc(x.c.emoji)}</span>${esc(x.c.name)}</button>`).join('')}
+    ${exact?'':`<button class="addchip new" onclick="addTyped()">＋ Add “${esc(raw)}”</button>`}</div>`;}
+function addChipsHtml(){const chip=(c,i)=>`<button class="addchip" onclick="addPick(${i})"><span>${esc(c.emoji)}</span>${esc(c.name)}</button>`;
+  const mine=addChoices.map((c,i)=>({c,i})).filter(x=>x.c.mine);
+  let h=mine.length?`<div class="label" style="margin:14px 2px 8px">Your things</div><div class="addchips">${mine.map(x=>chip(x.c,x.i)).join('')}</div>`
+    :`<div class="sub" style="margin:12px 2px 0">Type anything you do for yourself — or browse ideas below.</div>`;
+  if(!addShowIdeas)return h+`<button class="nu-link" style="display:block;margin:16px 2px 0" onclick="addShowIdeas=true;addFilter('')">Browse ideas</button>`;
+  const groups={};addChoices.forEach((c,i)=>{if(c.mine)return;const g=c.group||'Treatments & appointments';(groups[g]=groups[g]||[]).push(chip(c,i));});
+  return h+Object.keys(groups).map(g=>`<div class="label" style="margin:16px 2px 8px">${esc(g)}</div><div class="addchips">${groups[g].join('')}</div>`).join('');}
 function addPick(i){const c=addChoices[i];if(!c)return;
   if(c.upkeepId){addUseUpkeep(upkeep.find(x=>x.id===c.upkeepId));}
   else{const cat=c.cat||guessCat(c.name);Object.assign(addS,{name:c.name,emoji:c.emoji||(CATS[cat]||UPK_CAT).emoji,cat,upkeepId:null,repeat:c.weekly?'week':'none'});}
@@ -1275,26 +1304,25 @@ function addTyped(){const v=(document.getElementById('add-name').value||'').trim
   const ex=upkeep.find(x=>x.name.toLowerCase()===v.toLowerCase());if(ex){addUseUpkeep(ex);renderAdd();return;}
   const cat=guessCat(v);Object.assign(addS,{name:v,emoji:(CATS[cat]||UPK_CAT).emoji,cat,upkeepId:null});renderAdd();}
 function renderAdd(){
-  if(!addS.name){addChoices=addChoiceList();
+  if(!addS.name){addChoices=addChoiceList();addShowIdeas=false;
     sheet(`<h2 class="serif">What are you adding?</h2>
-      <div class="addchips">${addChoices.map((c,i)=>`<button class="addchip" onclick="addPick(${i})"><span>${esc(c.emoji)}</span>${esc(c.name)}</button>`).join('')}</div>
-      <div class="field" style="margin-top:14px"><label class="label" for="add-name">Something else</label>
-        <div style="display:flex;gap:8px"><input type="text" id="add-name" class="selectfield" style="margin-top:6px" placeholder="e.g. Lash lift" onkeydown="if(event.key==='Enter')addTyped()"><button class="nu-go" style="margin-top:6px" onclick="addTyped()">Next</button></div></div>`);
+      <input type="text" id="add-name" class="selectfield" placeholder="Type anything — e.g. lash lift, padel, therapy" autocomplete="off" oninput="addFilter(this.value)" onkeydown="if(event.key==='Enter')addTyped()">
+      <div id="add-results">${addChipsHtml()}</div>`);
     return;}
   const t=today();const days=[...Array(21)].map((_,i)=>addDays(t,i));
   if(addS.date&&parseYMD(addS.date)<t)addS.past=true;
-  const cell=d=>{const ds=ymd(d);const r=rateOn(addS.cat,d);const cls=r?(r.r==='g'?' good':(r.r==='o'||r.r==='r'?' warn':'')):'';const busy=actsOn(d).length;
-    return `<button class="bkday${cls}${ds===addS.date?' on':''}" onclick="addDay('${ds}')"><span class="bk-w">${+d===+t?'Today':DOW[d.getDay()]}</span><span class="bk-d">${d.getDate()}</span><span class="bk-m">${r?(r.r==='g'?'✓':(cls?'⚠':MON[d.getMonth()])):MON[d.getMonth()]}</span>${busy?'<span class="bk-dot"></span>':''}</button>`;};
+  const cell=d=>{const ds=ymd(d);const r=rateOn(addS.cat,d,addS.name);const php=phaseForDate(d);const cls=r?(r.r==='g'?' good':(r.r==='o'||r.r==='r'?' warn':'')):'';const busy=actsOn(d).length;
+    return `<button class="bkday${cls}${ds===addS.date?' on':''}" style="--ph:${php?php.accent:'transparent'}" onclick="addDay('${ds}')"><span class="bk-w">${+d===+t?'Today':DOW[d.getDay()]}</span><span class="bk-d">${d.getDate()}</span><span class="bk-m">${r?(r.r==='g'?'✓':(cls?'⚠':MON[d.getMonth()])):MON[d.getMonth()]}</span>${busy?'<span class="bk-dot"></span>':''}</button>`;};
   const catOpts=[...CAT_KEYS.map(k=>`<option value="${k}" ${addS.cat===k?'selected':''}>${esc(CATS[k].label)}</option>`),`<option value="UPK" ${addS.cat==='UPK'?'selected':''}>Other (cycle doesn’t matter)</option>`].join('');
   const sel=addS.date?parseYMD(addS.date):null;
   sheet(`<h2 class="serif">${esc(addS.emoji)} ${esc(addS.name)} <button class="nu-link" style="font-size:12px;vertical-align:middle" onclick="addS.name='';renderAdd()">change</button></h2>
     <div class="add-kind">Counts as <select onchange="addS.cat=this.value;renderAdd()">${catOpts}</select></div>
     <div class="label" style="margin:16px 2px 6px">When?</div>
-    ${cycle&&addS.cat!=='UPK'?'<div class="add-legend"><span class="lg good">✓ good time</span><span class="lg warn">⚠ maybe wait</span></div>':''}
+    ${cycle?`<div class="add-legend">${['men','foll','ovu','lut'].map(k=>`<span class="lg-ph" style="--ph:${PHASES[k].accent}">${PHASES[k].label}</span>`).join('')}</div>${addS.cat!=='UPK'||recRow(addS.cat,addS.name)?'<div class="add-legend"><span class="lg good">✓ good time</span><span class="lg warn">⚠ maybe wait</span></div>':''}`:'<div class="verdict warn" style="margin-bottom:8px">Set up your cycle (My things → My cycle) to see good days.</div>'}
     <div class="bkgrid wk7">${days.map(cell).join('')}</div>
     ${addS.past?`<div class="field"><label class="label" for="add-past">Date you went</label><input type="date" id="add-past" class="selectfield" max="${ymd(t)}" value="${addS.date&&parseYMD(addS.date)<t?addS.date:''}" onchange="addDay(this.value)"></div>`
       :`<button class="nu-link" style="margin:0 2px 12px" onclick="addS.past=true;renderAdd()">Already been? Pick an earlier date</button>`}
-    ${sel?verdictHtml(addS.cat,sel):''}
+    ${sel?verdictHtml(addS.cat,sel,addS.name):''}
     <button class="timefield" style="margin-top:12px" onclick="openTimeWheel(addS.time||'10:00',v=>{addS.time=v;renderAdd();})">${addS.time?'🕒 '+fmtTime(addS.time):'＋ Time (optional)'}</button>
     <div class="label" style="margin:16px 2px 8px">Repeats?</div>
     <div class="seg" style="margin-bottom:6px"><button class="${addS.repeat==='none'?'on':''}" onclick="addS.repeat='none';renderAdd()">Just once</button><button class="${addS.repeat==='week'?'on':''}" onclick="addS.repeat='week';renderAdd()">Every week</button><button class="${addS.repeat==='n'?'on':''}" onclick="addS.repeat='n';renderAdd()">Every few weeks</button></div>
@@ -1318,7 +1346,7 @@ function addSave(){
   const when=`${+d===+t?'Today':DOW_FULL[d.getDay()]+' '+d.getDate()+' '+MON[d.getMonth()]}${addS.time?' · '+fmtTime(addS.time):''}${addS.repeat==='week'?' · every week':''}`;
   sheet(`<h2 class="serif">Saved ✓</h2>
     <div class="sub">${esc(addS.emoji)} ${esc(addS.name)} · ${when}</div>
-    ${d>=t?verdictHtml(addS.cat,d):''}
+    ${d>=t?verdictHtml(addS.cat,d,addS.name):''}
     ${d>=t?`<button class="btn ghost" style="width:100%;margin-top:14px" onclick="actCalendar('${act.id}')">📅 Add to my phone calendar</button>
       <a class="nu-link" style="display:block;text-align:center;margin-top:10px" href="${gcalUrl(act)}" target="_blank" rel="noopener">or Google Calendar</a>`:''}
     <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">Done</button></div>`);
@@ -1571,7 +1599,7 @@ function openActivityMenu(id){
   const a=activities.find(x=>x.id===id);if(!a)return;const cat=catOf(a);const d=a.recurring?null:parseYMD(a.date);const future=!d||d>=today();
   sheet(`<h2 class="serif">${cat.emoji} ${esc(a.type)||cat.label}</h2>
     <div class="sub">${d?DOW_FULL[d.getDay()]+' '+d.getDate()+' '+MON[d.getMonth()]:'Every '+(a.daysOfWeek||[]).map(w=>DOW_FULL[w]).join(', ')}${a.time?' · '+fmtTime(a.time):''}${a.place?' · '+esc(a.place):''}</div>
-    ${d?verdictHtml(a.category,d):''}
+    ${d?verdictHtml(a.category,d,a.type):''}
     <div class="acts menu" style="margin:14px 0 6px">
       <button class="act" onclick="changeActDay('${id}')"><span class="cat-badge" style="--c:#E2EDD7">📆</span><span class="body"><div class="a-name">Change the day</div></span></button>
       ${future?`<button class="act" onclick="actCalendar('${id}')"><span class="cat-badge" style="--c:#D6E2F4">📅</span><span class="body"><div class="a-name">Add to my phone calendar</div></span></button>`:''}
