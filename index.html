@@ -445,7 +445,7 @@
   .fab{bottom:calc(84px + env(safe-area-inset-bottom))!important}
   .planbar{bottom:calc(84px + env(safe-area-inset-bottom))!important}
   .wrap{padding-bottom:190px!important}
-  .phaseline{display:inline-flex;align-items:center;gap:8px;margin:2px 0 4px;padding:8px 14px;border-radius:999px;background:var(--t);color:var(--ink);font-size:13px}
+  .phaseline{display:inline-flex;align-items:center;text-align:left;line-height:1.4;gap:8px;margin:2px 0 4px;padding:8px 14px;border-radius:999px;background:var(--t);color:var(--ink);font-size:13px}
   .phaseline b{color:var(--a)}
   .pl-dot{width:9px;height:9px;border-radius:999px;background:var(--a)}
   .wkday{display:flex;gap:12px;align-items:flex-start;margin-bottom:10px}
@@ -459,6 +459,34 @@
   .wk-t{font-size:12px;color:var(--muted);font-weight:600}
   .mine-h{margin:22px 2px 10px}
   .act .chev{margin-left:auto;font-size:20px;color:var(--muted);padding-left:8px}
+  .verdict{font-size:13px;line-height:1.45;padding:10px 13px;border-radius:13px;background:#F4F0E8;color:var(--ink)}
+  .verdict.good{background:#E6F2EA;color:#2F6B40}
+  .verdict.warn{background:#FBEEDD;color:#8A5418}
+  .verdict.done{background:#EFEAE0;color:var(--muted)}
+  .bkday.warn{border-color:#E5B97C;background:#FDF6EC}
+  .bkday.good .bk-m{color:#3F8A55;font-weight:700}
+  .bkday.warn .bk-m{color:#B5722A;font-weight:700}
+  .bkday.on .bk-m{color:#F7F3EC}
+  .bkgrid.wk7{grid-template-columns:repeat(7,1fr);gap:5px}
+  .bkgrid.wk7 .bkday{padding:7px 0;border-radius:11px}
+  .bkgrid.wk7 .bk-d{font-size:17px}
+  .bkgrid.wk7 .bk-w{font-size:10px}
+  .bk-dot{width:5px;height:5px;border-radius:9px;background:#B5722A;margin-top:2px}
+  .addchips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+  .addchip{display:inline-flex;align-items:center;gap:7px;padding:11px 15px;border-radius:999px;background:var(--card);border:1.5px solid #E7DFD1;font-weight:600;font-size:14px;color:var(--ink)}
+  .addchip:active{transform:scale(.96)}
+  .add-kind{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .add-kind select,.add-kind input{padding:7px 10px;border-radius:10px;border:1.5px solid #DCE2DB;background:#fff;font-size:13.5px}
+  .add-legend{display:flex;gap:12px;font-size:12px;font-weight:600;margin:0 2px 8px}
+  .lg.good{color:#3F8A55}.lg.warn{color:#B5722A}
+  .wk-n small{font-weight:500;color:var(--muted);font-size:12px;margin-left:4px}
+  .wk-m{font-size:11px;font-weight:700;white-space:nowrap;padding:3px 8px;border-radius:999px}
+  .wk-m.good{color:#3F8A55;background:#E6F2EA}
+  .wk-m.warn{color:#B5722A;background:#FBEEDD}
+  .wk-m.done{color:var(--muted);background:#EFEAE0}
+  .wk-i.past{opacity:.7}
+  .wk-d.past{border-color:#E1DACB;box-shadow:none;background:transparent}
+  .backlink{font-size:13px;color:var(--muted);margin:4px 2px 0}
   .upk{display:flex;align-items:center;gap:12px;background:#fff;border:1.5px solid #E9E2D4;border-radius:16px;padding:11px 12px;margin-bottom:10px}
   .upk .cat-badge{flex:none}
   .upk-b{flex:1;min-width:0}
@@ -481,7 +509,7 @@
 <body>
 <div class="wrap" id="app"></div>
 
-<button class="fab hidden" id="fab" onclick="openActivity()">
+<button class="fab hidden" id="fab" onclick="openAdd()">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
   Add
 </button>
@@ -805,7 +833,8 @@ function renderWeek(){
   const ttGrid=weekTimetable(mon,tday,passCats);const trayHtml=weekTrayHtml(mon);const anyGoodSlot=ttGrid.anyGood;
   document.getElementById('app').innerHTML=`
     ${headerHtml()}
-    ${calTogHtml('week')}
+    <button class="linklike backlink" onclick="setView('mine')">‹ My things</button>
+    <h2 class="serif" style="margin:4px 2px 12px">Plan a week of classes</h2>
     <div class="weeknav">
       <button class="wbtn" onclick="changeWeek(-1)" aria-label="Previous week">‹</button>
       <button class="wnow ${weekOffset===0?'here':''}" onclick="goThisWeek()">${esc(wLabel)}<span class="wrange">${wRange}</span></button>
@@ -890,7 +919,6 @@ function renderMonth(){
     return `<button class="act" onclick="openDay('${ymd(d)}')"><span class="cat-badge" style="--c:${c.color}">${c.emoji}</span><span class="body"><div class="a-top"><span class="a-name">${esc(a.type)||c.label}</span><span class="cost" style="color:#BE4A41">${DOW[d.getDay()]} ${d.getDate()}</span></div><div class="a-sub">better ${better}</div></span></button>`;}).join('')}</div>`:'';
   document.getElementById('app').innerHTML=`
     ${headerHtml()}
-    ${calTogHtml('month')}
     ${np?`<div class="predict" onclick="openCycle()"><div><div class="label">Next period · approx</div><div class="pv">~ ${npTxt}</div></div><div class="pdays">${npWhen}</div></div>`:''}
     <div class="weeknav">
       <button class="wbtn" onclick="changeMonth(-1)" aria-label="Previous month">‹</button>
@@ -920,39 +948,44 @@ function openDay(ds){
   sheet(`<h2 class="serif">${DOW_FULL[d.getDay()]} ${d.getDate()} ${MON[d.getMonth()]}</h2>
     <div class="sub" style="color:${p.accent}">${p.label} · ${p.nudge}</div>
     <div class="acts" style="margin:2px 0 18px">${list}</div>
-    <div class="sheet-actions"><button class="btn ghost" onclick="closeSheet()">Close</button><button class="btn primary" onclick="closeSheet();openActivity(null,{date:'${ds}'})">＋ Add to this day</button></div>`);
+    <div class="sheet-actions"><button class="btn ghost" onclick="closeSheet()">Close</button><button class="btn primary" onclick="openAdd({date:'${ds}'})">＋ Add to this day</button></div>`);
 }
 function setView(v){viewMode=v;if(v==='month'&&!monthCursor)monthCursor=today();render();window.scrollTo(0,0)}
 function changeMonth(n){const b=monthCursor||today();monthCursor=new Date(b.getFullYear(),b.getMonth()+n,1);renderMonth();window.scrollTo(0,0)}
 function goThisMonth(){monthCursor=today();renderMonth();window.scrollTo(0,0)}
 function render(){
   if(viewMode==='month')renderMonth();else if(viewMode==='week')renderWeek();else if(viewMode==='mine')renderMine();else renderToday();
-  const tab=viewMode==='month'||viewMode==='week'?'cal':viewMode;
+  const tab=viewMode==='month'?'cal':viewMode==='week'?'mine':viewMode;
   document.querySelectorAll('.tabbar button').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
   document.getElementById('tabbar').classList.remove('hidden');
   document.getElementById('fab').classList.toggle('hidden',viewMode==='mine'||(viewMode==='week'&&planPick.length>0));
 }
-function goTab(t){setView(t==='cal'?(viewMode==='week'?'week':'month'):t);}
+function goTab(t){setView(t==='cal'?'month':t);}
 function headerHtml(){const tt=today();return `<header class="hero">
       <img class="brandlogo" src="faze-logo.png" alt="fáze — cycle × wellness planner">
       <div class="dateline">Today · ${DOW_FULL[tt.getDay()]} ${tt.getDate()} ${MON[tt.getMonth()]} ${tt.getFullYear()}</div>
     </header>`;}
-function calTogHtml(on){return `<div class="viewtog"><button class="${on==='month'?'on':''}" onclick="setView('month')">Month</button><button class="${on==='week'?'on':''}" onclick="setView('week')">Plan my week</button></div>`;}
 
 /* ---- Home: what to book next + what's on this week ---- */
 function renderToday(){
   const t=today();const p=phaseForDate(t);const np=nextPeriodStart();
-  const phaseLine=p?`<button class="phaseline" onclick="openCycle()" style="--a:${p.accent};--t:${p.tint}"><span class="pl-dot"></span><b>${p.label}</b> · day ${p.day}${np?` · period ~${fmtDay(np)} ${MON[np.getMonth()]}${daysBetween(t,np)>0?` (in ${daysBetween(t,np)} day${daysBetween(t,np)===1?'':'s'})`:''}`:''}</button>`:'';
-  const rows=[...Array(7)].map((_,i)=>{const d=addDays(t,i);const acts=actsOn(d).slice().sort((a,b)=>(a.time||'99').localeCompare(b.time||'99'));if(!acts.length)return '';
-    const ph=phaseForDate(d);
-    return `<div class="wkday"><button class="wk-d" onclick="openDay('${ymd(d)}')" style="--a:${ph?ph.accent:'#ccc'}"><span>${i===0?'Today':i===1?'Tomorrow':DOW[d.getDay()]}</span><b>${d.getDate()}</b></button>
-      <div class="wk-items">${acts.map(a=>{const c=catOf(a);return `<button class="wk-i" onclick="openActivityMenu('${a.id}')"><span class="wk-e">${c.emoji}</span><span class="wk-n">${esc(a.type)||c.label}</span><span class="wk-t">${fmtTime(a.time)}</span></button>`;}).join('')}</div></div>`;}).join('');
+  const phaseLine=p?`<button class="phaseline" onclick="openCycle()" style="--a:${p.accent};--t:${p.tint}"><span class="pl-dot"></span><span><b>${p.label}</b> · day ${p.day}${np?` · period ~${fmtDay(np)} ${MON[np.getMonth()]}${daysBetween(t,np)>0?` (in ${daysBetween(t,np)} day${daysBetween(t,np)===1?'':'s'})`:''}`:''}</span></button>`:'';
+  const itemHtml=(a,d,past)=>{const c=catOf(a);const r=past?null:rateOn(a.category,d);
+    const mark=past?'<span class="wk-m done">done</span>':(r&&r.r==='g'?'<span class="wk-m good">✓ good time</span>':(r&&(r.r==='o'||r.r==='r')?'<span class="wk-m warn">⚠ maybe wait</span>':''));
+    return `<button class="wk-i${past?' past':''}" onclick="openActivityMenu('${a.id}')"><span class="wk-e">${c.emoji}</span><span class="wk-n">${esc(a.type)||c.label}${a.time?` <small>${fmtTime(a.time)}</small>`:''}</span>${mark}</button>`;};
+  const dayRow=(d,past)=>{const acts=actsOn(d);if(!acts.length)return '';const ph=phaseForDate(d);const off=daysBetween(t,d);
+    return `<div class="wkday"><button class="wk-d" onclick="openDay('${ymd(d)}')" style="--a:${ph?ph.accent:'#ccc'}"><span>${off===0?'Today':off===1?'Tomorrow':off===-1?'Yesterday':DOW[d.getDay()]}</span><b>${d.getDate()}</b></button>
+      <div class="wk-items">${acts.map(a=>itemHtml(a,d,past)).join('')}</div></div>`;};
+  const rows=[...Array(14)].map((_,i)=>dayRow(addDays(t,i),false)).join('');
+  const done=[...Array(14)].map((_,i)=>{const d=addDays(t,-1-i);const acts=actsOn(d).filter(a=>!a.recurring);if(!acts.length)return '';
+    return `<div class="wkday"><div class="wk-d past"><span>${i===0?'Yesterday':DOW[d.getDay()]}</span><b>${d.getDate()}</b></div><div class="wk-items">${acts.map(a=>itemHtml(a,d,true)).join('')}</div></div>`;}).join('');
   document.getElementById('app').innerHTML=`
     ${headerHtml()}
     ${phaseLine}
     ${nextUpHtml()}
-    <div class="label nu-h" style="margin-top:22px">Next 7 days <button class="linklike nu-all" onclick="setView('week')">Plan my week</button></div>
-    ${rows||'<div class="nu-quiet" style="margin-bottom:6px">Nothing planned yet. Tap <b>Add</b>, or plan your week from the Calendar.</div>'}
+    <div class="label nu-h" style="margin-top:22px">Coming up</div>
+    ${rows||'<div class="nu-quiet" style="margin-bottom:6px">Nothing planned in the next 2 weeks. Tap <b>Add</b> — Fáze shows you the good days.</div>'}
+    ${done?`<div class="label nu-h" style="margin-top:22px">Done lately</div>${done}`:''}
     <div class="footer"><button class="disclaimer discbtn" onclick="openScience()">A gentle guideline synced to your cycle — not medical advice. <span class="disc-why">Why?</span></button></div>`;
 }
 
@@ -969,6 +1002,7 @@ function renderMine(){
     <div class="acts menu">
       ${mineRow('openUpkeep()','🔁','#F7E4CE','Treatments &amp; visits',n(upkeep.length,'tracked','tracked')||'Facials, haircut, lashes, dentist…')}
       ${mineRow('openPlaces()','📍','#D7E9E3','Studios &amp; classes',n(places.length,'place','places')||'Add where you go and their class times')}
+      ${mineRow("setView('week')",'🗓️','#E2EDD7','Plan a week of classes','Your studios’ timetable + suggestions')}
       ${mineRow('openPasses()','🎟️','#F3E7C9','Passes &amp; memberships',n(passes.length,'pass','passes')||'Track class packs and memberships')}
       ${mineRow('openCycle()','🩸','#E0EAF3','My cycle',p?`${p.label} · day ${p.day} · log a period`:'Set up or log a period')}
     </div>
@@ -1097,7 +1131,7 @@ function openUpkeep(){
     return `<div class="upk">
       <span class="cat-badge" style="--c:#F4F0E8">${it.emoji||'🔁'}</span>
       <span class="upk-b"><button class="upk-n" style="display:block;text-align:left" onclick="openUpkeepEdit('${it.id}')">${esc(it.name)}</button><div class="upk-s">${lastTxt}${cad}</div></span>
-      <span class="upk-r"><span class="upk-due ${st.cls}">${st.txt}</span><button class="upk-log" onclick="openLogVisit('${it.id}',true)">Log a visit</button></span>
+      <span class="upk-r"><span class="upk-due ${st.cls}">${st.txt}</span><button class="upk-log" onclick="openAdd({upkeepId:'${it.id}'})">Add a visit</button></span>
     </div>`;}).join(''):'<div class="empty">Nothing tracked yet — add a treatment or appointment you like to keep on top of.</div>';
   sheet(`<h2 class="serif">Treatments &amp; visits</h2>
     <div class="sub">Log when you last went, and Fáze reminds you when you're roughly due again.</div>
@@ -1178,7 +1212,7 @@ function nextUpHtml(){
   if(!upkeep.length)return `<div class="nextup"><div class="label nu-h">Next up</div>
     <div class="nucard nu-empty"><div class="nu-sub" style="margin:0 0 10px">Keep up with facials, haircuts, lashes… Fáze tells you <b>when to book</b>, around your cycle.</div>
     <button class="nu-go" onclick="openUpkeepEdit()">＋ Track something</button></div></div>`;
-  const items=upkeep.map(it=>({it,w:it.booked?null:bookWindow(it)})).filter(x=>x.it.booked||x.w)
+  const items=upkeep.filter(it=>!it.booked).map(it=>({it,w:bookWindow(it)})).filter(x=>x.w)
     .map(x=>({...x,sort:x.it.booked?parseYMD(x.it.booked.date):x.w.start})).sort((a,b)=>a.sort-b.sort);
   const soon=items.filter(x=>daysBetween(today(),x.sort)<=21);
   const all=`<button class="linklike nu-all" onclick="openUpkeep()">See all</button>`;
@@ -1188,7 +1222,7 @@ function nextUpHtml(){
     if(it.booked){const d=parseYMD(it.booked.date);
       return `<div class="nucard booked"><div class="nu-top"><span class="nu-e">${esc(it.emoji||'🔁')}</span><span class="nu-n">${esc(it.name)}</span><span class="nu-pill ok">Booked ✓</span></div>
         <div class="nu-when">${+d===+today()?'Today':DOW_FULL[d.getDay()]+' '+d.getDate()+' '+MON[d.getMonth()]}${it.booked.time?' · '+fmtTime(it.booked.time):''}</div>
-        <div class="nu-acts"><button class="nu-link" onclick="openBook('${it.id}')">Change</button><button class="nu-link" onclick="upkeepCalendar('${it.id}')">Add to calendar again</button></div></div>`;}
+        <div class="nu-acts"><button class="nu-link" onclick="openAdd({upkeepId:'${it.id}',replaceAct:'${it.booked.actId}'})">Change day</button><button class="nu-link" onclick="actCalendar('${it.booked.actId}')">Add to phone calendar</button></div></div>`;}
     const late=daysBetween(w.due,w.start);const over=daysBetween(w.due,today());
     const pill=over>0?`<span class="nu-pill over">Due now</span>`:'';
     let sub=sinceTxt(it);
@@ -1197,72 +1231,107 @@ function nextUpHtml(){
     return `<div class="nucard"${w.fit==='g'?` style="border-color:${w.accent}"`:''}><div class="nu-top"><span class="nu-e">${esc(it.emoji||'🔁')}</span><span class="nu-n">${esc(it.name)}</span>${pill}</div>
       <div class="nu-when"><span class="nu-pre">Book for</span> ${fmtRange(w.start,w.end)}</div>
       <div class="nu-sub">${sub}</div>${why}
-      <div class="nu-acts"><button class="nu-go" onclick="openBook('${it.id}')">Pick a day</button><button class="nu-link" onclick="openLogVisit('${it.id}')">Went already</button></div></div>`;
+      <div class="nu-acts"><button class="nu-go" onclick="openAdd({upkeepId:'${it.id}'})">Choose a day</button></div></div>`;
   }).join('');
   return `<div class="nextup"><div class="label nu-h">Next up ${all}</div>${cards}</div>`;
 }
-/* log a past visit on the day it actually happened (not always "today") */
-let logFor=null,logBack=false;
-function openLogVisit(id,back){const it=upkeep.find(x=>x.id===id);if(!it)return;logFor=id;logBack=!!back;
-  const t=today();const chip=(d,l)=>`<button class="nicechip" onclick="saveVisit('${ymd(d)}')">${l}</button>`;
-  sheet(`<h2 class="serif">${esc(it.emoji||'')} When did you go?</h2>
-    <div class="sub">${esc(it.name)}. Fáze counts your next one from this date.</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 14px">${chip(t,'Today')}${chip(addDays(t,-1),'Yesterday')}</div>
-    <div class="field"><label class="label" for="lv-date">Or pick the date</label><input type="date" id="lv-date" class="selectfield" max="${ymd(t)}" value="${ymd(t)}"></div>
-    <div class="sheet-actions"><button class="btn ghost" onclick="${back?'openUpkeep()':'closeSheet()'}">Cancel</button><button class="btn primary" onclick="saveVisit(document.getElementById('lv-date').value)">Save</button></div>`);}
-function saveVisit(ds){const it=upkeep.find(x=>x.id===logFor);if(!it||!ds)return;
-  if(ds>ymd(today())){alert('Pick a day that has already happened.');return;}
-  it.lastDate=ds;if(it.booked&&it.booked.date<=ds)delete it.booked;save(K_UPKEEP,upkeep);
-  const d=parseYMD(ds);render();if(logBack)openUpkeep();else closeSheet();showToast('Logged '+d.getDate()+' '+MON[d.getMonth()]+' ✓');}
-
-/* booking sheet: pick a day in (or just after) the window → saved to the week + calendar file */
-let bookFor=null,bookDay=null,bookTime='';
-function openBook(id){
-  const it=upkeep.find(x=>x.id===id);if(!it)return;bookFor=id;bookDay=it.booked?it.booked.date:null;bookTime=it.booked?it.booked.time||'':'';
-  const w=bookWindow({...it,booked:null})||{start:today(),end:addDays(today(),6),fit:null};
-  const n=Math.min(10,daysBetween(w.start,w.end)+1+4);const good=d=>w.fit&&d<=w.end;
-  const days=[...Array(n)].map((_,i)=>{const d=addDays(w.start,i);const ds=ymd(d);const busy=actsOn(d);
-    return `<button class="bkday${good(d)?' good':''}${ds===bookDay?' on':''}" data-ds="${ds}" onclick="pickBookDay('${ds}')">
-      <span class="bk-w">${+d===+today()?'Today':DOW[d.getDay()]}</span><span class="bk-d">${d.getDate()}</span><span class="bk-m">${MON[d.getMonth()]}</span>
-      ${busy.length?`<span class="bk-busy" title="${esc(busy.map(a=>a.type||catOf(a).label).join(', '))}">${busy.length} planned</span>`:''}</button>`;}).join('');
-  sheet(`<h2 class="serif">${esc(it.emoji||'')} ${esc(it.name)}</h2>
-    <div class="sub">${w.fit==='g'?'Outlined days suit your cycle best. Any day is fine though.':'Pick the day you\'ve booked or plan to book.'}</div>
-    <div class="bkgrid">${days}</div>
-    <div class="bk-other"><label class="label" for="bk-date">Another date</label><input type="date" id="bk-date" min="${ymd(today())}" value="" onchange="pickBookDay(this.value,true)"></div>
-    <button class="timefield" id="bk-time" onclick="openTimeWheel(bookTime||'10:00',v=>{bookTime=v;document.getElementById('bk-time').textContent='🕒 '+fmtTime(v);})">${bookTime?'🕒 '+fmtTime(bookTime):'＋ Add a time (optional)'}</button>
-    <div class="sheet-actions"><button class="btn ghost" onclick="closeSheet()">Cancel</button><button class="btn primary" id="bk-go" ${bookDay?'':'disabled'} onclick="confirmBook()">Book &amp; add to calendar</button></div>`);
+/* ================= ONE way to add: What? → When? (with ✓ / ⚠) → Save ================= */
+const FIT_RE=/pilates|yoga|gym|run|spin|cycl|swim|strength|hiit|crossfit|barre|box|dance|tennis|padel|class|workout|walk|hike|stretch/i;
+function guessCat(name){const n=(name||'').trim().toLowerCase();if(!n)return 'UPK';
+  for(const k of Object.keys(CATS))if(catTypes(k).some(t=>t.toLowerCase()===n))return k;
+  for(const[re,k]of UPK_GUESS)if(re.test(n))return k==='NONE'?'UPK':k;
+  if(FIT_RE.test(n))return 'MOVE';if(/medit|breath|journal|sleep|therap/i.test(n))return 'MIND';if(/trip|flight|travel|holiday|getaway/i.test(n))return 'TRAVEL';
+  return 'UPK';}
+function rateOn(cat,d){if(!cycle||!REC[cat])return null;const p=phaseForDate(d);if(!p)return null;const r=REC[cat][p.key];return {r:r[0],why:r[1]};}
+function nextGoodFrom(cat,d){for(let i=1;i<45;i++){const x=addDays(d,i);const r=rateOn(cat,x);if(r&&r.r==='g')return x;}return null;}
+function verdictHtml(cat,d){const t=today();if(d<t)return '<div class="verdict done">Recorded as done ✓</div>';
+  const r=rateOn(cat,d);if(!r)return cat==='UPK'?'<div class="verdict">This doesn’t depend on your cycle — any day is fine.</div>':'';
+  const why=r.why.charAt(0).toUpperCase()+r.why.slice(1);
+  if(r.r==='g')return `<div class="verdict good">✓ Good time · ${esc(why)}</div>`;
+  if(r.r==='y')return `<div class="verdict">Fine · ${esc(why)}</div>`;
+  const ng=nextGoodFrom(cat,d);
+  return `<div class="verdict warn">⚠ Maybe wait · ${esc(why)}${ng?`. Good days from <b>${fmtDay(ng)} ${MON[ng.getMonth()]}</b>`:''}</div>`;}
+let addS={},addChoices=[];
+function openAdd(pre){pre=pre||{};
+  addS={name:'',emoji:'',cat:'UPK',upkeepId:null,date:pre.date||null,time:'',repeat:'none',n:4,past:false,replaceAct:pre.replaceAct||null};
+  if(pre.upkeepId){const it=upkeep.find(x=>x.id===pre.upkeepId);if(it)addUseUpkeep(it);}
+  renderAdd();}
+function addUseUpkeep(it){Object.assign(addS,{name:it.name,emoji:it.emoji||'🔁',cat:upkeepCat(it)||'UPK',upkeepId:it.id,repeat:it.cadenceWeeks?'n':'none',n:it.cadenceWeeks||4});}
+function addChoiceList(){const out=[],seen={};const push=(o)=>{const k=o.name.toLowerCase();if(seen[k])return;seen[k]=1;out.push(o);};
+  upkeep.forEach(it=>push({name:it.name,emoji:it.emoji||'🔁',upkeepId:it.id}));
+  [...activities].reverse().forEach(a=>{if(out.length<10&&a.type)push({name:a.type,emoji:catOf(a).emoji,cat:a.category,weekly:a.recurring});});
+  if(out.length<6)[['Hydrafacial','💧'],['Pilates','🧘'],['Massage','💆'],['Manicure','💅'],['Haircut','💇'],['Waxing','🪒']].forEach(([n,e])=>out.length<8&&push({name:n,emoji:e}));
+  return out;}
+function addPick(i){const c=addChoices[i];if(!c)return;
+  if(c.upkeepId){addUseUpkeep(upkeep.find(x=>x.id===c.upkeepId));}
+  else{const cat=c.cat||guessCat(c.name);Object.assign(addS,{name:c.name,emoji:c.emoji||(CATS[cat]||UPK_CAT).emoji,cat,upkeepId:null,repeat:c.weekly?'week':'none'});}
+  renderAdd();}
+function addTyped(){const v=(document.getElementById('add-name').value||'').trim();if(!v)return;
+  const ex=upkeep.find(x=>x.name.toLowerCase()===v.toLowerCase());if(ex){addUseUpkeep(ex);renderAdd();return;}
+  const cat=guessCat(v);Object.assign(addS,{name:v,emoji:(CATS[cat]||UPK_CAT).emoji,cat,upkeepId:null});renderAdd();}
+function renderAdd(){
+  if(!addS.name){addChoices=addChoiceList();
+    sheet(`<h2 class="serif">What are you adding?</h2>
+      <div class="addchips">${addChoices.map((c,i)=>`<button class="addchip" onclick="addPick(${i})"><span>${esc(c.emoji)}</span>${esc(c.name)}</button>`).join('')}</div>
+      <div class="field" style="margin-top:14px"><label class="label" for="add-name">Something else</label>
+        <div style="display:flex;gap:8px"><input type="text" id="add-name" class="selectfield" style="margin-top:6px" placeholder="e.g. Lash lift" onkeydown="if(event.key==='Enter')addTyped()"><button class="nu-go" style="margin-top:6px" onclick="addTyped()">Next</button></div></div>`);
+    return;}
+  const t=today();const days=[...Array(21)].map((_,i)=>addDays(t,i));
+  if(addS.date&&parseYMD(addS.date)<t)addS.past=true;
+  const cell=d=>{const ds=ymd(d);const r=rateOn(addS.cat,d);const cls=r?(r.r==='g'?' good':(r.r==='o'||r.r==='r'?' warn':'')):'';const busy=actsOn(d).length;
+    return `<button class="bkday${cls}${ds===addS.date?' on':''}" onclick="addDay('${ds}')"><span class="bk-w">${+d===+t?'Today':DOW[d.getDay()]}</span><span class="bk-d">${d.getDate()}</span><span class="bk-m">${r?(r.r==='g'?'✓':(cls?'⚠':MON[d.getMonth()])):MON[d.getMonth()]}</span>${busy?'<span class="bk-dot"></span>':''}</button>`;};
+  const catOpts=[...CAT_KEYS.map(k=>`<option value="${k}" ${addS.cat===k?'selected':''}>${esc(CATS[k].label)}</option>`),`<option value="UPK" ${addS.cat==='UPK'?'selected':''}>Other (cycle doesn’t matter)</option>`].join('');
+  const sel=addS.date?parseYMD(addS.date):null;
+  sheet(`<h2 class="serif">${esc(addS.emoji)} ${esc(addS.name)} <button class="nu-link" style="font-size:12px;vertical-align:middle" onclick="addS.name='';renderAdd()">change</button></h2>
+    <div class="add-kind">Counts as <select onchange="addS.cat=this.value;renderAdd()">${catOpts}</select></div>
+    <div class="label" style="margin:16px 2px 6px">When?</div>
+    ${cycle&&addS.cat!=='UPK'?'<div class="add-legend"><span class="lg good">✓ good time</span><span class="lg warn">⚠ maybe wait</span></div>':''}
+    <div class="bkgrid wk7">${days.map(cell).join('')}</div>
+    ${addS.past?`<div class="field"><label class="label" for="add-past">Date you went</label><input type="date" id="add-past" class="selectfield" max="${ymd(t)}" value="${addS.date&&parseYMD(addS.date)<t?addS.date:''}" onchange="addDay(this.value)"></div>`
+      :`<button class="nu-link" style="margin:0 2px 12px" onclick="addS.past=true;renderAdd()">Already been? Pick an earlier date</button>`}
+    ${sel?verdictHtml(addS.cat,sel):''}
+    <button class="timefield" style="margin-top:12px" onclick="openTimeWheel(addS.time||'10:00',v=>{addS.time=v;renderAdd();})">${addS.time?'🕒 '+fmtTime(addS.time):'＋ Time (optional)'}</button>
+    <div class="label" style="margin:16px 2px 8px">Repeats?</div>
+    <div class="seg" style="margin-bottom:6px"><button class="${addS.repeat==='none'?'on':''}" onclick="addS.repeat='none';renderAdd()">Just once</button><button class="${addS.repeat==='week'?'on':''}" onclick="addS.repeat='week';renderAdd()">Every week</button><button class="${addS.repeat==='n'?'on':''}" onclick="addS.repeat='n';renderAdd()">Every few weeks</button></div>
+    ${addS.repeat==='n'?`<div class="add-kind" style="margin-top:8px">Every <input type="number" min="1" max="52" value="${addS.n}" style="width:62px" onchange="addS.n=Math.max(1,parseInt(this.value)||4)"> weeks — Fáze will remind you when it’s due</div>`:''}
+    <div class="sheet-actions"><button class="btn ghost" onclick="closeSheet()">Cancel</button><button class="btn primary" ${addS.date?'':'disabled'} onclick="addSave()">Save</button></div>`);
 }
-function pickBookDay(ds,fromInput){if(!ds)return;bookDay=ds;
-  document.querySelectorAll('.bkday').forEach(b=>b.classList.toggle('on',b.dataset.ds===ds));
-  if(!fromInput){const di=document.getElementById('bk-date');if(di)di.value='';}
-  const g=document.getElementById('bk-go');if(g)g.disabled=false;}
-function confirmBook(){
-  const it=upkeep.find(x=>x.id===bookFor);if(!it||!bookDay)return;
-  if(it.booked&&it.booked.actId)activities=activities.filter(a=>a.id!==it.booked.actId);
-  const act={id:newActId(),category:upkeepCat(it)||'UPK',type:it.name,recurring:false,date:bookDay,time:bookTime||'',cost:0,upkeepId:it.id};
+function addDay(ds){if(!ds)return;addS.date=ds;renderAdd();}
+function addSave(){
+  const ds=addS.date;if(!ds||!addS.name)return;const d=parseYMD(ds);const t=today();
+  if(addS.replaceAct)activities=activities.filter(a=>a.id!==addS.replaceAct);
+  const base={category:addS.cat,type:addS.name,place:'',passId:null,includedInPass:false,cost:0,time:addS.time||''};
+  const act=addS.repeat==='week'?{id:newActId(),...base,recurring:true,daysOfWeek:[d.getDay()],date:null}:{id:newActId(),...base,recurring:false,daysOfWeek:null,date:ds};
   activities.push(act);save(K_ACTS,activities);
-  it.booked={date:bookDay,time:bookTime||'',actId:act.id};save(K_UPKEEP,upkeep);
-  upkeepCalendar(it.id,true);
-  const d=parseYMD(bookDay);
-  sheet(`<h2 class="serif">Booked ✓</h2>
-    <div class="sub">${esc(it.name)} · ${DOW_FULL[d.getDay()]} ${d.getDate()} ${MON[d.getMonth()]}${bookTime?' · '+fmtTime(bookTime):''}. It's in your week, and a calendar file has been opened so you can add it to your phone's calendar.</div>
-    <a class="btn ghost" style="display:block;text-align:center;text-decoration:none;margin:4px 0 0" href="${gcalUrl(it)}" target="_blank" rel="noopener">Use Google Calendar? Add it there</a>
-    <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">Done</button></div>`);
+  if(addS.repeat!=='week'){let it=addS.upkeepId?upkeep.find(x=>x.id===addS.upkeepId):upkeep.find(x=>x.name.toLowerCase()===addS.name.toLowerCase());
+    if(!it&&addS.repeat==='n'){it={id:'u'+Date.now()+Math.random().toString(36).slice(2,5),name:addS.name,emoji:addS.emoji||'🔁',cadenceWeeks:addS.n,lastDate:'',category:REC[addS.cat]?addS.cat:'NONE'};upkeep.push(it);}
+    if(it){if(addS.repeat==='n')it.cadenceWeeks=addS.n;
+      if(d<=t){if(!it.lastDate||it.lastDate<ds)it.lastDate=ds;if(it.booked&&it.booked.date<=ds)delete it.booked;}
+      else it.booked={date:ds,time:addS.time||'',actId:act.id};
+      save(K_UPKEEP,upkeep);}}
   render();
+  const when=`${+d===+t?'Today':DOW_FULL[d.getDay()]+' '+d.getDate()+' '+MON[d.getMonth()]}${addS.time?' · '+fmtTime(addS.time):''}${addS.repeat==='week'?' · every week':''}`;
+  sheet(`<h2 class="serif">Saved ✓</h2>
+    <div class="sub">${esc(addS.emoji)} ${esc(addS.name)} · ${when}</div>
+    ${d>=t?verdictHtml(addS.cat,d):''}
+    ${d>=t?`<button class="btn ghost" style="width:100%;margin-top:14px" onclick="actCalendar('${act.id}')">📅 Add to my phone calendar</button>
+      <a class="nu-link" style="display:block;text-align:center;margin-top:10px" href="${gcalUrl(act)}" target="_blank" rel="noopener">or Google Calendar</a>`:''}
+    <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">Done</button></div>`);
 }
-function upkeepEventDates(it){const d=parseYMD(it.booked.date);const t=it.booked.time;
-  const D=x=>x.getFullYear()+pad2(x.getMonth()+1)+pad2(x.getDate());
+function actEventDates(a,d){d=d||parseYMD(a.date);const t=a.time;const D=x=>x.getFullYear()+pad2(x.getMonth()+1)+pad2(x.getDate());
   if(!t)return {allDay:true,s:D(d),e:D(addDays(d,1))};
   const[h,m]=t.split(':');return {allDay:false,s:D(d)+'T'+pad2(h)+pad2(m)+'00',e:D(d)+'T'+addHour(t).replace(':','')+'00'};}
-function upkeepCalendar(id,quiet){const it=upkeep.find(x=>x.id===id);if(!it||!it.booked)return;
-  const ev=upkeepEventDates(it);const title=(it.name+' — Fáze').replace(/[,;\\]/g,' ');
+function actFirstDate(a){if(!a.recurring)return parseYMD(a.date);let f=today();for(let g=0;g<7&&!(a.daysOfWeek||[]).includes(f.getDay());g++)f=addDays(f,1);return f;}
+function actCalendar(id){const a=activities.find(x=>x.id===id);if(!a)return;const ev=actEventDates(a,actFirstDate(a));const title=((a.type||catOf(a).label)+' — Fáze').replace(/[,;\\]/g,' ');
   const now=new Date();const stamp=now.getUTCFullYear()+pad2(now.getUTCMonth()+1)+pad2(now.getUTCDate())+'T'+pad2(now.getUTCHours())+pad2(now.getUTCMinutes())+'00Z';
-  const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Faze//EN','CALSCALE:GREGORIAN','BEGIN:VEVENT','UID:'+it.booked.actId+'@faze','DTSTAMP:'+stamp,
-    ev.allDay?'DTSTART;VALUE=DATE:'+ev.s:'DTSTART:'+ev.s, ev.allDay?'DTEND;VALUE=DATE:'+ev.e:'DTEND:'+ev.e,'SUMMARY:'+title,
-    'BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+title,'TRIGGER:-P1D','END:VALARM','END:VEVENT','END:VCALENDAR'];
-  download('faze-'+(it.name||'booking').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'.ics',L.join('\r\n'),'text/calendar');}
-function gcalUrl(it){const ev=upkeepEventDates(it);
-  return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(it.name)+'&dates='+ev.s+'/'+ev.e;}
+  const dow=['SU','MO','TU','WE','TH','FR','SA'];
+  const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Faze//EN','CALSCALE:GREGORIAN','BEGIN:VEVENT','UID:'+a.id+'@faze','DTSTAMP:'+stamp,
+    ev.allDay?'DTSTART;VALUE=DATE:'+ev.s:'DTSTART:'+ev.s, ev.allDay?'DTEND;VALUE=DATE:'+ev.e:'DTEND:'+ev.e];
+  if(a.recurring)L.push('RRULE:FREQ=WEEKLY;BYDAY='+(a.daysOfWeek||[]).map(w=>dow[w]).join(','));
+  L.push('SUMMARY:'+title,'BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+title,'TRIGGER:-P1D','END:VALARM','END:VEVENT','END:VCALENDAR');
+  download('faze-'+(a.type||'plan').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'.ics',L.join('\r\n'),'text/calendar');}
+function gcalUrl(a){const ev=actEventDates(a,actFirstDate(a));
+  return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(a.type||'')+'&dates='+ev.s+'/'+ev.e;}
 function deleteUpkeep(id){upkeep=upkeep.filter(x=>x.id!==id);save(K_UPKEEP,upkeep);openUpkeep();}
 
 /* ---------------- onboarding / cycle ---------------- */
@@ -1494,14 +1563,22 @@ function saveActivity(){
 }
 function deleteActivity(id){id=id||editingId;if(!id)return;activities=activities.filter(x=>x.id!==id);save(K_ACTS,activities);closeSheet();render();}
 function openActivityMenu(id){
-  const a=activities.find(x=>x.id===id);if(!a)return;const cat=catOf(a);
-  sheet(`<h2 class="serif">${esc(a.type)||cat.label}</h2>
-    <div class="sub">${esc(a.place)||cat.label}${a.time?' · '+fmtTime(a.time):''}${a.recurring?' · weekly':''}</div>
-    <div class="sheet-actions">
-      <button class="btn danger" onclick="deleteActivity('${id}')">Delete</button>
-      <button class="btn primary" onclick="openActivity('${id}')">Modify</button>
-    </div>`);
+  const a=activities.find(x=>x.id===id);if(!a)return;const cat=catOf(a);const d=a.recurring?null:parseYMD(a.date);const future=!d||d>=today();
+  sheet(`<h2 class="serif">${cat.emoji} ${esc(a.type)||cat.label}</h2>
+    <div class="sub">${d?DOW_FULL[d.getDay()]+' '+d.getDate()+' '+MON[d.getMonth()]:'Every '+(a.daysOfWeek||[]).map(w=>DOW_FULL[w]).join(', ')}${a.time?' · '+fmtTime(a.time):''}${a.place?' · '+esc(a.place):''}</div>
+    ${d?verdictHtml(a.category,d):''}
+    <div class="acts menu" style="margin:14px 0 6px">
+      <button class="act" onclick="changeActDay('${id}')"><span class="cat-badge" style="--c:#E2EDD7">📆</span><span class="body"><div class="a-name">Change the day</div></span></button>
+      ${future?`<button class="act" onclick="actCalendar('${id}')"><span class="cat-badge" style="--c:#D6E2F4">📅</span><span class="body"><div class="a-name">Add to my phone calendar</div></span></button>`:''}
+      <button class="act" onclick="openActivity('${id}')"><span class="cat-badge" style="--c:#F3E7C9">✏️</span><span class="body"><div class="a-name">Edit details</div><div class="a-sub">Place, cost, pass, time</div></span></button>
+    </div>
+    <div class="sheet-actions"><button class="btn danger" onclick="deleteActivity('${id}')">Delete</button><button class="btn primary" onclick="closeSheet()">Done</button></div>`);
 }
+function changeActDay(id){const a=activities.find(x=>x.id===id);if(!a)return;
+  const it=upkeep.find(x=>x.booked&&x.booked.actId===id)||upkeep.find(x=>x.name.toLowerCase()===(a.type||'').toLowerCase());
+  openAdd({replaceAct:id,upkeepId:it?it.id:null});
+  if(!it){Object.assign(addS,{name:a.type||catOf(a).label,emoji:catOf(a).emoji,cat:a.category,time:a.time||'',repeat:a.recurring?'week':'none'});renderAdd();}
+  else{addS.time=a.time||'';renderAdd();}}
 function exportWeekICS(){
   const mon=addDays(mondayOf(today()),weekOffset*7);
   const dt=(d,t)=>{const[h,m]=(t||'09:00').split(':');return d.getFullYear()+pad2(d.getMonth()+1)+pad2(d.getDate())+'T'+pad2(h)+pad2(m)+'00';};
